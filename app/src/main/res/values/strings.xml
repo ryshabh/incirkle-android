@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Application -->
+    <string name="app_name">InCirkle</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Drawer -->
+    <string name="nav_header_picture">Display Picture</string>
+    <string name="nav_header_title">User Name</string>
+    <string name="nav_header_subtitle">User ID</string>
+    <string name="nav_menu_item_account">Account</string>
+    <string name="nav_menu_item_logout">Logout</string>
+
+    <!-- Home -->
+    <string name="home_action_add_course">Add Course</string>
+
+</resources>
