@@ -92,7 +92,7 @@ class User()
     var type: Type
         get() = Type.from(this.typeRawValue)!!
         set(value) { this.typeRawValue = value.toString() }
-    var courses = ArrayList<String>()
+    var courses = ArrayList<DocumentReference>()
 
     constructor(uid: String, firstName: String, lastName: String, gender: Gender, emailAddress: String?, phoneNumber: String?, type: Type): this()
     {
