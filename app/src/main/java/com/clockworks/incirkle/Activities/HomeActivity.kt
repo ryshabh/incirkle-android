@@ -9,10 +9,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import com.clockworks.incirkle.LoginActivity
 import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
-import com.clockworks.incirkle.UserProfileActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_home.*
@@ -70,11 +68,12 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 {
                     userData ->
 
-                    // TODO: - Update View
                     val fullName = userData.firstName + " " + userData.lastName
                     textView_user_name.setText(fullName)
                     val userId = userData.emailAddress.let { it } ?: userData.phoneNumber.let { it }
                     textView_user_id.setText(userId ?: getString(R.string.nav_header_subtitle))
+
+                    // TODO: - Update Courses View
 
                     if (userData.courses.isEmpty())
                     {
@@ -117,7 +116,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         when (item.itemId)
         {
-            R.id.nav_account -> { }
+            R.id.nav_account -> this.startActivity(Intent(this, UserProfileActivity::class.java))
             R.id.nav_logout ->
             {
                 this.mAuth.signOut()
