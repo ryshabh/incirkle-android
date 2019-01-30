@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.clockworks.incirkle">
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.READ_PROFILE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application
             android:allowBackup="true"
@@ -10,11 +14,50 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".HomeActivity"
+                android:name=".Activities.UserProfileActivity"
+                android:parentActivityName=".Activities.LoginActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.clockworks.incirkle.Activities.LoginActivity"/>
+        </activity>
+        <activity
+                android:name=".Activities.LoginEmailActivity"
+                android:parentActivityName=".Activities.LoginActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.clockworks.incirkle.Activities.LoginActivity"/>
+        </activity>
+        <activity
+                android:name=".Activities.LoginPhoneVerificationActivity"
+                android:parentActivityName=".Activities.LoginPhoneActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.clockworks.incirkle.Activities.LoginPhoneActivity"/>
+        </activity>
+        <activity
+                android:name=".Activities.LoginPhoneActivity"
+                android:label="@string/button_login_phone"
+                android:parentActivityName=".Activities.LoginActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.clockworks.incirkle.Activities.LoginActivity"/>
+        </activity>
+        <activity
+                android:name=".Activities.LoginActivity"
+                android:label="@string/title_activity_login">
+        </activity>
+        <activity
+                android:name=".Activities.HomeActivity"
                 android:label="@string/app_name"
+                android:launchMode="singleTop"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

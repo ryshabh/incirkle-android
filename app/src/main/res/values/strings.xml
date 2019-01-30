@@ -16,4 +16,35 @@
     <!-- Home -->
     <string name="home_action_add_course">Add Course</string>
 
+    <!-- Login -->
+    <string name="title_activity_login">Log in</string>
+    <string name="button_login_email">Login via Email</string>
+    <string name="button_login_phone">Login via Phone</string>
+
+    <!-- Email Verification -->
+    <string name="prompt_email_address">Email Address</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_sign_in">Sign In</string>
+
+    <!-- Phone Login -->
+    <string name="phone_country_code">+91</string>
+    <string name="prompt_phone">Phone Number</string>
+    <string name="prompt_next">Next</string>
+
+    <!-- Phone Verification -->
+    <string name="prompt_enter_code">Enter Code</string>
+    <string name="prompt_continue">Continue</string>
+
+    <!-- User Profile -->
+    <string name="text_first_name">First Name</string>
+    <string name="text_last_name">Last Name</string>
+    <string name="text_gender">Gender</string>
+    <string name="text_gender_male">Male</string>
+    <string name="text_gender_female">Female</string>
+    <string name="text_dob">Date of Birth</string>
+    <string name="text_user_type">User Type</string>
+    <string name="text_user_type_teacher">Teacher</string>
+    <string name="text_user_type_student">Student</string>
+    <string name="text_update_profile">Update Profile</string>
+
 </resources>
