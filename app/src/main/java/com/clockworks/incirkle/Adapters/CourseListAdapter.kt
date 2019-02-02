@@ -8,7 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
-import com.clockworks.incirkle.Views.CourseView
+import com.clockworks.incirkle.ViewModels.CourseViewModel
 
 class CourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
 {
@@ -33,12 +33,12 @@ class CourseListAdapter(private val context: Context, private var dataSource: Ar
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View
     {
         val view: View
-        val courseView: CourseView
+        val courseView: CourseViewModel
 
         if (convertView == null)
         {
             view = inflater.inflate(R.layout.list_item_course, parent, false)
-            courseView = CourseView()
+            courseView = CourseViewModel()
             courseView.codeTextView = view.findViewById<TextView>(R.id.textView_course_code)
             courseView.nameTextView= view.findViewById<TextView>(R.id.textView_course_name)
             courseView.lastestUpdateTextView = view.findViewById<TextView>(R.id.textView_latest_update)
@@ -47,7 +47,7 @@ class CourseListAdapter(private val context: Context, private var dataSource: Ar
         else
         {
             view = convertView
-            courseView = convertView.tag as CourseView
+            courseView = convertView.tag as CourseViewModel
         }
 
         val course = this.getItem(position) as Course
