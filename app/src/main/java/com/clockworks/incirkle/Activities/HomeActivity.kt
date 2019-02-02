@@ -8,18 +8,59 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
 import android.widget.Toast
+import com.clockworks.incirkle.Adapters.CourseListAdapter
+import com.clockworks.incirkle.Models.Course
+import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
+import kotlinx.android.synthetic.main.content_home.*
 import kotlinx.android.synthetic.main.nav_header_home.*
 
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var mAuth: FirebaseAuth
+    private var courses = ArrayList<Course>()
+
+    private fun setCoursesForUser(user: User)
+    {
+        this.courses = ArrayList<Course>()
+        user.courses.forEach()
+        {
+            courseReference ->
+            courseReference.get().addOnCompleteListener()
+            {
+                task ->
+                if (task.isSuccessful)
+                {
+                    task.result?.toObject(Course::class.java)?.let()
+                    {
+                        course ->
+                        this.courses.add(course)
+                        this.updateCoursesList()
+                    }
+                    ?: run()
+                    {
+                        Toast.makeText(this@HomeActivity, "Could not deserialize Course Data", Toast.LENGTH_LONG).show()
+                    }
+                }
+                else
+                    Toast.makeText(this, task.exception.toString(), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    fun updateCoursesList()
+    {
+        val adapter = CourseListAdapter(this, this.courses)
+        courses_list_view.adapter = adapter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -79,6 +120,8 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     {
                         // TODO: - Start Add Course Activity in case no Courses are added
                     }
+                    else
+                        this.setCoursesForUser(userData)
                 }
                 ?: run()
                 {
