@@ -3,6 +3,7 @@ package com.clockworks.incirkle.Models
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.collections.ArrayList
 
@@ -78,7 +79,6 @@ class User()
         }
     }
 
-    var documentReference: DocumentReference? = null
     lateinit var uid: String
     lateinit var firstName: String
     lateinit var lastName: String
@@ -93,6 +93,9 @@ class User()
         get() = Type.from(this.typeRawValue)!!
         set(value) { this.typeRawValue = value.toString() }
     var courses = ArrayList<DocumentReference>()
+
+    @Exclude
+    var documentReference: DocumentReference? = null
 
     constructor(uid: String, firstName: String, lastName: String, gender: Gender, emailAddress: String?, phoneNumber: String?, type: Type): this()
     {
