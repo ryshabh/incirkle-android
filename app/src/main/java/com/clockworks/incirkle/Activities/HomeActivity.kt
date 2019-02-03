@@ -8,9 +8,8 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ArrayAdapter
 import android.widget.Toast
-import com.clockworks.incirkle.Adapters.CourseListAdapter
+import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.currentUserData
@@ -43,7 +42,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     {
                         course ->
                         this.courses.add(course)
-                        courses_list_view.adapter = CourseListAdapter(this, this.courses)
+                        courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
                     ?: run()
                     {

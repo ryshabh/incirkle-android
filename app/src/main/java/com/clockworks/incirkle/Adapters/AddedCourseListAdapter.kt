@@ -10,7 +10,7 @@ import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
 import com.clockworks.incirkle.ViewModels.CourseViewModel
 
-class CourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
+class AddedCourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
 {
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
