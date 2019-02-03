@@ -28,7 +28,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mAuth: FirebaseAuth
     private var courses = ArrayList<Course>()
 
-    private fun setCoursesForUser(user: User)
+    private fun getCoursesForUser(user: User)
     {
         this.courses = ArrayList<Course>()
         user.courses.forEach()
@@ -43,7 +43,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     {
                         course ->
                         this.courses.add(course)
-                        this.updateCoursesList()
+                        courses_list_view.adapter = CourseListAdapter(this, this.courses)
                     }
                     ?: run()
                     {
@@ -54,12 +54,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     Toast.makeText(this, task.exception.toString(), Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    fun updateCoursesList()
-    {
-        val adapter = CourseListAdapter(this, this.courses)
-        courses_list_view.adapter = adapter
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -117,11 +111,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     // TODO: - Update Courses View
 
                     if (userData.courses.isEmpty())
-                    {
-                        // TODO: - Start Add Course Activity in case no Courses are added
-                    }
+                        this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
                     else
-                        this.setCoursesForUser(userData)
+                        this.getCoursesForUser(userData)
                 }
                 ?: run()
                 {
@@ -149,7 +141,11 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     {
         when (item.itemId)
         {
-            R.id.home_action_add_course -> return true
+            R.id.home_action_add_course ->
+            {
+                this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
