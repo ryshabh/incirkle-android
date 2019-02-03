@@ -5,10 +5,11 @@ import com.google.firebase.firestore.Exclude
 
 class Course()
 {
+    lateinit var id: String
     lateinit var name: String
+    lateinit var code: String
     lateinit var teacher: DocumentReference
     var teachingAssistants = ArrayList<DocumentReference>()
-    lateinit var code: String
     var invitedStudents = HashMap<String, String>()
 
     @Exclude
