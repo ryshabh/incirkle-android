@@ -37,7 +37,7 @@ class CourseListAdapter(private val context: Context, private var dataSource: Ar
 
         if (convertView == null)
         {
-            view = inflater.inflate(R.layout.list_item_course, parent, false)
+            view = inflater.inflate(R.layout.list_item_added_course, parent, false)
             courseView = CourseViewModel()
             courseView.codeTextView = view.findViewById<TextView>(R.id.textView_course_code)
             courseView.nameTextView= view.findViewById<TextView>(R.id.textView_course_name)
