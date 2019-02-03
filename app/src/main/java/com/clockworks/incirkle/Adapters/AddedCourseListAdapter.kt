@@ -8,10 +8,15 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
-import com.clockworks.incirkle.ViewModels.CourseViewModel
 
 class AddedCourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
 {
+    private class ViewModel
+    {
+        lateinit var codeTextView: TextView
+        lateinit var nameTextView: TextView
+        lateinit var lastestUpdateTextView: TextView
+    }
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
@@ -33,12 +38,12 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View
     {
         val view: View
-        val courseView: CourseViewModel
+        val courseView: ViewModel
 
         if (convertView == null)
         {
             view = inflater.inflate(R.layout.list_item_added_course, parent, false)
-            courseView = CourseViewModel()
+            courseView = ViewModel()
             courseView.codeTextView = view.findViewById<TextView>(R.id.textView_course_code)
             courseView.nameTextView= view.findViewById<TextView>(R.id.textView_course_name)
             courseView.lastestUpdateTextView = view.findViewById<TextView>(R.id.textView_latest_update)
@@ -47,7 +52,7 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
         else
         {
             view = convertView
-            courseView = convertView.tag as CourseViewModel
+            courseView = convertView.tag as ViewModel
         }
 
         val course = this.getItem(position) as Course
