@@ -1,5 +1,6 @@
 package com.clockworks.incirkle.Activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
@@ -55,7 +56,7 @@ class SelectOrganisationActivity : AppCompatActivity()
                 }
                 this.organisations = newOrganisations
                 val adapter = ArrayAdapter(this, android.R.layout.select_dialog_item, this.organisations.map { "${it.name}, ${it.location}" })
-                autoCompleteTextView_organisations.setAdapter(adapter)
+                spinner_organisations.setAdapter(adapter)
 //                autoCompleteTextView_organisations.threshold = 2
             }
         }

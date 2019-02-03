@@ -33,7 +33,7 @@
             android:layout_height="75dp">
 
         <Spinner
-                android:id="@+id/autoCompleteTextView_organisations"
+                android:id="@+id/spinner_organisations"
                 android:hint="@string/text_select_organisation"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
