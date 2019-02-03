@@ -52,4 +52,11 @@
     <string name="text_course_name">Course Name</string>
     <string name="text_latest_update">Latest Update</string>
 
+    <!-- Select Organisation -->
+    <string name="text_select_organisation">Select Organisation</string>
+    <string name="text_proceed">Proceed</string>
+    <string name="text_add">+</string>
+    <string name="text_organisation_name">Organisation Name</string>
+    <string name="text_organisation_location">Location</string>
+
 </resources>
