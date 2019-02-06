@@ -14,6 +14,16 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
+                android:name=".Activities.TeachingAssistantsActivity"
+                android:parentActivityName=".Activities.CourseActivity">
+        </activity>
+        <activity
+                android:name=".Activities.InviteStudentsActivity"
+                android:parentActivityName=".Activities.CourseActivity">
+        </activity>
+        <activity android:name=".Activities.CourseActivity">
+        </activity>
+        <activity
                 android:name=".Activities.AvailableCoursesActivity"
                 android:parentActivityName=".Activities.SelectOrganisationActivity">
         </activity>

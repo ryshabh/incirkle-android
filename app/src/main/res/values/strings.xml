@@ -62,4 +62,12 @@
     <!-- Add Course -->
     <string name="text_create_course">Create Course</string>
 
+    <!-- Course -->
+    <string name="text_courseID">Course ID</string>
+    <string name="text_teachingAssistants">Teaching Assistants</string>
+    <string name="text_inviteStudents">Invite Students</string>
+    <string name="text_save">Save</string>
+
+    <string name="text_delete">Delete</string>
+
 </resources>
