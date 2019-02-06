@@ -57,7 +57,6 @@ class SelectOrganisationActivity : AppCompatActivity()
                 this.organisations = newOrganisations
                 val adapter = ArrayAdapter(this, android.R.layout.select_dialog_item, this.organisations.map { "${it.name}, ${it.location}" })
                 spinner_organisations.setAdapter(adapter)
-//                autoCompleteTextView_organisations.threshold = 2
             }
         }
     }
