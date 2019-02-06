@@ -1,5 +1,6 @@
 package com.clockworks.incirkle.Activities
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -29,6 +30,14 @@ class AvailableCoursesActivity : AppCompatActivity()
 
     var showMenu = false
     var availableCourses = ArrayList<Course>()
+
+    fun coursesPath(): String
+    {
+        return Organisation.reference
+            .document(this.intent.getStringExtra(IDENTIFIER_SELECTED_ORGANISATION)!!)
+            .collection("Courses")
+            .path
+    }
 
     fun showAddAlertForCourse(course: Course)
     {
@@ -79,7 +88,10 @@ class AvailableCoursesActivity : AppCompatActivity()
                     if (courseIDString.equals(course.id, false))
                     {
                         dialogInterface.dismiss()
-                        // TODO: Navigate to Add Course Activity
+                        val intent = Intent(this, CourseActivity::class.java)
+                        intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+                        intent.putExtra(CourseActivity.IDENTIFIER_COURSE_ID, courseID)
+                        startActivity(intent)
                     }
                     else
                         courseIDEditText.error = "Incorrect Course ID"
@@ -169,7 +181,9 @@ class AvailableCoursesActivity : AppCompatActivity()
         {
             R.id.item_create_course ->
             {
-                // TODO : - Navigate to create course page
+                val intent = Intent(this, CourseActivity::class.java)
+                intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+                startActivity(intent)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
