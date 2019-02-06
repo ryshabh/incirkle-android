@@ -43,6 +43,16 @@ class User()
         this.type = type
     }
 
+    fun fullName() : String
+    {
+        return "$firstName $lastName"
+    }
+
+    fun userID() : String
+    {
+        return this.emailAddress ?: this.phoneNumber ?: "User ID"
+    }
+
     fun update(completion: (Exception?) -> Unit)
     {
         this.documentReference?.let()
