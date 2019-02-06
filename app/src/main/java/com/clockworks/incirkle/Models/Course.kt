@@ -14,4 +14,12 @@ class Course()
 
     @Exclude
     var reference: DocumentReference? = null
+
+    constructor(id: String, teacher: DocumentReference): this()
+    {
+        this.id = id
+        this.name = ""
+        this.code = ""
+        this.teacher = teacher
+    }
 }
