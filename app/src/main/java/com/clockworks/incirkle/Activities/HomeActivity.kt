@@ -21,9 +21,8 @@ import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
 import kotlinx.android.synthetic.main.nav_header_home.*
 
-class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
-    private lateinit var mAuth: FirebaseAuth
+class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener
+{
     private var courses = ArrayList<Course>()
 
     private fun getCoursesForUser(user: User)
@@ -71,53 +70,40 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         nav_view.setNavigationItemSelectedListener(this)
 
         FirebaseApp.initializeApp(this)
-        this.mAuth = FirebaseAuth.getInstance()
-    }
-
-    override fun onStart()
-    {
-        super.onStart()
-        if (this.mAuth.currentUser == null)
-            this.startActivity(Intent(this, LoginActivity::class.java))
-    }
-
-    override fun onResume()
-    {
-        super.onResume()
-
-        this.mAuth.currentUser?.let()
+        FirebaseAuth.getInstance().currentUser?.let()
         {
-            firebaseUser ->
+                firebaseUser ->
 
             firebaseUser.currentUserData()
             {
-                user, exception ->
+                    userData, exception ->
 
-                exception?.let()
-                { e ->
-                    Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
-                }
-                ?: user?.let()
+                exception?.let() { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                ?: userData?.let()
                 {
-                    userData ->
+                    user ->
 
-                    val fullName = userData.firstName + " " + userData.lastName
-                    textView_user_name.setText(fullName)
-                    val userId = userData.emailAddress.let { it } ?: userData.phoneNumber.let { it }
-                    textView_user_id.setText(userId ?: getString(R.string.nav_header_subtitle))
-
-                    // TODO: - Update Courses View
+                    textView_user_name.setText(user.fullName())
+                    textView_user_id.setText(user.userID())
 
                     if (userData.courses.isEmpty())
+                    {
                         this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
+                        finish()
+                    }
                     else
                         this.getCoursesForUser(userData)
                 }
                 ?: run()
                 {
                     startActivity(Intent(this, UserProfileActivity::class.java))
+                    finish()
                 }
             }
+        } ?: run()
+        {
+            this.startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
     }
 
@@ -156,8 +142,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_account -> this.startActivity(Intent(this, UserProfileActivity::class.java))
             R.id.nav_logout ->
             {
-                this.mAuth.signOut()
+                FirebaseAuth.getInstance().signOut()
                 this.startActivity(Intent(this, LoginActivity::class.java))
+                finish()
             }
         }
 
