@@ -129,7 +129,15 @@ class AvailableCoursesActivity : AppCompatActivity()
                         if (user.courses.contains(snapshot.reference))
                             return@forEach
 
-                        snapshot.toObject(Course::class.java)?.let() { courses.add(it) }
+                        snapshot.toObject(Course::class.java)?.let()
+                        {
+
+                            if (it.teacher != user.documentReference)
+                            {
+                                it.reference = snapshot.reference
+                                courses.add(it)
+                            }
+                        }
                         ?: run()
                         {
                             Toast.makeText(this, "Could not deserialize Course", Toast.LENGTH_LONG).show()
