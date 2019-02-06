@@ -9,67 +9,8 @@ import kotlin.collections.ArrayList
 
 class User()
 {
-    enum class Type
-    {
-        TEACHER,
-        STUDENT;
-
-        companion object
-        {
-            private val teacherRawValue = "teacher"
-            private val studentRawValue = "student"
-
-            fun from(rawValue: String): Type?
-            {
-                when (rawValue)
-                {
-                    this.teacherRawValue -> return TEACHER
-                    this.studentRawValue -> return STUDENT
-                    else -> return null
-                }
-            }
-        }
-
-        override fun toString(): String
-        {
-            when (this)
-            {
-                TEACHER -> return Type.teacherRawValue
-                STUDENT -> return Type.studentRawValue
-            }
-        }
-    }
-
-    enum class Gender
-    {
-        MALE,
-        FEMALE;
-
-        companion object
-        {
-            private val maleRawValue = "male"
-            private val femaleRawValue = "female"
-
-            fun from(rawValue: String): Gender?
-            {
-                when (rawValue)
-                {
-                    this.maleRawValue-> return MALE
-                    this.femaleRawValue -> return FEMALE
-                    else -> return null
-                }
-            }
-        }
-
-        override fun toString(): String
-        {
-            when (this)
-            {
-                MALE -> return Gender.maleRawValue
-                FEMALE -> return Gender.femaleRawValue
-            }
-        }
-    }
+    enum class Type { TEACHER, STUDENT; }
+    enum class Gender { MALE, FEMALE; }
 
     companion object
     {
@@ -82,16 +23,10 @@ class User()
     lateinit var uid: String
     lateinit var firstName: String
     lateinit var lastName: String
-    lateinit var genderRawValue: String
-    var gender: Gender
-        get() = Gender.from(this.genderRawValue)!!
-        set(value) { this.genderRawValue = value.toString() }
+    lateinit var gender: Gender
     var emailAddress: String? = null
     var phoneNumber: String? = null
-    lateinit var typeRawValue: String
-    var type: Type
-        get() = Type.from(this.typeRawValue)!!
-        set(value) { this.typeRawValue = value.toString() }
+    lateinit var type: Type
     var courses = ArrayList<DocumentReference>()
 
     @Exclude
