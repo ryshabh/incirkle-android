@@ -125,7 +125,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     {
         when (item.itemId)
         {
-            R.id.home_action_add_course ->
+            R.id.home_action_enrol_course ->
             {
                 this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
                 return true

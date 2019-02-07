@@ -18,9 +18,9 @@ import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_add_course.*
+import kotlinx.android.synthetic.main.activity_enrol_course.*
 
-class AvailableCoursesActivity : AppCompatActivity()
+class EnrolCourseActivity : AppCompatActivity()
 {
     companion object
     {
@@ -106,7 +106,7 @@ class AvailableCoursesActivity : AppCompatActivity()
 
     private fun fetchAvailableCoursesForUser(user: User)
     {
-        val organisationID = intent.getStringExtra(AvailableCoursesActivity.IDENTIFIER_SELECTED_ORGANISATION)
+        val organisationID = intent.getStringExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION)
         Organisation.reference.document(organisationID).collection("Courses").get().addOnCompleteListener()
         {
                 task ->
@@ -156,7 +156,7 @@ class AvailableCoursesActivity : AppCompatActivity()
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_course)
+        setContentView(R.layout.activity_enrol_course)
 
         FirebaseAuth.getInstance().currentUser?.currentUserData()
         {

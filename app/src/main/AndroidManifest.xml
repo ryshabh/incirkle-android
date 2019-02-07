@@ -24,7 +24,7 @@
         <activity android:name=".Activities.CourseActivity">
         </activity>
         <activity
-                android:name=".Activities.AvailableCoursesActivity"
+                android:name=".Activities.EnrolCourseActivity"
                 android:parentActivityName=".Activities.SelectOrganisationActivity">
         </activity>
         <activity

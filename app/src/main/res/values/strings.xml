@@ -14,7 +14,6 @@
     <string name="nav_menu_item_logout">Logout</string>
 
     <!-- Home -->
-    <string name="home_action_add_course">Add Course</string>
 
     <!-- Login -->
     <string name="title_activity_login">Log in</string>
@@ -59,7 +58,8 @@
     <string name="text_organisation_name">Organisation Name</string>
     <string name="text_organisation_location">Location</string>
 
-    <!-- Add Course -->
+    <!-- Enrol Course -->
+    <string name="title_activity_enrolCourse">Enrol Course</string>
     <string name="text_create_course">Create Course</string>
 
     <!-- Course -->

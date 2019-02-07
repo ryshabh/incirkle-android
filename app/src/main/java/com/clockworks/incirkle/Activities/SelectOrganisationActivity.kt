@@ -118,8 +118,8 @@ class SelectOrganisationActivity : AppCompatActivity()
         this.organisations[spinner_organisations.selectedItemPosition].reference?.id?.let()
         {
             id ->
-            val intent = Intent(this, AvailableCoursesActivity::class.java)
-            intent.putExtra(AvailableCoursesActivity.IDENTIFIER_SELECTED_ORGANISATION, id)
+            val intent = Intent(this, EnrolCourseActivity::class.java)
+            intent.putExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION, id)
             startActivity(intent)
         }
     }

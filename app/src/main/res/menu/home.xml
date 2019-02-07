@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/home_action_add_course"
-          android:title="@string/home_action_add_course"
+    <item android:id="@+id/home_action_enrol_course"
+          android:title="@string/title_activity_enrolCourse"
           app:showAsAction="never"/>
 </menu>
