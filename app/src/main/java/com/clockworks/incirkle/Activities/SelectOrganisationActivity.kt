@@ -22,7 +22,6 @@ class SelectOrganisationActivity : AppCompatActivity()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_organisation)
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         Organisation.reference.addSnapshotListener()
         {
