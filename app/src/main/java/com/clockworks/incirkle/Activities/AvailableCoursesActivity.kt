@@ -41,21 +41,21 @@ class AvailableCoursesActivity : AppCompatActivity()
 
     fun showAddAlertForCourse(course: Course)
     {
-        val courseIDEditText = EditText(this)
-        courseIDEditText.inputType = InputType.TYPE_CLASS_NUMBER
-        courseIDEditText.filters = arrayOf(InputFilter.LengthFilter(4))
-        courseIDEditText.setPadding(10, 10, 10, 10)
+        val coursePasswordEditText = EditText(this)
+        coursePasswordEditText.inputType = InputType.TYPE_CLASS_NUMBER
+        coursePasswordEditText.filters = arrayOf(InputFilter.LengthFilter(4))
+        coursePasswordEditText.setPadding(10, 10, 10, 10)
 
         val alertBuilder = AlertDialog.Builder(this)
         alertBuilder.setTitle("Add ${course.name}")
-        alertBuilder.setMessage("Enter Course ID")
-        alertBuilder.setView(courseIDEditText)
+        alertBuilder.setMessage("Enter Course Password")
+        alertBuilder.setView(coursePasswordEditText)
         alertBuilder.setPositiveButton("Add", null)
         alertBuilder.setNeutralButton("Cancel", null)
 
         val alert = alertBuilder.create()
 
-        courseIDEditText.addTextChangedListener(object : TextWatcher
+        coursePasswordEditText.addTextChangedListener(object : TextWatcher
         {
             override fun afterTextChanged(p0: Editable?)
             {
@@ -78,14 +78,14 @@ class AvailableCoursesActivity : AppCompatActivity()
             {
                 button ->
 
-                courseIDEditText.error = null
+                coursePasswordEditText.error = null
 
-                val courseIDString = courseIDEditText.text.toString().trim()
+                val courseIDString = coursePasswordEditText.text.toString().trim()
                 courseIDString.toIntOrNull()?.let()
                 {
                     courseID ->
 
-                    if (courseIDString.equals(course.id, false))
+                    if (courseIDString.equals(course.password, false))
                     {
                         dialogInterface.dismiss()
                         val intent = Intent(this, CourseActivity::class.java)
@@ -94,11 +94,11 @@ class AvailableCoursesActivity : AppCompatActivity()
                         startActivity(intent)
                     }
                     else
-                        courseIDEditText.error = "Incorrect Course ID"
+                        coursePasswordEditText.error = "Incorrect Course Password"
                 }
                 ?: run()
                 {
-                    courseIDEditText.error = "Course ID must be numeric"
+                    coursePasswordEditText.error = "Course Password must be numeric"
                 }
             }
         }

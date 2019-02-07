@@ -35,7 +35,7 @@ class CourseActivity : AppCompatActivity()
     private fun updateCourse(course: Course, user: User)
     {
         this.course = course
-        textView_courseID.setText(course.id)
+        textView_coursePassword.setText(course.password)
         textView_courseCode.setText(course.code)
         textView_courseName.setText(course.name)
 
@@ -84,10 +84,10 @@ class CourseActivity : AppCompatActivity()
                 }?: run()
                 {
                     // Create New Course
-                    var newID = (0..9999).random().toString()
-                    while (newID.length < 4)
-                        newID = "0$newID"
-                    this.updateCourse(Course(newID, user.documentReference!!), user)
+                    var newPassword = (0..9999).random().toString()
+                    while (newPassword.length < 4)
+                        newPassword = "0$newPassword"
+                    this.updateCourse(Course(newPassword, user.documentReference!!), user)
                 }
             }
         }
