@@ -67,6 +67,8 @@ class TeachingAssistantsActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_teaching_assistants)
+        supportActionBar?.let { it.title = getString(R.string.text_teachingAssistants) }
+
         if (this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false))
         {
             button_add_teachingAssistant.visibility = View.VISIBLE

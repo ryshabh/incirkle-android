@@ -97,6 +97,8 @@ class CourseInfoActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_course_info)
+        supportActionBar?.let { it.title = getString(R.string.title_activity_courseInfo) }
+
         this.coursesCollectionReference = FirebaseFirestore.getInstance().collection(this.intent.getStringExtra(IDENTIFIER_COURSES_PATH)!!)
         this.courseID = this.intent.getStringExtra(IDENTIFIER_COURSE_ID)
         this.fetchCourse()

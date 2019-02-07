@@ -12,6 +12,7 @@ class LoginActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        supportActionBar?.let { it.title = getString(R.string.title_activity_login) }
     }
 
     fun phoneLogin(view: View)

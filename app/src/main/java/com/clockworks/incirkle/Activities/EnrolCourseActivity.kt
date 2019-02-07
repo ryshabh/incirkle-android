@@ -157,6 +157,7 @@ class EnrolCourseActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_enrol_course)
+        supportActionBar?.let { it.title = getString(R.string.title_activity_enrolCourse) }
 
         FirebaseAuth.getInstance().currentUser?.currentUserData()
         {

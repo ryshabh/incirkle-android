@@ -100,6 +100,7 @@ class InviteStudentsActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_invite_students)
+        supportActionBar?.let { it.title = getString(R.string.text_inviteStudents) }
 
         this.invitedStudents = intent.getSerializableExtra(IDENTIFIER_INVITED_STUDENTS) as HashMap<String, String>
         listView_invitedStudents.adapter = DetailedListAdapter(this, this.invitedStudents.toList())

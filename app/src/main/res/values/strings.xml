@@ -21,20 +21,24 @@
     <string name="button_login_phone">Login via Phone</string>
 
     <!-- Email Verification -->
+    <string name="title_activity_loginViaEmail">Login via Email Address</string>
     <string name="prompt_email_address">Email Address</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_sign_in">Sign In</string>
 
     <!-- Phone Login -->
+    <string name="title_activity_loginViaPhone">Login via Phone Number</string>
     <string name="phone_country_code">+91</string>
     <string name="prompt_phone">Phone Number</string>
     <string name="prompt_next">Next</string>
 
     <!-- Phone Verification -->
+    <string name="title_activity_verifyPhone">Verify Phone Number</string>
     <string name="prompt_enter_code">Enter Code</string>
     <string name="prompt_continue">Continue</string>
 
     <!-- User Profile -->
+    <string name="title_activity_userProfile">User Profile</string>
     <string name="text_first_name">First Name</string>
     <string name="text_last_name">Last Name</string>
     <string name="text_gender">Gender</string>
@@ -52,6 +56,7 @@
     <string name="text_latest_update">Latest Update</string>
 
     <!-- Select Organisation -->
+    <string name="title_activity_selectOrganisation">Select Organisation</string>
     <string name="text_select_organisation">Select Organisation</string>
     <string name="text_proceed">Proceed</string>
     <string name="text_add">+</string>
@@ -62,7 +67,8 @@
     <string name="title_activity_enrolCourse">Enrol Course</string>
     <string name="text_create_course">Create Course</string>
 
-    <!-- Course -->
+    <!-- Course Info -->
+    <string name="title_activity_courseInfo">Course Info</string>
     <string name="text_password">Password</string>
     <string name="text_teachingAssistants">Teaching Assistants</string>
     <string name="text_inviteStudents">Invite Students</string>
