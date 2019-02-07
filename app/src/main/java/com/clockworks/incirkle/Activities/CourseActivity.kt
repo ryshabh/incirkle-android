@@ -167,7 +167,7 @@ class CourseActivity : AppCompatActivity()
         if (courseCode.isBlank())
             textView_courseCode.error = "Course Code is empty"
         else if (courseName.isBlank())
-            textView_courseName.error = "Couse Name is empty"
+            textView_courseName.error = "Course Name is empty"
         else
         {
             this.course.code = courseCode
