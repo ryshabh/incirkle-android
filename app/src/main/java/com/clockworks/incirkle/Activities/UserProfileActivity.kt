@@ -1,11 +1,14 @@
 package com.clockworks.incirkle.Activities
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.view.View
 import android.widget.Toast
+import com.clockworks.incirkle.Models.Course
+import com.clockworks.incirkle.Models.Organisation
 import com.clockworks.incirkle.Models.User
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_user_profile.*
@@ -56,14 +59,38 @@ class UserProfileActivity : AppCompatActivity()
                 ?: user?.let()
                 {
                     this.update(it)
+                    for (index in 0 until gender.childCount) gender.getChildAt(index).isEnabled = false
+                    for (index in 0 until type.childCount) type.getChildAt(index).isEnabled = false
                 }
                 ?:
                 run()
                 {
+                    val userID = firebaseUser.phoneNumber
 
                     val newUser = User(firebaseUser.uid, "", "", this@UserProfileActivity.selectedGender(), null, firebaseUser.phoneNumber, this@UserProfileActivity.selectedType())
                     newUser.phoneNumber = firebaseUser.phoneNumber
                     this.update(newUser)
+
+                    Organisation.reference.get().addOnCompleteListener()
+                    {
+                        it.exception?.let { Toast.makeText(this@UserProfileActivity, it.toString(), Toast.LENGTH_LONG).show() }
+                        ?: it.result?.forEach()
+                        {
+                            it.reference.collection("Courses").get().addOnCompleteListener()
+                            {
+                                it.exception?.let { Toast.makeText(this@UserProfileActivity, it.toString(), Toast.LENGTH_LONG).show() }
+                                    ?: it.result?.forEach()
+                                {
+                                    courseSnapshot ->
+                                    courseSnapshot.toObject(Course::class.java).let()
+                                    {
+                                        if ((it.invitedStudents + it.teachingAssistants).contains(userID))
+                                            newUser.courses.add(courseSnapshot.reference)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
@@ -116,7 +143,10 @@ class UserProfileActivity : AppCompatActivity()
             }
             ?: run()
             {
-                this.finish()
+                val homeActivityIntent = Intent(this, HomeActivity::class.java)
+                homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(homeActivityIntent)
+                finish()
             }
         }
     }
