@@ -156,7 +156,7 @@ class CourseActivity : AppCompatActivity()
             super.onActivityResult(requestCode, resultCode, data)
     }
 
-    fun save(v: View)
+    fun finish(v: View)
     {
         val courseCode = textView_courseCode.text.toString().trim()
         val courseName = textView_courseName.text.toString().trim()
