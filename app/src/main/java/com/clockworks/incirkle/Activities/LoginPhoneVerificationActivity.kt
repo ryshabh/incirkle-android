@@ -68,5 +68,6 @@ class LoginPhoneVerificationActivity : AppCompatActivity()
         val homeActivityIntent = Intent(this, HomeActivity::class.java)
         homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(homeActivityIntent)
+        finish()
     }
 }
