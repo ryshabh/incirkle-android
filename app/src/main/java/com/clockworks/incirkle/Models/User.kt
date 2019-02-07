@@ -1,10 +1,9 @@
 package com.clockworks.incirkle.Models
 
+import android.util.Patterns
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.Exclude
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.*
 import kotlin.collections.ArrayList
 
 class User()
@@ -17,6 +16,22 @@ class User()
         fun collectionReference(): CollectionReference
         {
             return FirebaseFirestore.getInstance().collection("Users")
+        }
+
+        fun iterate(userIDs: ArrayList<String>, onIteration: (Int, String, Task<QuerySnapshot>) -> Unit)
+        {
+            for (index in 0 until userIDs.size)
+            {
+                val userID = userIDs[index]
+                (if (Patterns.PHONE.matcher(userID).matches()) "phoneNumber"
+                else if (Patterns.PHONE.matcher(userID).matches()) "emailAddress"
+                else null)?.let()
+                {
+                    key ->
+                    User.collectionReference().whereEqualTo(key, userID).get()
+                        .addOnCompleteListener() { onIteration(index, key, it) }
+                }
+            }
         }
     }
 
