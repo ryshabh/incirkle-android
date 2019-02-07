@@ -14,10 +14,10 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.activity_course.*
+import kotlinx.android.synthetic.main.activity_course_info.*
 
 
-class CourseActivity : AppCompatActivity()
+class CourseInfoActivity : AppCompatActivity()
 {
     companion object
     {
@@ -96,7 +96,7 @@ class CourseActivity : AppCompatActivity()
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_course)
+        setContentView(R.layout.activity_course_info)
         this.coursesCollectionReference = FirebaseFirestore.getInstance().collection(this.intent.getStringExtra(IDENTIFIER_COURSES_PATH)!!)
         this.courseID = this.intent.getStringExtra(IDENTIFIER_COURSE_ID)
         this.fetchCourse()

@@ -86,9 +86,9 @@ class AvailableCoursesActivity : AppCompatActivity()
                     if (courseIDString.equals(course.password, false))
                     {
                         dialogInterface.dismiss()
-                        val intent = Intent(this, CourseActivity::class.java)
-                        intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
-                        intent.putExtra(CourseActivity.IDENTIFIER_COURSE_ID, course.reference!!.id)
+                        val intent = Intent(this, CourseInfoActivity::class.java)
+                        intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+                        intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSE_ID, course.reference!!.id)
                         startActivity(intent)
                     }
                     else
@@ -176,8 +176,8 @@ class AvailableCoursesActivity : AppCompatActivity()
 
     fun createCourse(v: View)
     {
-        val intent = Intent(this, CourseActivity::class.java)
-        intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+        val intent = Intent(this, CourseInfoActivity::class.java)
+        intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
         startActivity(intent)
     }
 }
