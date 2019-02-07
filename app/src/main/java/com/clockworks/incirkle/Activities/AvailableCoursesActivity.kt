@@ -8,8 +8,7 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
-import android.view.Menu
-import android.view.MenuItem
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.clockworks.incirkle.Adapters.AvailableCourseListAdapter
@@ -28,7 +27,6 @@ class AvailableCoursesActivity : AppCompatActivity()
         val IDENTIFIER_SELECTED_ORGANISATION= "Selected Organisation"
     }
 
-    var showMenu = false
     var availableCourses = ArrayList<Course>()
 
     fun coursesPath(): String
@@ -170,31 +168,16 @@ class AvailableCoursesActivity : AppCompatActivity()
             }
                 ?: user?.let()
             {
-                this.showMenu = it.type == User.Type.TEACHER
-                this.invalidateOptionsMenu()
-                this.fetchAvailableCoursesForUser(user)
+                this.button_create_course.visibility = if (it.type == User.Type.TEACHER) View.VISIBLE else View.GONE
+                this.fetchAvailableCoursesForUser(it)
             }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean
+    fun createCourse(v: View)
     {
-        menuInflater.inflate(R.menu.activity_add_course, menu)
-        return this.showMenu
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean
-    {
-        when (item.itemId)
-        {
-            R.id.item_create_course ->
-            {
-                val intent = Intent(this, CourseActivity::class.java)
-                intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
-                startActivity(intent)
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
+        val intent = Intent(this, CourseActivity::class.java)
+        intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+        startActivity(intent)
     }
 }
