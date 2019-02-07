@@ -90,7 +90,7 @@ class AvailableCoursesActivity : AppCompatActivity()
                         dialogInterface.dismiss()
                         val intent = Intent(this, CourseActivity::class.java)
                         intent.putExtra(CourseActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
-                        intent.putExtra(CourseActivity.IDENTIFIER_COURSE_ID, courseID)
+                        intent.putExtra(CourseActivity.IDENTIFIER_COURSE_ID, course.reference!!.id)
                         startActivity(intent)
                     }
                     else
