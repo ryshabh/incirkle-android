@@ -5,16 +5,18 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.util.Patterns
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import android.widget.Spinner
+import android.widget.EditText
 import android.widget.Toast
 import com.clockworks.incirkle.Adapters.DetailedListAdapter
 import com.clockworks.incirkle.Models.User
+import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_teaching_assistants.*
 
 class TeachingAssistantsActivity : AppCompatActivity()
@@ -23,44 +25,54 @@ class TeachingAssistantsActivity : AppCompatActivity()
     {
         val REQUEST_CODE = 2
         val IDENTIFIER_CAN_MODIFY = "Can Modify"
-        val IDENTIFIER_COURSE_PATH = "Course Path"
         val IDENTIFIER_TEACHING_ASSISTANTS = "Teaching Assistants"
     }
 
-    private var teachingAssistants = ArrayList<User>()
+    private var teachingAssistants = ArrayList<String>()
 
-    private fun updateTeachingAssistants()
+    private fun updateTeachingAssistantsListView()
     {
-        listView_teachingAssistants.adapter = DetailedListAdapter(this, this.teachingAssistants.map { Pair(it.fullName(), it.userID()) })
-        val intent = Intent()
-        intent.putExtra(IDENTIFIER_TEACHING_ASSISTANTS, this.teachingAssistants.map { it.documentReference!!.path }.toTypedArray())
-        setResult(Activity.RESULT_OK, intent)
-    }
-
-    fun fetchTeachingAssistants()
-    {
-        val assistantsPaths = intent.getStringArrayExtra(IDENTIFIER_TEACHING_ASSISTANTS)
-        val size = assistantsPaths.size
-        val assistants = ArrayList<User>()
-        for (index in 0..size)
+        listView_teachingAssistants.adapter = DetailedListAdapter(this, ArrayList())
+        val students = ArrayList<Pair<String, String>>()
+        User.iterate(this.teachingAssistants)
         {
-            FirebaseFirestore.getInstance().document(assistantsPaths[index]).get().addOnCompleteListener()
+            index, key, task ->
+            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+            task.result?.let()
             {
-                result ->
-                result.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: result.result?.let()
-                {
-                    val teachingAssistant = it.toObject(User::class.java)!!
-                    teachingAssistant.documentReference = it.reference
-                    assistants.add(teachingAssistant)
-                }
-                if (index == size - 1)
-                {
-                    this.teachingAssistants = assistants
-                    this.updateTeachingAssistants()
-                }
+                val student = Pair(this.teachingAssistants[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
+                students.add(student)
+                if (students.size == this.teachingAssistants.size)
+                    listView_teachingAssistants.adapter = DetailedListAdapter(this, students)
             }
         }
+
+        /*
+        for (index in 0 until this.teachingAssistants.size)
+        {
+            val userID = this.teachingAssistants[index]
+            (if (Patterns.PHONE.matcher(userID).matches()) "phoneNumber"
+            else if (Patterns.PHONE.matcher(userID).matches()) "emailAddress"
+            else null)?.let()
+            {
+                    key ->
+
+                User.collectionReference().whereEqualTo(key, userID).get().addOnCompleteListener()
+                {
+                        task ->
+                    task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                    task.result?.let()
+                    {
+                        val student = Pair(userID, it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
+                        students.add(student)
+                        if (students.size == this.teachingAssistants.size)
+                            listView_teachingAssistants.adapter = DetailedListAdapter(this, students)
+                    }
+                }
+            }
+                ?: run() { Toast.makeText(this, "Found invalid User ID type: $userID", Toast.LENGTH_LONG).show() }
+        }
+        */
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -69,21 +81,22 @@ class TeachingAssistantsActivity : AppCompatActivity()
         setContentView(R.layout.activity_teaching_assistants)
         supportActionBar?.let { it.title = getString(R.string.text_teachingAssistants) }
 
+        this.teachingAssistants = intent.getStringArrayListExtra(IDENTIFIER_TEACHING_ASSISTANTS)
+        this.updateTeachingAssistantsListView()
         if (this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false))
         {
             button_add_teachingAssistant.visibility = View.VISIBLE
             registerForContextMenu(listView_teachingAssistants)
         }
-        this.fetchTeachingAssistants()
     }
 
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?)
     {
         super.onCreateContextMenu(menu, v, menuInfo)
-        if (v?.id == R.id.listView_invitedStudents)
+        if (v?.id == R.id.listView_teachingAssistants)
         {
             val info = menuInfo as AdapterView.AdapterContextMenuInfo
-            menu?.setHeaderTitle(this.teachingAssistants[info.position].fullName())
+            menu?.setHeaderTitle(this.teachingAssistants[info.position])
             menu?.add("Delete")
         }
     }
@@ -92,54 +105,78 @@ class TeachingAssistantsActivity : AppCompatActivity()
     {
         val menuInfo = item?.menuInfo as AdapterView.AdapterContextMenuInfo
         this.teachingAssistants.removeAt(menuInfo.position)
-        this.updateTeachingAssistants()
+        this.updateTeachingAssistantsListView()
         return true
     }
 
     fun addTeachingAssistant(v: View)
     {
-        val courseReference = FirebaseFirestore.getInstance().document(intent.getStringExtra(IDENTIFIER_COURSE_PATH))
-        User.collectionReference().whereArrayContains("courses", courseReference).get().addOnCompleteListener()
+        val userIDTextView = EditText(this)
+        userIDTextView.hint = "Email Address / Phone Number"
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Add Teaching Assistant")
+        builder.setView(userIDTextView)
+        builder.setPositiveButton("Done", null)
+        builder.setNeutralButton("Cancel", null)
+
+        val alert = builder.create()
+        alert.setOnShowListener()
         {
-                task ->
-            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: task.result?.documents?.let()
+                dialogInterface ->
+
+            (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
+            {
+
+                var userID = userIDTextView.text.toString().trim()
+                userIDTextView.error = null
+                if (userID.isBlank())
+                    userIDTextView.error = "User cannot be empty"
+                else if (this.teachingAssistants.contains(userID))
+                    userIDTextView.error = "User with login ID $userID is already present"
+                else if (!Patterns.PHONE.matcher(userID).matches() && !Patterns.PHONE.matcher(userID).matches())
+                    userIDTextView.error = "Invalid User ID"
+                else
                 {
-                    val availableUsers = it.filter { !this.teachingAssistants.map() { it.documentReference!! }.contains(it.reference) }.map()
+                    if (Patterns.PHONE.matcher(userID).matches())
                     {
-                        val user = it.toObject(User::class.java)!!
-                        user.documentReference = it.reference
-                        return@map user
-                    }
-
-                    val spinner = Spinner(this)
-                    spinner.adapter = DetailedListAdapter(this, availableUsers.map { Pair(it.fullName(), it.userID()) })
-
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Teaching Assistant")
-                    builder.setView(spinner)
-                    builder.setPositiveButton("Done", null)
-                    builder.setNeutralButton("Cancel", null)
-                    val alert = builder.create()
-                    alert.setOnShowListener()
-                    {
-                            dialogInterface ->
-
-                        (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
+                        if (userID.length == 10)
+                            userID = "+91$userID"
+                        else if (userID.length != 13)
                         {
-                            if (spinner.selectedItemPosition == Spinner.INVALID_POSITION)
-                            {
-                                Toast.makeText(this, "Please select Assistant", Toast.LENGTH_LONG).show()
-                                return@setOnClickListener
-                            }
-                            val newAssistant = availableUsers[spinner.selectedItemPosition]
-                            this.teachingAssistants.add(newAssistant)
-                            this.updateTeachingAssistants()
-                            dialogInterface.dismiss()
+                            userIDTextView.error = "Invalid Mobile Phone Number"
+                            return@setOnClickListener
                         }
                     }
-                    alert.show()
+
+                    FirebaseAuth.getInstance().currentUser?.currentUserData()
+                    {
+                        userData, exception ->
+                        exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                        ?: userData?.let()
+                        {
+                            user ->
+                            if (user.userID().equals(userID, true))
+                                Toast.makeText(this, "Cannot add self", Toast.LENGTH_LONG).show()
+                            else
+                            {
+                                this.teachingAssistants.add(userID)
+                                this.updateTeachingAssistantsListView()
+                                alert.dismiss()
+                            }
+                        }
+                    }
                 }
+            }
         }
+        alert.show()
+    }
+
+    fun done(view: View)
+    {
+        val intent = Intent()
+        intent.putExtra(IDENTIFIER_TEACHING_ASSISTANTS, this.teachingAssistants)
+        setResult(Activity.RESULT_OK, intent)
+        finish()
     }
 }

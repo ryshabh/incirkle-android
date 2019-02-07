@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".Activities.InviteStudentsActivity">
+
     <ListView
             android:id="@+id/listView_invitedStudents"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            android:layout_weight="2"/>
 
-    </ListView>
-
-    <android.support.design.widget.FloatingActionButton
-            android:layout_width="wrap_content"
+    <Button
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
-            android:onClick="inviteStudent"
-            android:src="@android:drawable/ic_input_add" />
+            android:text="@string/text_add"
+            android:onClick="inviteStudent" />
 
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_done"
+            android:onClick="done" />
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

@@ -1,10 +1,9 @@
 package com.clockworks.incirkle.Activities
 
+import android.app.Activity
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import com.clockworks.incirkle.Models.Course
@@ -42,15 +41,14 @@ class CourseInfoActivity : AppCompatActivity()
         // Set Privilege
         this.privilege =
                 if (course.teacher == user.documentReference) PRIVILEGE.FULL
-                else if (course.teachingAssistants.contains(user.documentReference)) PRIVILEGE.SEMI
+                else if (course.teachingAssistants.contains(user.userID())) PRIVILEGE.SEMI
                 else PRIVILEGE.NONE
 
         // Refresh Views
         textView_courseCode.isEnabled = this.privilege == PRIVILEGE.FULL
         textView_courseName.isEnabled = this.privilege == PRIVILEGE.FULL
-
-        // Refresh Menu Items
-        this.invalidateOptionsMenu()
+        button_teachingAssistant.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
+        button_inviteStudents.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
     }
 
     private fun fetchCourse()
@@ -104,58 +102,36 @@ class CourseInfoActivity : AppCompatActivity()
         this.fetchCourse()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean
-    {
-        menuInflater.inflate(R.menu.activity_course, menu)
-        if (this.privilege == PRIVILEGE.NONE)
-            return false
-        else if (this.privilege == PRIVILEGE.SEMI || (this.privilege == PRIVILEGE.FULL && !this.intent.hasExtra(IDENTIFIER_COURSE_ID)))
-            menu.removeItem(R.id.item_teachingAssistants)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean
-    {
-        when (item.itemId)
-        {
-            R.id.item_teachingAssistants->
-            {
-                val intent = Intent(this, TeachingAssistantsActivity::class.java)
-                intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_CAN_MODIFY, this.privilege == PRIVILEGE.FULL)
-                intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_COURSE_PATH, this.course.reference!!.path)
-                intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS, this.course.teachingAssistants.map { it.path }.toTypedArray())
-                startActivityForResult(intent, TeachingAssistantsActivity.REQUEST_CODE)
-                return true
-            }
-            R.id.item_inviteStudents->
-            {
-                val intent = Intent(this, InviteStudentsActivity::class.java)
-                intent.putExtra(InviteStudentsActivity.IDENTIFIER_INVITED_STUDENTS, this.course.invitedStudents)
-                startActivityForResult(intent, InviteStudentsActivity.REQUEST_CODE)
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
-        if (requestCode == TeachingAssistantsActivity.REQUEST_CODE)
+        if (requestCode == TeachingAssistantsActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
         {
-            data?.getStringArrayExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS)?.let()
-            {
-                this.course.teachingAssistants = ArrayList(it.map() { FirebaseFirestore.getInstance().document(it) })
-            }
+            data?.getStringArrayListExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS)?.
+                let { this.course.teachingAssistants = it }
         }
-        else if (requestCode == InviteStudentsActivity.REQUEST_CODE)
+        else if (requestCode == InviteStudentsActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
         {
-            (data?.getSerializableExtra(InviteStudentsActivity.IDENTIFIER_INVITED_STUDENTS) as? HashMap<String, String>)?.let()
-            {
-                this.course.invitedStudents = it
-            }
+            data?.getStringArrayListExtra(InviteStudentsActivity.IDENTIFIER_INVITED_STUDENTS)?.
+                let { this.course.invitedStudents = it }
         }
         else
             super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun teachingAssistants(v: View)
+    {
+        val intent = Intent(this, TeachingAssistantsActivity::class.java)
+        intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_CAN_MODIFY, this.privilege == PRIVILEGE.FULL)
+        intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS, this.course.teachingAssistants)
+        startActivityForResult(intent, TeachingAssistantsActivity.REQUEST_CODE)
+    }
+
+    fun inviteStudents(v: View)
+    {
+        val intent = Intent(this, InviteStudentsActivity::class.java)
+        intent.putExtra(InviteStudentsActivity.IDENTIFIER_INVITED_STUDENTS, this.course.invitedStudents)
+        startActivityForResult(intent, InviteStudentsActivity.REQUEST_CODE)
     }
 
     fun finish(v: View)
@@ -175,9 +151,10 @@ class CourseInfoActivity : AppCompatActivity()
             this.course.code = courseCode
             this.course.name = courseName
 
-            val courseDocument = this.courseID?.let() { this.coursesCollectionReference.document(it) }
-            ?: run() { this.coursesCollectionReference.document() }
-            courseDocument.set(this.course).addOnCompleteListener()
+            val courseReference = this.courseID?.let() { this.coursesCollectionReference.document(it) }
+            ?: run()
+            { this.coursesCollectionReference.document() }
+            courseReference.set(this.course).addOnCompleteListener()
             {
                 task ->
 
@@ -192,12 +169,28 @@ class CourseInfoActivity : AppCompatActivity()
                         exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
                         ?: run()
                         {
-                            user?.courses?.add(courseDocument)
+                            user?.courses?.add(courseReference)
                             user?.documentReference?.set(user)?.addOnCompleteListener()
                             {
                                 it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
                                     ?: run()
                                     {
+                                        val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
+                                        User.iterate(ArrayList(allUsers))
+                                        {
+                                            index, key, task ->
+
+                                            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                                            task.result?.forEach()
+                                            {
+                                                it.toObject(User::class.java).let()
+                                                {
+                                                    if (!it.courses.contains(courseReference))
+                                                        it.courses.add(courseReference)
+                                                }
+                                            }
+                                        }
+
                                         val intent = Intent(this, HomeActivity::class.java)
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                         startActivity(intent)

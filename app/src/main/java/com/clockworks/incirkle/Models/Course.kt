@@ -9,8 +9,8 @@ class Course()
     lateinit var name: String
     lateinit var code: String
     lateinit var teacher: DocumentReference
-    var teachingAssistants = ArrayList<DocumentReference>()
-    var invitedStudents = HashMap<String, String>()
+    var teachingAssistants = ArrayList<String>()
+    var invitedStudents = ArrayList<String>()
 
     @Exclude
     var reference: DocumentReference? = null

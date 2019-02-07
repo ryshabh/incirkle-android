@@ -96,7 +96,23 @@
                     android:gravity="center_vertical" />
 
         </LinearLayout>
-    
+
+    <Button
+            android:id="@+id/button_teachingAssistant"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/text_teachingAssistants"
+            android:onClick="teachingAssistants" />
+
+    <Button
+            android:id="@+id/button_inviteStudents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/text_inviteStudents"
+            android:onClick="inviteStudents" />
+
     <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

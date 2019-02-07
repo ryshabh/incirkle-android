@@ -5,6 +5,7 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.util.Patterns
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
@@ -13,6 +14,10 @@ import com.clockworks.incirkle.Adapters.DetailedListAdapter
 import com.clockworks.incirkle.R
 import kotlinx.android.synthetic.main.activity_invite_students.*
 import android.widget.AdapterView
+import android.widget.Toast
+import com.clockworks.incirkle.Models.User
+import com.clockworks.incirkle.Models.currentUserData
+import com.google.firebase.auth.FirebaseAuth
 
 
 class InviteStudentsActivity : AppCompatActivity()
@@ -23,77 +28,50 @@ class InviteStudentsActivity : AppCompatActivity()
         val IDENTIFIER_INVITED_STUDENTS = "Invited Students"
     }
 
-    private var invitedStudents = HashMap<String, String>()
+    private var invitedStudents = ArrayList<String>()
 
-    private fun updateInvitedStudents()
+    private fun updateInvitedStudentsListView()
     {
-        listView_invitedStudents.adapter = DetailedListAdapter(this, this.invitedStudents.toList())
-        val intent = Intent()
-        intent.putExtra(IDENTIFIER_INVITED_STUDENTS, this.invitedStudents)
-        setResult(Activity.RESULT_OK, intent)
-    }
-
-    private fun setInvitedStudent(student: Pair<String, String>?)
-    {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Invite Student")
-        builder.setView(R.layout.view_detailed_text)
-
-        builder.setPositiveButton("Done", null)
-        builder.setNeutralButton("Cancel", null)
-        val alert = builder.create()
-        alert.setOnShowListener()
+        listView_invitedStudents.adapter = DetailedListAdapter(this, ArrayList())
+        val students = ArrayList<Pair<String, String>>()
+        User.iterate(this.invitedStudents)
         {
-            dialogInterface ->
-
-            val alert = dialogInterface as AlertDialog
-
-            val topTextView = alert.findViewById<EditText>(R.id.textView_top)!!
-            val bottomTextView = alert.findViewById<EditText>(R.id.textView_bottom)!!
-
-            topTextView.hint = "Name"
-            bottomTextView.hint = "User ID"
-
-            (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
+            index, key, task ->
+            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+            task.result?.let()
             {
-
-                val name = topTextView.text.toString().trim()
-                val userID = bottomTextView.text.toString().trim()
-
-                topTextView.error = null
-                bottomTextView.error = null
-
-                if (name.isBlank())
-                {
-                    topTextView.error = "User cannot be empty"
-                    return@setOnClickListener
-                }
-                else if (userID.isBlank())
-                {
-                    bottomTextView.error = "User ID cannot be empty"
-                    return@setOnClickListener
-                }
-
-                if (student == null)
-                {
-                    if (this.invitedStudents.containsKey(name))
-                    {
-                        topTextView.error = "User named $name is already present"
-                        return@setOnClickListener
-                    }
-                    else if (this.invitedStudents.containsValue(userID))
-                    {
-                        topTextView.error = "User with id $userID is already present"
-                        return@setOnClickListener
-                    }
-                }
-
-                this.invitedStudents.set(name, userID)
-                this.updateInvitedStudents()
-                alert.dismiss()
+                val student = Pair(this.invitedStudents[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
+                students.add(student)
+                if (students.size == this.invitedStudents.size)
+                    listView_invitedStudents.adapter = DetailedListAdapter(this, students)
             }
         }
-        alert.show()
+        /*
+        for (index in 0 until this.invitedStudents.size)
+        {
+            val userID = this.invitedStudents[index]
+            (if (Patterns.PHONE.matcher(userID).matches()) "phoneNumber"
+            else if (Patterns.PHONE.matcher(userID).matches()) "emailAddress"
+            else null)?.let()
+            {
+                key ->
+
+                User.collectionReference().whereEqualTo(key, userID).get().addOnCompleteListener()
+                {
+                    task ->
+                    task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                    task.result?.let()
+                    {
+                        val student = Pair(userID, it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
+                        students.add(student)
+                        if (students.size == this.invitedStudents.size)
+                            listView_invitedStudents.adapter = DetailedListAdapter(this, students)
+                    }
+                }
+            }
+            ?: run() { Toast.makeText(this, "Found invalid User ID type: $userID", Toast.LENGTH_LONG).show() }
+        }
+        */
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -102,13 +80,8 @@ class InviteStudentsActivity : AppCompatActivity()
         setContentView(R.layout.activity_invite_students)
         supportActionBar?.let { it.title = getString(R.string.text_inviteStudents) }
 
-        this.invitedStudents = intent.getSerializableExtra(IDENTIFIER_INVITED_STUDENTS) as HashMap<String, String>
-        listView_invitedStudents.adapter = DetailedListAdapter(this, this.invitedStudents.toList())
-        listView_invitedStudents.setOnItemClickListener()
-        {
-            adapterView, view, position, id ->
-            this.setInvitedStudent(adapterView.getItemAtPosition(position) as Pair<String, String>)
-        }
+        this.invitedStudents = intent.getSerializableExtra(IDENTIFIER_INVITED_STUDENTS) as ArrayList<String>
+        this.updateInvitedStudentsListView()
         registerForContextMenu(listView_invitedStudents)
     }
 
@@ -118,7 +91,7 @@ class InviteStudentsActivity : AppCompatActivity()
         if (v?.id == R.id.listView_invitedStudents)
         {
             val info = menuInfo as AdapterView.AdapterContextMenuInfo
-            menu?.setHeaderTitle((listView_invitedStudents.adapter.getItem(info.position) as Pair<String, String>).first)
+            menu?.setHeaderTitle(this.invitedStudents[info.position])
             menu?.add("Delete")
         }
     }
@@ -126,14 +99,79 @@ class InviteStudentsActivity : AppCompatActivity()
     override fun onContextItemSelected(item: MenuItem?): Boolean
     {
         val menuInfo = item?.menuInfo as AdapterView.AdapterContextMenuInfo
-        val student = listView_invitedStudents.adapter.getItem(menuInfo.position) as Pair<String, String>
-        this.invitedStudents.remove(student.first)
-        this.updateInvitedStudents()
+        this.invitedStudents.removeAt(menuInfo.position)
+        this.updateInvitedStudentsListView()
         return true
     }
 
     fun inviteStudent(v: View)
     {
-        this.setInvitedStudent(null)
+        val userIDTextView = EditText(this)
+        userIDTextView.hint = "Email Address / Phone Number"
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Invite Student")
+        builder.setView(userIDTextView)
+        builder.setPositiveButton("Done", null)
+        builder.setNeutralButton("Cancel", null)
+
+        val alert = builder.create()
+        alert.setOnShowListener()
+        {
+            dialogInterface ->
+
+            (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
+            {
+
+                var userID = userIDTextView.text.toString().trim()
+                userIDTextView.error = null
+                if (userID.isBlank())
+                    userIDTextView.error = "User cannot be empty"
+                else if (this.invitedStudents.contains(userID))
+                    userIDTextView.error = "User with login ID $userID is already present"
+                else if (!Patterns.PHONE.matcher(userID).matches() && !Patterns.PHONE.matcher(userID).matches())
+                    userIDTextView.error = "Invalid User ID"
+                else
+                {
+                    if (Patterns.PHONE.matcher(userID).matches())
+                    {
+                        if (userID.length == 10)
+                            userID = "+91$userID"
+                        else if (userID.length != 13)
+                        {
+                            userIDTextView.error = "Invalid Mobile Phone Number"
+                            return@setOnClickListener
+                        }
+                    }
+
+                    FirebaseAuth.getInstance().currentUser?.currentUserData()
+                    {
+                        userData, exception ->
+                        exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                            ?: userData?.let()
+                        {
+                            user ->
+                            if (user.userID().equals(userID, true))
+                                Toast.makeText(this, "Cannot add self", Toast.LENGTH_LONG).show()
+                            else
+                            {
+                                this.invitedStudents.add(userID)
+                                this.updateInvitedStudentsListView()
+                                alert.dismiss()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        alert.show()
+    }
+
+    fun done(view: View)
+    {
+        val intent = Intent()
+        intent.putExtra(IDENTIFIER_INVITED_STUDENTS, this.invitedStudents)
+        setResult(Activity.RESULT_OK, intent)
+        finish()
     }
 }
