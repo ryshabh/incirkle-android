@@ -46,32 +46,6 @@ class InviteStudentsActivity : AppCompatActivity()
                     listView_invitedStudents.adapter = DetailedListAdapter(this, students)
             }
         }
-        /*
-        for (index in 0 until this.invitedStudents.size)
-        {
-            val userID = this.invitedStudents[index]
-            (if (Patterns.PHONE.matcher(userID).matches()) "phoneNumber"
-            else if (Patterns.PHONE.matcher(userID).matches()) "emailAddress"
-            else null)?.let()
-            {
-                key ->
-
-                User.collectionReference().whereEqualTo(key, userID).get().addOnCompleteListener()
-                {
-                    task ->
-                    task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                    task.result?.let()
-                    {
-                        val student = Pair(userID, it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
-                        students.add(student)
-                        if (students.size == this.invitedStudents.size)
-                            listView_invitedStudents.adapter = DetailedListAdapter(this, students)
-                    }
-                }
-            }
-            ?: run() { Toast.makeText(this, "Found invalid User ID type: $userID", Toast.LENGTH_LONG).show() }
-        }
-        */
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
