@@ -15,13 +15,13 @@
             android:theme="@style/AppTheme">
         <activity
                 android:name=".Activities.TeachingAssistantsActivity"
-                android:parentActivityName=".Activities.CourseActivity">
+                android:parentActivityName=".Activities.CourseInfoActivity">
         </activity>
         <activity
                 android:name=".Activities.InviteStudentsActivity"
-                android:parentActivityName=".Activities.CourseActivity">
+                android:parentActivityName=".Activities.CourseInfoActivity">
         </activity>
-        <activity android:name=".Activities.CourseActivity">
+        <activity android:name=".Activities.CourseInfoActivity">
         </activity>
         <activity
                 android:name=".Activities.EnrolCourseActivity"
