@@ -59,7 +59,7 @@
     <string name="title_activity_selectOrganisation">Select Organisation</string>
     <string name="text_select_organisation">Select Organisation</string>
     <string name="text_proceed">Proceed</string>
-    <string name="text_add">+</string>
+    <string name="text_add">Add</string>
     <string name="text_organisation_name">Organisation Name</string>
     <string name="text_organisation_location">Location</string>
 
@@ -74,6 +74,7 @@
     <string name="text_inviteStudents">Invite Students</string>
     <string name="text_finish">Finish</string>
 
+    <string name="text_done">Done</string>
     <string name="text_delete">Delete</string>
 
 </resources>
