@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.nav_header_home.*
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener
 {
     private var courses = ArrayList<Course>()
+    private var isUserTeacher = false
 
     private fun getCoursesForUser(user: User)
     {
@@ -85,6 +86,8 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     textView_user_name.setText(user.fullName())
                     textView_user_id.setText(user.userID())
+                    this.isUserTeacher = user.type == User.Type.TEACHER
+                    this.invalidateOptionsMenu()
 
                     if (userData.courses.isEmpty())
                     {
@@ -118,6 +121,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreateOptionsMenu(menu: Menu): Boolean
     {
         menuInflater.inflate(R.menu.home, menu)
+        menu.findItem(R.id.home_action_enrol_course).setTitle(if (this.isUserTeacher) R.string.text_enrol_create_course else R.string.title_activity_enrolCourse)
         return true
     }
 
