@@ -98,6 +98,14 @@
         </LinearLayout>
 
     <Button
+            android:id="@+id/button_timings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/text_timings"
+            android:onClick="timings" />
+
+    <Button
             android:id="@+id/button_teachingAssistant"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

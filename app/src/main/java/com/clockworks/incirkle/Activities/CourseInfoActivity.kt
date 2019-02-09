@@ -105,7 +105,12 @@ class CourseInfoActivity : AppCompatActivity()
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
-        if (requestCode == TeachingAssistantsActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
+        if (requestCode == TimingsActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
+        {
+            (data?.getSerializableExtra(TimingsActivity.IDENTIFIER_TIMINGS) as? ArrayList<Course.Timing>)?.
+                let { this.course.timings = it }
+        }
+        else if (requestCode == TeachingAssistantsActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
         {
             data?.getStringArrayListExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS)?.
                 let { this.course.teachingAssistants = it }
@@ -117,6 +122,14 @@ class CourseInfoActivity : AppCompatActivity()
         }
         else
             super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun timings(v: View)
+    {
+        val intent = Intent(this, TimingsActivity::class.java)
+        intent.putExtra(TimingsActivity.IDENTIFIER_CAN_MODIFY, this.privilege == PRIVILEGE.FULL)
+        intent.putExtra(TimingsActivity.IDENTIFIER_TIMINGS, this.course.timings)
+        startActivityForResult(intent, TimingsActivity.REQUEST_CODE)
     }
 
     fun teachingAssistants(v: View)
