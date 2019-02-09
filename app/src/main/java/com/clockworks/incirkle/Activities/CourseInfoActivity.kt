@@ -48,6 +48,7 @@ class CourseInfoActivity : AppCompatActivity()
         linearLayour_coursePassword.visibility = if (this.privilege == PRIVILEGE.FULL) View.VISIBLE else View.GONE
         textView_courseCode.isEnabled = this.privilege == PRIVILEGE.FULL
         textView_courseName.isEnabled = this.privilege == PRIVILEGE.FULL
+        linearLayour_teacherName.visibility = if (this.privilege == PRIVILEGE.FULL) View.GONE else View.VISIBLE
         button_teachingAssistant.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
         button_inviteStudents.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
     }
@@ -76,6 +77,14 @@ class CourseInfoActivity : AppCompatActivity()
                         {
                             val course = it.toObject(Course::class.java)!!
                             course.reference = it.reference
+                            course.teacher.get().addOnCompleteListener()
+                            {
+                                it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                                    ?:it.result?.let()
+                                    {
+                                        it.toObject(User::class.java)?.let { textView_teacherName.text = it.fullName() }
+                                    }
+                            }
                             this.updateCourse(course, user)
                         }
                     }

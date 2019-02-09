@@ -99,6 +99,36 @@
 
         </LinearLayout>
 
+    <!-- Teacher Name -->
+
+    <LinearLayout
+            android:id="@+id/linearLayour_teacherName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_margin="10dp" >
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1.75"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp"
+                android:text="@string/text_teacher_name"
+                android:textSize="18sp"
+                android:gravity="center_vertical" />
+
+        <TextView
+                android:id="@+id/textView_teacherName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/text_teacher_name"
+                android:textSize="18sp"
+                android:gravity="center_vertical" />
+
+    </LinearLayout>
+
     <Button
             android:id="@+id/button_timings"
             android:layout_width="match_parent"

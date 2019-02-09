@@ -72,6 +72,7 @@
     <!-- Course Info -->
     <string name="title_activity_courseInfo">Course Info</string>
     <string name="text_course_password">Course Password</string>
+    <string name="text_teacher_name">Teacher Name</string>
     <string name="text_teachingAssistants">Teaching Assistants</string>
     <string name="text_inviteStudents">Invite Students</string>
     <string name="text_timings">Timings</string>
