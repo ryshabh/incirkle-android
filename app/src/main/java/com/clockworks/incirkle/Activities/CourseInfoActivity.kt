@@ -45,10 +45,10 @@ class CourseInfoActivity : AppCompatActivity()
                 else PRIVILEGE.NONE
 
         // Refresh Views
-        linearLayour_coursePassword.visibility = if (this.privilege == PRIVILEGE.FULL) View.VISIBLE else View.GONE
+        linearLayout_coursePassword.visibility = if (this.privilege == PRIVILEGE.FULL) View.VISIBLE else View.GONE
         textView_courseCode.isEnabled = this.privilege == PRIVILEGE.FULL
         textView_courseName.isEnabled = this.privilege == PRIVILEGE.FULL
-        linearLayour_teacherName.visibility = if (this.privilege == PRIVILEGE.FULL) View.GONE else View.VISIBLE
+        linearLayout_teacherName.visibility = if (this.privilege == PRIVILEGE.FULL) View.GONE else View.VISIBLE
         button_teachingAssistant.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
         button_inviteStudents.visibility = if (this.privilege == PRIVILEGE.NONE) View.GONE else View.VISIBLE
     }

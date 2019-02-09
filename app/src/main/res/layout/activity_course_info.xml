@@ -10,7 +10,7 @@
         <!-- Course Password -->
 
         <LinearLayout
-                android:id="@+id/linearLayour_coursePassword"
+                android:id="@+id/linearLayout_coursePassword"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:orientation="horizontal"
@@ -102,7 +102,7 @@
     <!-- Teacher Name -->
 
     <LinearLayout
-            android:id="@+id/linearLayour_teacherName"
+            android:id="@+id/linearLayout_teacherName"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal"
