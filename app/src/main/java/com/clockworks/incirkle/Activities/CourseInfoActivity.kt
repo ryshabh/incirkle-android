@@ -12,6 +12,7 @@ import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_course_info.*
 
@@ -101,6 +102,48 @@ class CourseInfoActivity : AppCompatActivity()
         }
     }
 
+    private fun saveUser(user: User, courseReference: DocumentReference)
+    {
+        fun goHome()
+        {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+            finish()
+        }
+
+        user.documentReference?.set(user)?.addOnCompleteListener()
+        {
+            it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                ?: run()
+                {
+
+                    // Update all Invited Students & Teachers
+                    val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
+
+                    if (allUsers.isEmpty())
+                        goHome()
+                    else
+                        User.iterate(ArrayList(allUsers))
+                        {
+                            index, key, task ->
+
+                            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
+                            task.result?.forEach()
+                            {
+                                it.toObject(User::class.java).let()
+                                {
+                                    if (!it.courses.contains(courseReference))
+                                        it.courses.add(courseReference)
+                                }
+                            }
+                            if (index == (allUsers.size - 1))
+                                goHome()
+                        }
+                }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -184,42 +227,15 @@ class CourseInfoActivity : AppCompatActivity()
                 task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
                 ?: run()
                 {
-
                     FirebaseAuth.getInstance().currentUser?.currentUserData()
                     {
                         user, exception ->
-
                         exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                        ?: run()
+                        ?: user?.let()
                         {
-                            user?.courses?.add(courseReference)
-                            user?.documentReference?.set(user)?.addOnCompleteListener()
-                            {
-                                it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                                    ?: run()
-                                    {
-                                        val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
-                                        User.iterate(ArrayList(allUsers))
-                                        {
-                                            index, key, task ->
-
-                                            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                                            task.result?.forEach()
-                                            {
-                                                it.toObject(User::class.java).let()
-                                                {
-                                                    if (!it.courses.contains(courseReference))
-                                                        it.courses.add(courseReference)
-                                                }
-                                            }
-                                        }
-
-                                        val intent = Intent(this, HomeActivity::class.java)
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                        startActivity(intent)
-                                        finish()
-                                    }
-                            }
+                            if (this.courseID == null)
+                                it.courses.add(courseReference)
+                            this.saveUser(it, courseReference)
                         }
                     }
                 }
