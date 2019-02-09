@@ -3,13 +3,7 @@ package com.clockworks.incirkle.Activities
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.text.Editable
-import android.text.InputFilter
-import android.text.InputType
-import android.text.TextWatcher
 import android.view.View
-import android.widget.EditText
 import android.widget.Toast
 import com.clockworks.incirkle.Adapters.AvailableCourseListAdapter
 import com.clockworks.incirkle.Models.Course
