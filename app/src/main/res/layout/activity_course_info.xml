@@ -10,9 +10,11 @@
         <!-- Course Password -->
 
         <LinearLayout
+                android:id="@+id/linearLayour_coursePassword"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:orientation="horizontal"
+                android:visibility="gone"
                 android:layout_margin="10dp" >
 
             <TextView
@@ -107,6 +109,7 @@
 
     <Button
             android:id="@+id/button_teachingAssistant"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -115,6 +118,7 @@
 
     <Button
             android:id="@+id/button_inviteStudents"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
