@@ -63,7 +63,7 @@ class SelectOrganisationActivity : AppCompatActivity()
     fun createOrganisation(v: View)
     {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("New Organisation")
+        builder.setTitle("Create Organisation")
         builder.setView(R.layout.alert_new_organisation)
         builder.setPositiveButton("Add", null)
         builder.setNeutralButton("Cancel", null)

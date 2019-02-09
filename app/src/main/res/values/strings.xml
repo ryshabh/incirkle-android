@@ -58,6 +58,7 @@
     <!-- Select Organisation -->
     <string name="title_activity_selectOrganisation">Select Organisation</string>
     <string name="text_select_organisation">Select Organisation</string>
+    <string name="text_create_organisation">Create Organisation</string>
     <string name="text_proceed">Proceed</string>
     <string name="text_add">Add</string>
     <string name="text_organisation_name">Organisation Name</string>
