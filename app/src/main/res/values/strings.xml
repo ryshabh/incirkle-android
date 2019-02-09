@@ -52,8 +52,8 @@
     <string name="text_update_profile">Update Profile</string>
 
     <!-- Courses List -->
-    <string name="text_code">Code</string>
-    <string name="text_name">Name</string>
+    <string name="text_course_code">Course Code</string>
+    <string name="text_course_name">Course Name</string>
     <string name="text_latest_update">Latest Update</string>
 
     <!-- Select Organisation -->
@@ -71,7 +71,7 @@
 
     <!-- Course Info -->
     <string name="title_activity_courseInfo">Course Info</string>
-    <string name="text_password">Password</string>
+    <string name="text_course_password">Course Password</string>
     <string name="text_teachingAssistants">Teaching Assistants</string>
     <string name="text_inviteStudents">Invite Students</string>
     <string name="text_timings">Timings</string>
