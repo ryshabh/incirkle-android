@@ -37,73 +37,6 @@ class EnrolCourseActivity : AppCompatActivity()
             .path
     }
 
-    fun showAddAlertForCourse(course: Course)
-    {
-        val coursePasswordEditText = EditText(this)
-        coursePasswordEditText.inputType = InputType.TYPE_CLASS_NUMBER
-        coursePasswordEditText.filters = arrayOf(InputFilter.LengthFilter(4))
-        coursePasswordEditText.setPadding(10, 10, 10, 10)
-
-        val alertBuilder = AlertDialog.Builder(this)
-        alertBuilder.setTitle("Add ${course.name}")
-        alertBuilder.setMessage("Enter Course Password")
-        alertBuilder.setView(coursePasswordEditText)
-        alertBuilder.setPositiveButton("Add", null)
-        alertBuilder.setNeutralButton("Cancel", null)
-
-        val alert = alertBuilder.create()
-
-        coursePasswordEditText.addTextChangedListener(object : TextWatcher
-        {
-            override fun afterTextChanged(p0: Editable?)
-            {
-                alert.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = p0?.length == 4
-            }
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int)
-            {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int)
-            {
-            }
-        })
-        
-        alert.setOnShowListener()
-        {
-            dialogInterface ->
-            alert.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-            (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
-            {
-                button ->
-
-                coursePasswordEditText.error = null
-
-                val courseIDString = coursePasswordEditText.text.toString().trim()
-                courseIDString.toIntOrNull()?.let()
-                {
-                    courseID ->
-
-                    if (courseIDString.equals(course.password, false))
-                    {
-                        dialogInterface.dismiss()
-                        val intent = Intent(this, CourseInfoActivity::class.java)
-                        intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
-                        intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSE_ID, course.reference!!.id)
-                        startActivity(intent)
-                    }
-                    else
-                        coursePasswordEditText.error = "Incorrect Course Password"
-                }
-                ?: run()
-                {
-                    coursePasswordEditText.error = "Course Password must be numeric"
-                }
-            }
-        }
-
-        alert.show()
-    }
-
     private fun fetchAvailableCoursesForUser(user: User)
     {
         val organisationID = intent.getStringExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION)
@@ -149,7 +82,10 @@ class EnrolCourseActivity : AppCompatActivity()
         listView_available_courses.setOnItemClickListener()
         {
             adapterView, view, position, id ->
-            this.showAddAlertForCourse(this.availableCourses[position])
+            val intent = Intent(this, CourseInfoActivity::class.java)
+            intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
+            intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSE_ID, this.availableCourses[position].reference!!.id)
+            startActivity(intent)
         }
     }
 
