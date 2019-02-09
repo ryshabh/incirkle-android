@@ -61,7 +61,7 @@
     <string name="text_select_organisation">Select Organisation</string>
     <string name="text_create_organisation">Create Organisation</string>
     <string name="text_proceed">Proceed</string>
-    <string name="text_add">Add</string>
+
     <string name="text_organisation_name">Organisation Name</string>
     <string name="text_organisation_location">Location</string>
 
@@ -74,9 +74,18 @@
     <string name="text_password">Password</string>
     <string name="text_teachingAssistants">Teaching Assistants</string>
     <string name="text_inviteStudents">Invite Students</string>
+    <string name="text_timings">Timings</string>
     <string name="text_finish">Finish</string>
 
+    <!-- Timing -->
+    <string name="text_day">Day</string>
+    <string name="text_startTime">Start Time</string>
+    <string name="text_duration">Duration</string>
+    <string name="text_endTime">End Time</string>
+
+    <!-- General Purpose -->
     <string name="text_done">Done</string>
     <string name="text_delete">Delete</string>
+    <string name="text_add">Add</string>
 
 </resources>

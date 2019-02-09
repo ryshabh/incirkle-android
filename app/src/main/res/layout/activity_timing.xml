@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".Activities.TimingActivity">
+
+    <!-- Day -->
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_margin="10dp" >
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:text="@string/text_day"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16sp" />
+
+        <Spinner
+                android:id="@+id/spinner_day"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:layout_gravity="center"
+                android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- Start Time -->
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_margin="10dp" >
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:text="@string/text_startTime"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16sp" />
+
+        <Button
+                android:id="@+id/button_startTime"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:onClick="selectStartTime"/>
+
+    </LinearLayout>
+
+    <!-- End Time -->
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_margin="10dp" >
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:text="@string/text_endTime"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16sp" />
+
+        <Button
+                android:id="@+id/button_endTime"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:onClick="selectEndTime"/>
+
+    </LinearLayout>
+
+
+    <!-- Duration -->
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_margin="10dp" >
+
+        <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:text="@string/text_duration"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16sp" />
+
+        <TextView
+                android:id="@+id/textView_duration"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:layout_gravity="center"
+                android:gravity="center" />
+
+    </LinearLayout>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_done"
+            android:onClick="done" />
+
+</LinearLayout>
