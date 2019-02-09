@@ -1,23 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:padding="20dp"
-        android:orientation="horizontal"
+        android:layout_margin="10dp"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <TextView
-            android:id="@+id/textView_courseCode"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:text="@string/text_course_code"
-            android:gravity="start|center_vertical" />
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-    <TextView
-            android:id="@+id/textView_courseName"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/text_course_name"
-            android:gravity="start|center_vertical" />
+        <TextView
+                android:id="@+id/textView_courseCode"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:text="@string/text_course_code"
+                android:gravity="start|center_vertical" />
+
+        <TextView
+                android:id="@+id/textView_courseName"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:text="@string/text_course_name"
+                android:gravity="start|center_vertical" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:text="@string/text_teacher_name"
+                android:gravity="start|center_vertical" />
+
+        <TextView
+                android:id="@+id/textView_teacherName"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:text="@string/text_teacher_name"
+                android:gravity="start|center_vertical" />
+
+    </LinearLayout>
 
 </LinearLayout>

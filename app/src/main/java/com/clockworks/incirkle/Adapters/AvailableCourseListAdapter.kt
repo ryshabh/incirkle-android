@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.clockworks.incirkle.Models.Course
+import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.R
 
 class AvailableCourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
@@ -15,6 +16,7 @@ class AvailableCourseListAdapter(private val context: Context, private var dataS
     {
         lateinit var courseCode: TextView
         lateinit var courseName: TextView
+        lateinit var teacherName: TextView
     }
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -45,6 +47,7 @@ class AvailableCourseListAdapter(private val context: Context, private var dataS
             viewModel = ViewModel()
             viewModel.courseCode = view.findViewById<TextView>(R.id.textView_courseCode)
             viewModel.courseName = view.findViewById<TextView>(R.id.textView_courseName)
+            viewModel.teacherName = view.findViewById<TextView>(R.id.textView_teacherName)
             view.tag = viewModel
         }
         else
@@ -56,6 +59,12 @@ class AvailableCourseListAdapter(private val context: Context, private var dataS
         val course = this.getItem(position) as Course
         viewModel.courseCode.setText(course.code)
         viewModel.courseName.setText(course.name)
+        course.teacher.addSnapshotListener()
+        {
+            task, e ->
+            viewModel.teacherName.error = e?.toString()
+            viewModel.teacherName.text = task?.toObject(User::class.java)?.fullName() ?: ""
+        }
 
         return view
     }
