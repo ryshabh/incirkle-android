@@ -5,14 +5,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.ImageButton
 import android.widget.TextView
+import com.clockworks.incirkle.R
 
-class DetailedListAdapter(private val context: Context, private var dataSource: List<Pair<String, String>>) : BaseAdapter()
+class DetailedListAdapter(private val context: Context, private var dataSource: List<Pair<String, String>>, private val deleteListener: DeleteListener? = null) : BaseAdapter()
 {
+    interface DeleteListener
+    {
+        fun onItemDelete(position: Int)
+    }
+
     private class ViewModel
     {
-        lateinit var text1: TextView
-        lateinit var text2: TextView
+        lateinit var topTextView: TextView
+        lateinit var bottomTextView: TextView
+        lateinit var deleteButton: ImageButton
     }
 
     private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -39,10 +47,11 @@ class DetailedListAdapter(private val context: Context, private var dataSource: 
 
         if (convertView == null)
         {
-            view = inflater.inflate(android.R.layout.simple_list_item_2, parent, false)
+            view = inflater.inflate(R.layout.list_item_detailed_deletable, parent, false)
             viewModel = ViewModel()
-            viewModel.text1 = view.findViewById<TextView>(android.R.id.text1)
-            viewModel.text2 = view.findViewById<TextView>(android.R.id.text2)
+            viewModel.topTextView = view.findViewById<TextView>(R.id.textView_top)
+            viewModel.bottomTextView = view.findViewById<TextView>(R.id.textView_bottom)
+            viewModel.deleteButton = view.findViewById<ImageButton>(R.id.button_delete)
             view.tag = viewModel
         }
         else
@@ -52,8 +61,10 @@ class DetailedListAdapter(private val context: Context, private var dataSource: 
         }
 
         val tuple = this.getItem(position) as Pair<String, String>
-        viewModel.text1.setText(tuple.first)
-        viewModel.text2.setText(tuple.second)
+        viewModel.topTextView.setText(tuple.first)
+        viewModel.bottomTextView.setText(tuple.second)
+        viewModel.deleteButton.visibility = if (this.deleteListener == null) View.GONE else View.VISIBLE
+        viewModel.deleteButton.setOnClickListener() { this.deleteListener?.onItemDelete(position) }
 
         return view
     }
