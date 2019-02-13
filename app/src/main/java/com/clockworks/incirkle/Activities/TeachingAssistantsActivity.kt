@@ -6,10 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Patterns
-import android.view.ContextMenu
-import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.Toast
 import com.clockworks.incirkle.Adapters.DetailedListAdapter
@@ -19,7 +16,7 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_teaching_assistants.*
 
-class TeachingAssistantsActivity : AppCompatActivity()
+class TeachingAssistantsActivity : AppCompatActivity(), DetailedListAdapter.DeleteListener
 {
     companion object
     {
@@ -29,10 +26,18 @@ class TeachingAssistantsActivity : AppCompatActivity()
     }
 
     private var teachingAssistants = ArrayList<String>()
+    private var isAdmin = false
+    private var deleteAlert: AlertDialog? = null
 
-    private fun updateTeachingAssistantsListView()
+    private fun updateTeachingAssistantsListView(list: ArrayList<Pair<String, String>>)
     {
-        listView_teachingAssistants.adapter = DetailedListAdapter(this, ArrayList())
+        this.deleteAlert = null
+        listView_teachingAssistants.adapter = DetailedListAdapter(this, list, if (this.isAdmin) this else null)
+    }
+
+    private fun updateTeachingAssistants()
+    {
+        this.updateTeachingAssistantsListView(ArrayList())
         val students = ArrayList<Pair<String, String>>()
         User.iterate(this.teachingAssistants)
         {
@@ -43,7 +48,7 @@ class TeachingAssistantsActivity : AppCompatActivity()
                 val student = Pair(this.teachingAssistants[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
                 students.add(student)
                 if (students.size == this.teachingAssistants.size)
-                    listView_teachingAssistants.adapter = DetailedListAdapter(this, students)
+                    listView_teachingAssistants.adapter = DetailedListAdapter(this, students, if (this.isAdmin) this else null)
             }
         }
     }
@@ -55,31 +60,33 @@ class TeachingAssistantsActivity : AppCompatActivity()
         supportActionBar?.let { it.title = getString(R.string.text_teachingAssistants) }
 
         this.teachingAssistants = intent.getStringArrayListExtra(IDENTIFIER_TEACHING_ASSISTANTS)
-        this.updateTeachingAssistantsListView()
-        if (this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false))
-        {
+        this.isAdmin = this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false)
+        if (this.isAdmin)
             button_add_teachingAssistant.visibility = View.VISIBLE
-            registerForContextMenu(listView_teachingAssistants)
-        }
+        this.updateTeachingAssistants()
     }
 
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?)
+    override fun onItemDelete(position: Int)
     {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        if (v?.id == R.id.listView_teachingAssistants)
+        if (this.isAdmin)
         {
-            val info = menuInfo as AdapterView.AdapterContextMenuInfo
-            menu?.setHeaderTitle(this.teachingAssistants[info.position])
-            menu?.add("Delete")
+            this.deleteAlert = AlertDialog.Builder(this)
+                .setTitle("Remove Teaching Assistant")
+                .setMessage("Are you sure you wish to remove User with ID: ${this.teachingAssistants[position]} as Teaching Assistant?")
+                .setPositiveButton("Yes")
+                {
+                    _, _ ->
+                    this.teachingAssistants.removeAt(position)
+                    this.updateTeachingAssistants()
+                }
+                .setNegativeButton("No")
+                {
+                    _, _ ->
+                    this.deleteAlert = null
+                }
+                .create()
+            this.deleteAlert?.show()
         }
-    }
-
-    override fun onContextItemSelected(item: MenuItem?): Boolean
-    {
-        val menuInfo = item?.menuInfo as AdapterView.AdapterContextMenuInfo
-        this.teachingAssistants.removeAt(menuInfo.position)
-        this.updateTeachingAssistantsListView()
-        return true
     }
 
     fun addTeachingAssistant(v: View)
@@ -134,7 +141,7 @@ class TeachingAssistantsActivity : AppCompatActivity()
                             else
                             {
                                 this.teachingAssistants.add(userID)
-                                this.updateTeachingAssistantsListView()
+                                this.updateTeachingAssistants()
                                 alert.dismiss()
                             }
                         }
