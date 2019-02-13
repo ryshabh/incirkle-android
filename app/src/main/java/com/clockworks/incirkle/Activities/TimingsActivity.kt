@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.support.v7.app.AlertDialog
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
@@ -14,7 +14,7 @@ import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
 import kotlinx.android.synthetic.main.activity_timings.*
 
-class TimingsActivity : AppCompatActivity()
+class TimingsActivity : AppCompatActivity(), DetailedListAdapter.DeleteListener
 {
     companion object
     {
@@ -24,10 +24,13 @@ class TimingsActivity : AppCompatActivity()
     }
 
     private var timings = ArrayList<Course.Timing>()
+    private var isAdmin = false
+    private var deleteAlert: AlertDialog? = null
 
     fun updateTimingsListView()
     {
-        listView_timings.adapter = DetailedListAdapter(this, this.timings.map { Pair(it.day.toString(), it.timePeriod()) })
+        this.deleteAlert = null
+        listView_timings.adapter = DetailedListAdapter(this, this.timings.map { Pair(it.day.toString(), it.timePeriod()) }, if (this.isAdmin) this else null)
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -37,8 +40,8 @@ class TimingsActivity : AppCompatActivity()
         supportActionBar?.let { it.title = getString(R.string.text_timings) }
 
         this.timings = intent.getSerializableExtra(IDENTIFIER_TIMINGS) as ArrayList<Course.Timing>
-        this.updateTimingsListView()
-        if (this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false))
+        this.isAdmin = this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false)
+        if (this.isAdmin)
         {
             button_addTiming.visibility = View.VISIBLE
             listView_timings.setOnItemClickListener()
@@ -52,6 +55,7 @@ class TimingsActivity : AppCompatActivity()
             }
             registerForContextMenu(listView_timings)
         }
+        this.updateTimingsListView()
     }
 
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?)
@@ -94,6 +98,30 @@ class TimingsActivity : AppCompatActivity()
         }
         else
             super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onItemDelete(position: Int)
+    {
+        if (this.isAdmin)
+        {
+            this.deleteAlert = AlertDialog.Builder(this)
+                .setTitle("Delete Timing")
+                .setMessage("Are you sure you wish remove the course for timing: ${this.timings[position]}?")
+                .setPositiveButton("Yes")
+                {
+                        _, _ ->
+                    this.timings.removeAt(position)
+                    this.deleteAlert = null
+                    this.updateTimingsListView()
+                }
+                .setNegativeButton("No")
+                {
+                        _, _ ->
+                    this.deleteAlert = null
+                }
+                .create()
+            this.deleteAlert?.show()
+        }
     }
 
     fun addTiming(view: View)
