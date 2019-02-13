@@ -6,14 +6,11 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Patterns
-import android.view.ContextMenu
-import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import com.clockworks.incirkle.Adapters.DetailedListAdapter
 import com.clockworks.incirkle.R
 import kotlinx.android.synthetic.main.activity_invite_students.*
-import android.widget.AdapterView
 import android.widget.Toast
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.currentUserData
@@ -30,9 +27,14 @@ class InviteStudentsActivity : AppCompatActivity()
 
     private var invitedStudents = ArrayList<String>()
 
-    private fun updateInvitedStudentsListView()
+    private fun updateInvitedStudentsListView(list: ArrayList<Pair<String, String>>)
     {
-        listView_invitedStudents.adapter = DetailedListAdapter(this, ArrayList())
+        listView_invitedStudents.adapter = DetailedListAdapter(this, list, null)
+    }
+
+    private fun updateInvitedStudents()
+    {
+        this.updateInvitedStudentsListView(ArrayList())
         val students = ArrayList<Pair<String, String>>()
         User.iterate(this.invitedStudents)
         {
@@ -43,7 +45,7 @@ class InviteStudentsActivity : AppCompatActivity()
                 val student = Pair(this.invitedStudents[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
                 students.add(student)
                 if (students.size == this.invitedStudents.size)
-                    listView_invitedStudents.adapter = DetailedListAdapter(this, students)
+                    this.updateInvitedStudentsListView(students)
             }
         }
     }
@@ -55,27 +57,7 @@ class InviteStudentsActivity : AppCompatActivity()
         supportActionBar?.let { it.title = getString(R.string.text_inviteStudents) }
 
         this.invitedStudents = intent.getSerializableExtra(IDENTIFIER_INVITED_STUDENTS) as ArrayList<String>
-        this.updateInvitedStudentsListView()
-        registerForContextMenu(listView_invitedStudents)
-    }
-
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?)
-    {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        if (v?.id == R.id.listView_invitedStudents)
-        {
-            val info = menuInfo as AdapterView.AdapterContextMenuInfo
-            menu?.setHeaderTitle(this.invitedStudents[info.position])
-            menu?.add("Delete")
-        }
-    }
-
-    override fun onContextItemSelected(item: MenuItem?): Boolean
-    {
-        val menuInfo = item?.menuInfo as AdapterView.AdapterContextMenuInfo
-        this.invitedStudents.removeAt(menuInfo.position)
-        this.updateInvitedStudentsListView()
-        return true
+        this.updateInvitedStudents()
     }
 
     fun inviteStudent(v: View)
@@ -130,7 +112,7 @@ class InviteStudentsActivity : AppCompatActivity()
                             else
                             {
                                 this.invitedStudents.add(userID)
-                                this.updateInvitedStudentsListView()
+                                this.updateInvitedStudents()
                                 alert.dismiss()
                             }
                         }
