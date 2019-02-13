@@ -104,7 +104,6 @@ class TimingActivity : AppCompatActivity()
     fun done(v: View)
     {
         val intent = Intent()
-        Log.d("Time on done", this.timing.toString())
         intent.putExtra(IDENTIFIER_TIMING, this.timing)
         intent.putExtra(IDENTIFIER_TIMING_INDEX, this.index)
         setResult(Activity.RESULT_OK, intent)

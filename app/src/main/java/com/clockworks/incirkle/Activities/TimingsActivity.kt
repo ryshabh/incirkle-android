@@ -79,18 +79,12 @@ class TimingsActivity : AppCompatActivity(), DetailedListAdapter.DeleteListener
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
-        Log.d("Time", "1")
         if (requestCode == TimingActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK)
         {
-            Log.d("Time", "2")
-            Log.d("Time", data?.getSerializableExtra(TimingActivity.IDENTIFIER_TIMING)?.toString() ?: "Doh!")
-
             (data?.getSerializableExtra(TimingActivity.IDENTIFIER_TIMING) as? Course.Timing)?.let()
             {
                 timing ->
 
-                Log.d("Time", timing.toString())
-                Log.d("Time", data.getIntExtra(TimingActivity.IDENTIFIER_TIMING_INDEX, -1).toString())
                 data.getIntExtra(TimingActivity.IDENTIFIER_TIMING_INDEX, -1).
                     let { if (it == -1) this.timings.add(timing) else this.timings[it] = timing }
                 this.updateTimingsListView()
