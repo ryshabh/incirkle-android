@@ -89,4 +89,12 @@
     <string name="text_delete">Delete</string>
     <string name="text_add">Add</string>
 
+    <!-- Course Feed -->
+    <string name="title_activity_course_feed">Course Feed</string>
+    <string name="tab_activities">Activities</string>
+    <string name="tab_forums">Forums</string>
+    <string name="tab_documents">Documents</string>
+    <string name="tab_assignments">Assignments</string>
+    <string name="title_activity_main">MainActivity</string>
+
 </resources>

@@ -13,6 +13,11 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity
+                android:name=".Activities.CourseFeedActivity"
+                android:label="@string/title_activity_course_feed"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
         <activity android:name=".Activities.TimingActivity">
         </activity>
         <activity android:name=".Activities.TimingsActivity">
