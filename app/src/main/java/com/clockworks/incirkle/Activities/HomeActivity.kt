@@ -40,6 +40,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     task.result?.toObject(Course::class.java)?.let()
                     {
                         course ->
+                        course.reference = task.result?.reference
                         this.courses.add(course)
                         courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
@@ -107,6 +108,16 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         {
             this.startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+
+        courses_list_view.setOnItemClickListener()
+        {
+            _, _, position, _ ->
+
+            val course = this.courses[position]
+            val intent = Intent(this, CourseFeedActivity::class.java)
+            intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_PATH, course.reference!!.path)
+            startActivity(intent)
         }
     }
 
