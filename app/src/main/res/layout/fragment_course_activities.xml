@@ -19,7 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:hint="Enter Description"/>
+                android:hint="@string/text_description"/>
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -31,7 +31,7 @@
                     android:id="@+id/button_post_activity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Post" />
+                    android:text="@string/text_post" />
 
         </LinearLayout>
 
