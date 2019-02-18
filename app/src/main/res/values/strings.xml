@@ -99,5 +99,10 @@
 
     <string name="text_poster_name">Poster Name</string>
     <string name="text_timestamp">Timestamp</string>
+    <string name="text_post">Post</string>
+
+    <string name="text_description">Description</string>
+
+
 
 </resources>
