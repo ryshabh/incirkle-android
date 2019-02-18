@@ -177,6 +177,6 @@ class CourseActivitiesFragment(): Fragment()
 
     private fun resetPostLayout()
     {
-        editText_post_activity_description.text.clear()
+        editText_post_activity_description.setText("")
     }
 }
