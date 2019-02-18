@@ -97,4 +97,7 @@
     <string name="tab_assignments">Assignments</string>
     <string name="title_activity_main">MainActivity</string>
 
+    <string name="text_poster_name">Poster Name</string>
+    <string name="text_timestamp">Timestamp</string>
+
 </resources>
