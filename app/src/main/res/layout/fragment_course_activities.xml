@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".Fragments.CourseActivitiesFragment">
+
+    <LinearLayout
+            android:id="@+id/layout_post_activity_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+        <EditText
+                android:id="@+id/editText_post_activity_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:hint="Enter Description"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="10dp" >
+
+            <Button
+                    android:id="@+id/button_post_activity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Post" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+            android:id="@+id/listView_courseFeed_activities"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+</LinearLayout>
