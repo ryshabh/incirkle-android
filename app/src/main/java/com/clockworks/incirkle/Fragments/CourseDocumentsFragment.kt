@@ -152,7 +152,7 @@ class CourseDocumentsFragment(): Fragment()
             }
             else if (details.isBlank())
             {
-                editText_post_document_details.error = "Document details cannot be empty"
+                editText_post_document_details.error = "Document description cannot be empty"
                 return@setOnClickListener
             }
             else
