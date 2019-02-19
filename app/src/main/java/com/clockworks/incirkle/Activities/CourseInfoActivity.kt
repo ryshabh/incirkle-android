@@ -312,7 +312,7 @@ class CourseInfoActivity : AppCompatActivity()
             this.course.code = courseCode
             this.course.name = courseName
 
-            if (this.isCourseEnrolled)
+            if (this.isCourseEnrolled || this.privilege == PRIVILEGE.FULL)
                 saveCourse()
             else
                 showEnrolmentAlert()
