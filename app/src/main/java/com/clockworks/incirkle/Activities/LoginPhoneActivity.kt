@@ -62,7 +62,7 @@ class LoginPhoneActivity : AppCompatActivity()
         }
         else if (!Patterns.PHONE.matcher(number).matches())
         {
-            editText_phone_number.error = "Phone Number is Inavlid"
+            editText_phone_number.error = "Phone Number is Invalid"
             editText_phone_number.requestFocus()
         }
         else
