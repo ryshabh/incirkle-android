@@ -1,10 +1,11 @@
 package com.clockworks.incirkle.Models
 
+import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.FirebaseFirestore
 
-class Organisation()
+class Organisation(): FirebaseDocument
 {
     companion object
     {
@@ -15,7 +16,7 @@ class Organisation()
     lateinit var location: String
 
     @Exclude
-    var reference: DocumentReference? = null
+    override var reference: DocumentReference? = null
 
     constructor(name: String, location: String) : this()
     {

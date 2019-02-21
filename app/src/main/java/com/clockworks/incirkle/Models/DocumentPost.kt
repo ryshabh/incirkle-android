@@ -1,12 +1,13 @@
 package com.clockworks.incirkle.Models
 
+import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import java.util.*
 
-class DocumentPost()
+class DocumentPost(): FirebaseDocument
 {
-    var reference: DocumentReference? = null
+    override var reference: DocumentReference? = null
 
     lateinit var name: String
     lateinit var details: String

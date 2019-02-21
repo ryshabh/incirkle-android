@@ -1,12 +1,13 @@
 package com.clockworks.incirkle.Models
 
+import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.Exclude
 import java.io.Serializable
 import java.lang.Exception
 import kotlin.math.sign
 
-class Course()
+class Course(): FirebaseDocument
 {
     class Timing(): Serializable
     {
@@ -87,7 +88,7 @@ class Course()
     var invitedStudents = ArrayList<String>()
 
     @Exclude
-    var reference: DocumentReference? = null
+    override var reference: DocumentReference? = null
 
     constructor(password: String, teacher: DocumentReference): this()
     {
