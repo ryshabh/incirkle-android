@@ -2,18 +2,16 @@ package com.clockworks.incirkle.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils
 import android.util.Patterns
 import android.view.View
 import android.widget.EditText
-import android.widget.Toast
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 
 import kotlinx.android.synthetic.main.activity_login_email.*
 
-class LoginEmailActivity : AppCompatActivity()
+class LoginEmailActivity : AppActivity()
 {
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -28,6 +26,7 @@ class LoginEmailActivity : AppCompatActivity()
         editText.requestFocus()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun login(v: View)
     {
         // Reset errors.
@@ -49,17 +48,15 @@ class LoginEmailActivity : AppCompatActivity()
             progressBar_sign_in.visibility = View.VISIBLE
             FirebaseAuth.getInstance().signInWithEmailAndPassword(emailAddress, password).addOnCompleteListener()
             {
-                    task ->
-
                 progressBar_sign_in.visibility = View.INVISIBLE
-                if (task.isSuccessful)
+                if (it.isSuccessful)
                 {
                     val homeActivityIntent = Intent(this, HomeActivity::class.java)
                     homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(homeActivityIntent)
                 }
                 else
-                    Toast.makeText(this, task.exception.toString(), Toast.LENGTH_LONG).show()
+                    this.showError(it.exception!!)
             }
         }
     }
