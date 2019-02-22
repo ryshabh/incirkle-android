@@ -2,7 +2,6 @@ package com.clockworks.incirkle.Activities
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.Editable
@@ -11,9 +10,8 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
-import com.clockworks.incirkle.Models.Course
-import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Interfaces.serialize
+import com.clockworks.incirkle.Models.*
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
@@ -22,7 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_course_info.*
 
 
-class CourseInfoActivity : AppCompatActivity()
+class CourseInfoActivity : AppActivity()
 {
     companion object
     {
@@ -38,17 +36,19 @@ class CourseInfoActivity : AppCompatActivity()
     private var privilege = PRIVILEGE.NONE
     private var isCourseEnrolled = false
 
-    private fun updateCourse(course: Course, user: User)
+    private fun updateCourse(course: Course)
     {
         this.course = course
         textView_coursePassword.setText(course.password)
         textView_courseCode.setText(course.code)
         textView_courseName.setText(course.name)
 
+        val currentUserReference = FirebaseAuth.getInstance().currentUser?.documentReference()
+
         // Set Privilege
         this.privilege =
-                if (course.teacher == user.documentReference) PRIVILEGE.FULL
-                else if (course.teachingAssistants.contains(user.userID())) PRIVILEGE.SEMI
+                if (course.teacher == currentUserReference) PRIVILEGE.FULL
+                else if (course.teachingAssistants.contains(currentUserReference?.id)) PRIVILEGE.SEMI
                 else PRIVILEGE.NONE
 
         // Refresh Views
@@ -62,57 +62,54 @@ class CourseInfoActivity : AppCompatActivity()
 
     private fun fetchCourse()
     {
-        FirebaseAuth.getInstance().currentUser?.currentUserData()
+        FirebaseAuth.getInstance().currentUser?.let()
         {
-            userData, exception ->
+            firebaseUser ->
 
-            exception?.let() { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-            ?: userData?.let()
-            {
-                user ->
-
-                this.courseID?.let()
+            firebaseUser.documentReference().get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
                 {
-                    courseID ->
+                    this.performThrowable { it.serialize(User::class.java) }?.let()
+                    { user ->
+                        this.courseID?.let()
+                        { courseID ->
 
-                    this.coursesCollectionReference.document(courseID).get().addOnCompleteListener()
-                    {
-                        task ->
+                            this.coursesCollectionReference.document(courseID).get()
+                                .addOnFailureListener(::showError)
+                                .addOnSuccessListener()
+                                {
 
-                        task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                        ?:task.result?.let()
-                        {
-                            // Update Button
-                            this.isCourseEnrolled = user.courses.contains(it.reference)
-                            button_finish.setText(if (this.isCourseEnrolled) R.string.text_finish else R.string.title_activity_enrolCourse)
-
-                            val course = it.toObject(Course::class.java)!!
-                            course.reference = it.reference
-                            course.teacher.get().addOnCompleteListener()
-                            {
-                                it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                                    ?:it.result?.let()
+                                    // Update Button
+                                    this.isCourseEnrolled = user.courses.contains(it.reference)
+                                    button_finish.setText(if (this.isCourseEnrolled) R.string.text_finish else R.string.title_activity_enrolCourse)
+                                    this.performThrowable { it.serialize(Course::class.java) }?.let()
                                     {
-                                        it.toObject(User::class.java)?.let { textView_teacherName.text = it.fullName() }
+                                        course ->
+                                        course.teacher.get()
+                                            .addOnFailureListener(::showError)
+                                            .addOnSuccessListener()
+                                            {
+                                                this.performThrowable { it.serialize(User::class.java) }
+                                                    ?.let { textView_teacherName.text = it.fullName() }
+                                            }
+                                        this.updateCourse(course)
                                     }
-                            }
-                            this.updateCourse(course, user)
+                                }
+                        } ?: run()
+                        {
+                            // Create New Course
+                            var newPassword = (0..9999).random().toString()
+                            if (newPassword.length < 4)
+                                newPassword = "0$newPassword"
+                            this.updateCourse(Course(newPassword, user.reference!!))
                         }
                     }
-
-                }?: run()
-                {
-                    // Create New Course
-                    var newPassword = (0..9999).random().toString()
-                    while (newPassword.length < 4)
-                        newPassword = "0$newPassword"
-                    this.updateCourse(Course(newPassword, user.documentReference!!), user)
                 }
-            }
         }
     }
 
-    private fun saveUser(user: User, courseReference: DocumentReference)
+    private fun updateAllUsers(courseReference: DocumentReference)
     {
         fun goHome()
         {
@@ -122,63 +119,61 @@ class CourseInfoActivity : AppCompatActivity()
             finish()
         }
 
-        user.documentReference?.set(user)?.addOnCompleteListener()
+        // Update all Invited Students & Teachers
+        val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
+
+        if (allUsers.isEmpty())
+            goHome()
+        else
         {
-            it.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: run()
-                {
-
-                    // Update all Invited Students & Teachers
-                    val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
-
-                    if (allUsers.isEmpty())
-                        goHome()
-                    else
-                        User.iterate(ArrayList(allUsers))
+            User.iterate(ArrayList(allUsers))
+            {
+                index, key, task ->
+                task.addOnFailureListener(::showError)
+                    .addOnSuccessListener()
+                    {
+                        it.forEach()
                         {
-                            index, key, task ->
-
-                            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                            task.result?.forEach()
+                            this.performThrowable { it.serialize(User::class.java) }?.let()
                             {
-                                it.toObject(User::class.java).let()
-                                {
-                                    if (!it.courses.contains(courseReference))
-                                        it.courses.add(courseReference)
-                                }
+                                if (!it.courses.contains(courseReference))
+                                    it.courses.add(courseReference)
                             }
-                            if (index == (allUsers.size - 1))
-                                goHome()
                         }
+                        if (index == (allUsers.size - 1))
+                            goHome()
+                    }
+            }
+        }
+    }
+
+    private fun updateUser(courseReference: DocumentReference)
+    {
+        FirebaseAuth.getInstance().currentUser?.let()
+        {
+            it.documentReference().get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
+                {
+                    this.performThrowable { it.serialize(User::class.java) }?.let()
+                    {
+                        if (this.courseID == null)
+                            it.courses.add(courseReference)
+                        it.reference!!.set(it)
+                            .addOnFailureListener(::showError)
+                            .addOnSuccessListener { this.updateAllUsers(courseReference) }
+                    }
                 }
         }
     }
 
     private fun saveCourse()
     {
-        val courseReference = this.courseID?.let() { this.coursesCollectionReference.document(it) }
-            ?: run()
-            { this.coursesCollectionReference.document() }
-        courseReference.set(this.course).addOnCompleteListener()
-        {
-                task ->
-
-            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: run()
-            {
-                FirebaseAuth.getInstance().currentUser?.currentUserData()
-                {
-                        user, exception ->
-                    exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                    ?: user?.let()
-                    {
-                        if (this.courseID == null)
-                            it.courses.add(courseReference)
-                        this.saveUser(it, courseReference)
-                    }
-                }
-            }
-        }
+        val courseReference = this.courseID?.let { this.coursesCollectionReference.document(it) }
+            ?: run { this.coursesCollectionReference.document() }
+        courseReference.set(this.course)
+            .addOnFailureListener(::showError)
+            .addOnSuccessListener { this.updateUser(courseReference) }
     }
 
     private fun showEnrolmentAlert()
@@ -224,7 +219,7 @@ class CourseInfoActivity : AppCompatActivity()
                 val courseIDString = coursePasswordEditText.text.toString().trim()
                 courseIDString.toIntOrNull()?.let()
                 {
-                    courseID ->
+                    _ ->
                     if (courseIDString.equals(course.password, false))
                     {
                         saveCourse()

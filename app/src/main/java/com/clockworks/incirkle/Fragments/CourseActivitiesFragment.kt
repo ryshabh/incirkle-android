@@ -8,9 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -97,7 +98,7 @@ class CourseActivitiesFragment(): Fragment()
                 task ->
 
                 task.exception?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: task.result?.toObject(User::class.java)?.let()
+                ?: task.result?.serialize(User::class.java)?.let()
                 {
                     viewModel.posterNameTextView.setText(it.fullName())
                     // TODO: Set Display Picture
@@ -147,18 +148,11 @@ class CourseActivitiesFragment(): Fragment()
             }
             else
             {
-                FirebaseAuth.getInstance().currentUser?.currentUserData()
+                FirebaseAuth.getInstance().currentUser?.let()
                 {
-                    user, e ->
-                    e?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
-                    user?.let()
-                    {
-                        activityPostsReference.add(ActivityPost(description, it.documentReference!!)).addOnCompleteListener()
-                        {
-                            it.exception?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
-                            ?: it.result.let { this.resetPostLayout() }
-                        }
-                    }
+                    activityPostsReference.add(ActivityPost(description, it.documentReference()))
+                        .addOnSuccessListener { this.resetPostLayout() }
+                        .addOnFailureListener { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
                 }
             }
         }
@@ -166,12 +160,8 @@ class CourseActivitiesFragment(): Fragment()
         {
             result, e ->
             e?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: result?.map()
-            {
-                val activityPost = it.toObject(ActivityPost::class.java)
-                activityPost.reference = it.reference
-                activityPost
-            }?.let() { listView_courseFeed_activities.adapter = ActivityPostAdapter(context!!, isAdmin, it) }
+            ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
+            { listView_courseFeed_activities.adapter = ActivityPostAdapter(context!!, isAdmin, it) }
         }
     }
 

@@ -63,39 +63,39 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         FirebaseApp.initializeApp(this)
         FirebaseAuth.getInstance().currentUser?.let()
         {
-                firebaseUser ->
-
-            firebaseUser.currentUserData()
-            {
-                    userData, exception ->
-
-                exception?.let() { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                ?: userData?.let()
+            it.documentReference().get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
                 {
-                    user ->
-
-                    textView_user_name.setText(user.fullName())
-                    textView_user_id.setText(user.userID())
-                    this.isUserTeacher = user.type == User.Type.TEACHER
-                    this.invalidateOptionsMenu()
-
-                    if (userData.courses.isEmpty())
+                    snapshot ->
+                    if (snapshot.data.isNullOrEmpty())
                     {
-                        this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
+                        startActivity(Intent(this, UserProfileActivity::class.java))
                         finish()
                     }
                     else
-                        this.getCoursesForUser(userData)
+                    {
+                        this.performThrowable { snapshot.serialize(User::class.java) }?.let()
+                        { user ->
+                            textView_user_name.text = user.fullName()
+                            textView_user_id.text = user.userID()
+                            this.isUserTeacher = user.type == User.Type.TEACHER
+                            this.invalidateOptionsMenu()
+
+                            if (user.courses.isEmpty())
+                            {
+                                this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
+                                finish()
+                            }
+                            else
+                                this.getCoursesForUser(user)
+                        }
+                    }
                 }
-                ?: run()
-                {
-                    startActivity(Intent(this, UserProfileActivity::class.java))
-                    finish()
-                }
-            }
-        } ?: run()
+        }
+        ?: run()
         {
-            this.startActivity(Intent(this, LoginActivity::class.java))
+           this.startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
 

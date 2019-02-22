@@ -1,29 +1,25 @@
 package com.clockworks.incirkle.Activities
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import com.clockworks.incirkle.Adapters.AvailableCourseListAdapter
-import com.clockworks.incirkle.Models.Course
-import com.clockworks.incirkle.Models.Organisation
-import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Interfaces.serialize
+import com.clockworks.incirkle.Models.*
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_enrol_course.*
 
-class EnrolCourseActivity : AppCompatActivity()
+class EnrolCourseActivity : AppActivity()
 {
     companion object
     {
-        val IDENTIFIER_SELECTED_ORGANISATION= "Selected Organisation"
+        const val IDENTIFIER_SELECTED_ORGANISATION= "Selected Organisation"
     }
 
     var availableCourses = ArrayList<Course>()
 
-    fun coursesPath(): String
+    private fun coursesPath(): String
     {
         return Organisation.reference
             .document(this.intent.getStringExtra(IDENTIFIER_SELECTED_ORGANISATION)!!)
@@ -34,48 +30,40 @@ class EnrolCourseActivity : AppCompatActivity()
     private fun fetchAvailableCoursesForUser(user: User)
     {
         val organisationID = intent.getStringExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION)
-        Organisation.reference.document(organisationID).collection("Courses").get().addOnCompleteListener()
-        {
-                task ->
-
-            val courses = ArrayList<Course>()
-            task.exception?.let()
+        Organisation.reference.document(organisationID).collection("Courses").get()
+            .addOnFailureListener()
             {
-                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+                this.showError(it)
+                this.availableCourses = ArrayList<Course>()
+                listView_available_courses.adapter = AvailableCourseListAdapter(this, this.availableCourses)
             }
-                ?: task.result?.documents?.let()
+            .addOnSuccessListener()
+            {
+                val courses = ArrayList<Course>()
+                it.documents.forEach()
                 {
-                    documents ->
+                    snapshot ->
 
-                    documents.forEach()
+                    if (user.courses.contains(snapshot.reference))
+                        return@forEach
+
+                    this.performThrowable { snapshot.serialize(Course::class.java) }?.let()
                     {
-                        snapshot ->
-
-                        if (user.courses.contains(snapshot.reference))
-                            return@forEach
-
-                        snapshot.toObject(Course::class.java)?.let()
+                        if (it.teacher != user.reference)
                         {
-
-                            if (it.teacher != user.documentReference)
-                            {
-                                it.reference = snapshot.reference
-                                courses.add(it)
-                            }
-                        }
-                        ?: run()
-                        {
-                            Toast.makeText(this, "Could not deserialize Course", Toast.LENGTH_LONG).show()
+                            it.reference = snapshot.reference
+                            courses.add(it)
                         }
                     }
                 }
-            this.availableCourses = courses
-            listView_available_courses.adapter = AvailableCourseListAdapter(this, this.availableCourses)
-        }
+
+                this.availableCourses = courses
+                listView_available_courses.adapter = AvailableCourseListAdapter(this, this.availableCourses)
+            }
 
         listView_available_courses.setOnItemClickListener()
         {
-            adapterView, view, position, id ->
+            _, _, position, _ ->
             val intent = Intent(this, CourseInfoActivity::class.java)
             intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
             intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSE_ID, this.availableCourses[position].reference!!.id)
@@ -89,22 +77,22 @@ class EnrolCourseActivity : AppCompatActivity()
         setContentView(R.layout.activity_enrol_course)
         supportActionBar?.let { it.title = "Available Courses" }
 
-        FirebaseAuth.getInstance().currentUser?.currentUserData()
+        FirebaseAuth.getInstance().currentUser?.let()
         {
-                user, exception ->
-
-            exception?.let()
-            {
-                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-            }
-                ?: user?.let()
-            {
-                this.button_create_course.visibility = if (it.type == User.Type.TEACHER) View.VISIBLE else View.GONE
-                this.fetchAvailableCoursesForUser(it)
-            }
+            it.documentReference().get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
+                {
+                    this.performThrowable { it.serialize(User::class.java) }?.let()
+                    {
+                        this.button_create_course.visibility = if (it.type == User.Type.TEACHER) View.VISIBLE else View.GONE
+                        this.fetchAvailableCoursesForUser(it)
+                    }
+                }
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun createCourse(v: View)
     {
         val intent = Intent(this, CourseInfoActivity::class.java)

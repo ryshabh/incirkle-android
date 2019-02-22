@@ -4,18 +4,14 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity;
 import android.view.View
-import android.widget.Toast
-import com.clockworks.incirkle.Models.Course
-import com.clockworks.incirkle.Models.Organisation
-import com.clockworks.incirkle.Models.User
+import com.clockworks.incirkle.Interfaces.serialize
+import com.clockworks.incirkle.Models.*
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_user_profile.*
-import com.clockworks.incirkle.Models.currentUserData
 import com.clockworks.incirkle.R
 
-class UserProfileActivity : AppCompatActivity()
+class UserProfileActivity : AppActivity()
 {
     private lateinit var user: User
     private val displayPictureAlertClickListener = DialogInterface.OnClickListener()
@@ -46,54 +42,57 @@ class UserProfileActivity : AppCompatActivity()
         FirebaseAuth.getInstance().currentUser?.let()
         {
             firebaseUser ->
-
-            firebaseUser.currentUserData()
-            {
-                user, exception ->
-
-                exception?.let()
+            firebaseUser.documentReference().get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
                 {
-                        e ->
-                    Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
-                }
-                ?: user?.let()
-                {
-                    this.update(it)
-                    for (index in 0 until gender.childCount) gender.getChildAt(index).isEnabled = false
-                    for (index in 0 until type.childCount) type.getChildAt(index).isEnabled = false
-                }
-                ?:
-                run()
-                {
-                    val userID = firebaseUser.phoneNumber
-
-                    val newUser = User(firebaseUser.uid, "", "", this@UserProfileActivity.selectedGender(), null, firebaseUser.phoneNumber, this@UserProfileActivity.selectedType())
-                    newUser.phoneNumber = firebaseUser.phoneNumber
-                    this.update(newUser)
-
-                    Organisation.reference.get().addOnCompleteListener()
+                    if (it.data?.isEmpty() != false)
                     {
-                        it.exception?.let { Toast.makeText(this@UserProfileActivity, it.toString(), Toast.LENGTH_LONG).show() }
-                        ?: it.result?.forEach()
-                        {
-                            it.reference.collection("Courses").get().addOnCompleteListener()
+                        val userID = firebaseUser.phoneNumber
+                        val newUser = User(
+                            "",
+                            "",
+                            this@UserProfileActivity.selectedGender(),
+                            null,
+                            firebaseUser.phoneNumber,
+                            this@UserProfileActivity.selectedType()
+                        )
+                        newUser.phoneNumber = firebaseUser.phoneNumber
+                        newUser.reference = FirebaseAuth.getInstance().currentUser?.documentReference()
+                        this.update(newUser)
+
+                        Organisation.reference.get()
+                            .addOnFailureListener(::showError)
+                            .addOnSuccessListener()
                             {
-                                it.exception?.let { Toast.makeText(this@UserProfileActivity, it.toString(), Toast.LENGTH_LONG).show() }
-                                    ?: it.result?.forEach()
+                                it.forEach()
                                 {
-                                    courseSnapshot ->
-                                    courseSnapshot.toObject(Course::class.java).let()
-                                    {
-                                        if ((it.invitedStudents + it.teachingAssistants).contains(userID))
-                                            newUser.courses.add(courseSnapshot.reference)
-                                    }
+                                    it.reference.collection("Courses").get()
+                                        .addOnFailureListener(::showError)
+                                        .addOnSuccessListener()
+                                        {
+                                            it.forEach()
+                                            {
+                                                this.performThrowable { it.serialize(Course::class.java) }?.let()
+                                                {
+                                                    if ((it.invitedStudents + it.teachingAssistants).contains(userID))
+                                                        newUser.courses.add(it.reference!!)
+                                                }
+                                            }
+                                        }
                                 }
                             }
+                    }
+                    else
+                    {
+                        this.performThrowable { it.serialize(User::class.java) }?.let()
+                        {
+                            this.update(it)
+                            for (index in 0 until gender.childCount) gender.getChildAt(index).isEnabled = false
+                            for (index in 0 until type.childCount) type.getChildAt(index).isEnabled = false
                         }
                     }
                 }
-
-            }
         }
     }
 
@@ -134,20 +133,14 @@ class UserProfileActivity : AppCompatActivity()
         this.user.gender = this.selectedGender()
         this.user.type = this.selectedType()
 
-        this.user.update()
-        {
-            it?.let()
-            {
-                exception ->
-                Toast.makeText(this, exception.toString(), Toast.LENGTH_LONG).show()
-            }
-            ?: run()
+        this.user.reference?.set(this.user)
+            ?.addOnFailureListener(::showError)
+            ?.addOnSuccessListener()
             {
                 val homeActivityIntent = Intent(this, HomeActivity::class.java)
                 homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(homeActivityIntent)
                 finish()
             }
-        }
     }
 }

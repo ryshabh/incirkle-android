@@ -131,22 +131,13 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
                         }
                     }
 
-                    FirebaseAuth.getInstance().currentUser?.currentUserData()
+                    if (userID.equals(FirebaseAuth.getInstance().currentUser?.documentReference()?.id, true))
+                        this.showError(Exception("Cannot add self"))
+                    else
                     {
-                        userData, exception ->
-                        exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-                        ?: userData?.let()
-                        {
-                            user ->
-                            if (user.userID().equals(userID, true))
-                                Toast.makeText(this, "Cannot add self", Toast.LENGTH_LONG).show()
-                            else
-                            {
-                                this.teachingAssistants.add(userID)
-                                this.updateTeachingAssistants()
-                                alert.dismiss()
-                            }
-                        }
+                        this.teachingAssistants.add(userID)
+                        this.updateTeachingAssistants()
+                        alert.dismiss()
                     }
                 }
             }
