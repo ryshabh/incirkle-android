@@ -5,14 +5,13 @@ import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -21,7 +20,7 @@ import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
 import kotlinx.android.synthetic.main.nav_header_home.*
 
-class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener
+class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListener
 {
     private var courses = ArrayList<Course>()
     private var isUserTeacher = false
@@ -32,26 +31,16 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         user.courses.forEach()
         {
             courseReference ->
-            courseReference.get().addOnCompleteListener()
-            {
-                task ->
-                if (task.isSuccessful)
+            courseReference.get()
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
                 {
-                    task.result?.toObject(Course::class.java)?.let()
+                    this.performThrowable { it.serialize(Course::class.java) }?.let()
                     {
-                        course ->
-                        course.reference = task.result?.reference
-                        this.courses.add(course)
+                        this.courses.add(it)
                         courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
-                    ?: run()
-                    {
-                        Toast.makeText(this@HomeActivity, "Could not deserialize Course Data", Toast.LENGTH_LONG).show()
-                    }
                 }
-                else
-                    Toast.makeText(this, task.exception.toString(), Toast.LENGTH_LONG).show()
-            }
         }
     }
 
