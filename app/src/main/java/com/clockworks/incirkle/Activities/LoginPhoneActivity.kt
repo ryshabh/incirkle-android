@@ -2,7 +2,6 @@ package com.clockworks.incirkle.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.InputFilter
 import android.text.TextUtils
@@ -17,9 +16,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.android.synthetic.main.activity_login_phone.*
+import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
-class LoginPhoneActivity : AppCompatActivity()
+class LoginPhoneActivity : AppActivity()
 {
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -43,13 +43,14 @@ class LoginPhoneActivity : AppCompatActivity()
         })
     }
 
-    fun setProgress(case: Boolean)
+    private fun setProgress(case: Boolean)
     {
         editText_phone_number.isEnabled = !case
         button_next.isEnabled = !case
         progressBar_get_code.visibility = if (case) View.VISIBLE else View.INVISIBLE
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun getCode(v: View)
     {
         editText_phone_number.error = null
@@ -80,29 +81,24 @@ class LoginPhoneActivity : AppCompatActivity()
                         FirebaseAuth.getInstance().signInWithCredential(credential)
                             .addOnCompleteListener()
                             {
-                                    task ->
-                                if (task.isSuccessful)
-                                {
-                                    Toast.makeText(this@LoginPhoneActivity, "Successfully Verified", Toast.LENGTH_LONG).show()
-                                }
-                                else
-                                    Toast.makeText(this@LoginPhoneActivity, task.exception.toString(), Toast.LENGTH_LONG).show()
+                                task ->
+                                task.exception?.let { this@LoginPhoneActivity.showError(it) }
+                                ?: run { Toast.makeText(this@LoginPhoneActivity, "Successfully Verified", Toast.LENGTH_LONG).show() }
                             }
                     }
 
                     override fun onVerificationFailed(e: FirebaseException)
                     {
                         this@LoginPhoneActivity.setProgress(false)
-                        Toast.makeText(this@LoginPhoneActivity, e.toString(), Toast.LENGTH_LONG).show()
+                        this@LoginPhoneActivity.showError(e)
                     }
 
-                    override fun onCodeSent(
-                        verificationId: String?,
-                        token: PhoneAuthProvider.ForceResendingToken?
-                    ) {
+                    override fun onCodeSent(verificationId: String?, token: PhoneAuthProvider.ForceResendingToken?)
+                    {
                         this@LoginPhoneActivity.setProgress(false)
                         verificationId?.let()
-                        { code ->
+                        {
+                            code ->
                             val phoneVerificationIntent =
                                 Intent(this@LoginPhoneActivity, LoginPhoneVerificationActivity::class.java)
                             phoneVerificationIntent.putExtra(
@@ -111,10 +107,7 @@ class LoginPhoneActivity : AppCompatActivity()
                             )
                             startActivity(phoneVerificationIntent)
                         }
-                            ?: run()
-                            {
-                                Toast.makeText(this@LoginPhoneActivity, "No Verification Code found", Toast.LENGTH_LONG).show()
-                            }
+                        ?: run { this@LoginPhoneActivity.showError(Exception("No Verification Code found")) }
                     }
                 })
         }
