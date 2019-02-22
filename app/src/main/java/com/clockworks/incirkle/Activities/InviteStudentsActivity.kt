@@ -2,27 +2,27 @@ package com.clockworks.incirkle.Activities
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Patterns
 import android.view.View
 import android.widget.EditText
 import com.clockworks.incirkle.Adapters.DetailedListAdapter
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.R
 import kotlinx.android.synthetic.main.activity_invite_students.*
-import android.widget.Toast
 import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Models.documentReference
 import com.google.firebase.auth.FirebaseAuth
+import java.lang.Exception
 
 
-class InviteStudentsActivity : AppCompatActivity()
+class InviteStudentsActivity : AppActivity()
 {
     companion object
     {
-        val REQUEST_CODE = 1
-        val IDENTIFIER_INVITED_STUDENTS = "Invited Students"
+        const val REQUEST_CODE = 1
+        const val IDENTIFIER_INVITED_STUDENTS = "Invited Students"
     }
 
     private var invitedStudents = ArrayList<String>()
@@ -38,15 +38,16 @@ class InviteStudentsActivity : AppCompatActivity()
         val students = ArrayList<Pair<String, String>>()
         User.iterate(this.invitedStudents)
         {
-            index, key, task ->
-            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-            task.result?.let()
-            {
-                val student = Pair(this.invitedStudents[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
-                students.add(student)
-                if (students.size == this.invitedStudents.size)
-                    this.updateInvitedStudentsListView(students)
-            }
+            index, _, task ->
+            task.addOnFailureListener(::showError)
+                .addOnSuccessListener()
+                {
+                    val user = this.performThrowable { it.firstOrNull()?.serialize(User::class.java) }
+                    val student = Pair(this.invitedStudents[index], user?.fullName() ?: "")
+                    students.add(student)
+                    if (students.size == this.invitedStudents.size)
+                        this.updateInvitedStudentsListView(students)
+                }
         }
     }
 
@@ -56,10 +57,11 @@ class InviteStudentsActivity : AppCompatActivity()
         setContentView(R.layout.activity_invite_students)
         supportActionBar?.let { it.title = getString(R.string.text_inviteStudents) }
 
-        this.invitedStudents = intent.getSerializableExtra(IDENTIFIER_INVITED_STUDENTS) as ArrayList<String>
+        this.invitedStudents = intent.getStringArrayListExtra(IDENTIFIER_INVITED_STUDENTS)
         this.updateInvitedStudents()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun inviteStudent(v: View)
     {
         val userIDTextView = EditText(this)
@@ -123,6 +125,7 @@ class InviteStudentsActivity : AppCompatActivity()
         alert.show()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun done(view: View)
     {
         val intent = Intent()
