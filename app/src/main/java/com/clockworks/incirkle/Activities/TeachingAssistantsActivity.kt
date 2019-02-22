@@ -2,27 +2,27 @@ package com.clockworks.incirkle.Activities
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Patterns
 import android.view.View
 import android.widget.EditText
-import android.widget.Toast
 import com.clockworks.incirkle.Adapters.DetailedListAdapter
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.currentUserData
+import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_teaching_assistants.*
+import java.lang.Exception
 
-class TeachingAssistantsActivity : AppCompatActivity(), DetailedListAdapter.DeleteListener
+class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteListener
 {
     companion object
     {
-        val REQUEST_CODE = 2
-        val IDENTIFIER_CAN_MODIFY = "Can Modify"
-        val IDENTIFIER_TEACHING_ASSISTANTS = "Teaching Assistants"
+        const val REQUEST_CODE = 2
+        const val IDENTIFIER_CAN_MODIFY = "Can Modify"
+        const val IDENTIFIER_TEACHING_ASSISTANTS = "Teaching Assistants"
     }
 
     private var teachingAssistants = ArrayList<String>()
@@ -38,18 +38,19 @@ class TeachingAssistantsActivity : AppCompatActivity(), DetailedListAdapter.Dele
     private fun updateTeachingAssistants()
     {
         this.updateTeachingAssistantsListView(ArrayList())
-        val students = ArrayList<Pair<String, String>>()
+        val assistants = ArrayList<Pair<String, String>>()
         User.iterate(this.teachingAssistants)
         {
             index, key, task ->
-            task.exception?.let { Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show() }
-            task.result?.let()
-            {
-                val student = Pair(this.teachingAssistants[index], it.firstOrNull()?.toObject(User::class.java)?.fullName() ?: "")
-                students.add(student)
-                if (students.size == this.teachingAssistants.size)
-                    listView_teachingAssistants.adapter = DetailedListAdapter(this, students, if (this.isAdmin) this else null)
-            }
+            task.addOnFailureListener(::showError)
+                .addOnSuccessListener()
+                {
+                    val user = this.performThrowable { it.firstOrNull()?.serialize(User::class.java) }
+                    val assistant = Pair(this.teachingAssistants[index], user?.fullName() ?: "")
+                    assistants.add(assistant)
+                    if (assistants.size == this.teachingAssistants.size)
+                        this.updateTeachingAssistantsListView(assistants)
+                }
         }
     }
 
@@ -89,6 +90,7 @@ class TeachingAssistantsActivity : AppCompatActivity(), DetailedListAdapter.Dele
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun addTeachingAssistant(v: View)
     {
         val userIDTextView = EditText(this)
@@ -152,6 +154,7 @@ class TeachingAssistantsActivity : AppCompatActivity(), DetailedListAdapter.Dele
         alert.show()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun done(view: View)
     {
         val intent = Intent()
