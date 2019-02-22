@@ -3,17 +3,16 @@ package com.clockworks.incirkle.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity;
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Organisation
 import com.clockworks.incirkle.R
-
 import kotlinx.android.synthetic.main.activity_select_organisation.*
 import kotlinx.android.synthetic.main.alert_new_organisation.*
 
-class SelectOrganisationActivity : AppCompatActivity()
+class SelectOrganisationActivity : AppActivity()
 {
     private var organisations = ArrayList<Organisation>()
 
@@ -25,41 +24,24 @@ class SelectOrganisationActivity : AppCompatActivity()
 
         Organisation.reference.addSnapshotListener()
         {
-            snapshot, exception ->
+            task, exception ->
 
-            this.organisations = ArrayList<Organisation>()
-
-            exception?.let()
+            this.organisations = ArrayList()
+            task?.let()
             {
-                e ->
-                Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
-            }
-            ?: snapshot?.documents?.let()
-            {
-                documents ->
-                val newOrganisations = ArrayList<Organisation>()
-                documents.forEach()
+                it.documents.forEach()
                 {
-                    snapshot ->
-
-                    snapshot.toObject(Organisation::class.java)?.let()
-                    {
-                        organisation ->
-                        organisation.reference = snapshot.reference
-                        newOrganisations.add(organisation)
-                    }
-                    ?: run()
-                    {
-                        Toast.makeText(this, "Could not deserialise Organisation", Toast.LENGTH_LONG).show()
-                    }
+                    this.performThrowable { it.serialize(Organisation::class.java) }
+                    ?.let { this.organisations.add(it) }
                 }
-                this.organisations = newOrganisations
-                val adapter = ArrayAdapter(this, android.R.layout.select_dialog_item, this.organisations.map { "${it.name}, ${it.location}" })
-                spinner_organisations.setAdapter(adapter)
             }
+            ?: exception?.let { this.showError(it) }
+            spinner_organisations.adapter = ArrayAdapter(this, android.R.layout.select_dialog_item, this.organisations.map { "${it.name}, ${it.location}" })
+            button_proceed.isEnabled = !this.organisations.isEmpty()
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun createOrganisation(v: View)
     {
         val builder = AlertDialog.Builder(this)
@@ -93,33 +75,25 @@ class SelectOrganisationActivity : AppCompatActivity()
                 }
 
                 val organisation = Organisation(name, location)
-                Organisation.reference.add(organisation).addOnCompleteListener()
-                {
-                    task ->
-
-                    task.exception?.let()
-                    {
-                        e ->
-                        Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
-                    }
-                    ?: run()
+                Organisation.reference.add(organisation)
+                    .addOnFailureListener(::showError)
+                    .addOnSuccessListener()
                     {
                         Toast.makeText(this, "Successfully added $name", Toast.LENGTH_LONG).show()
                         dialogInterface.dismiss()
                     }
-                }
             }
         }
         alert.show()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun proceed(v: View)
     {
         this.organisations[spinner_organisations.selectedItemPosition].reference?.id?.let()
         {
-            id ->
             val intent = Intent(this, EnrolCourseActivity::class.java)
-            intent.putExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION, id)
+            intent.putExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION, it)
             startActivity(intent)
         }
     }
