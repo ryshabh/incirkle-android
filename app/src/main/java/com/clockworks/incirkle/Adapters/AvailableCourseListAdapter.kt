@@ -6,11 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.R
 
-class AvailableCourseListAdapter(private val context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
+class AvailableCourseListAdapter(context: Context, private var dataSource: ArrayList<Course>) : BaseAdapter()
 {
     private class ViewModel
     {
@@ -63,7 +64,7 @@ class AvailableCourseListAdapter(private val context: Context, private var dataS
         {
             task, e ->
             viewModel.teacherName.error = e?.toString()
-            viewModel.teacherName.text = task?.toObject(User::class.java)?.fullName() ?: ""
+            viewModel.teacherName.text = task?.serialize(User::class.java)?.fullName() ?: ""
         }
 
         return view
