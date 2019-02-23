@@ -13,11 +13,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.android.synthetic.main.activity_login_phone_verification.*
 
-class LoginPhoneVerificationActivity : AppCompatActivity()
+class LoginPhoneVerificationActivity : AppActivity()
 {
     companion object
     {
-        val IDENTIFIER_VERIFICATION_CODE = "Verification Code"
+        const val IDENTIFIER_VERIFICATION_CODE = "Verification Code"
     }
     private lateinit var mVerificationId: String
 
@@ -49,18 +49,12 @@ class LoginPhoneVerificationActivity : AppCompatActivity()
 
     fun verify(v: View)
     {
-        progressBar_verify_code.visibility = View.VISIBLE
         val credential = PhoneAuthProvider.getCredential(this.mVerificationId, this.editText_verification_code.text.toString())
+        this.showLoadingAlert()
         FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnCompleteListener()
-            {
-                    task ->
-                progressBar_verify_code.visibility = View.INVISIBLE
-                if (task.isSuccessful)
-                    this.signIn()
-                else
-                    Toast.makeText(this, task.exception.toString(), Toast.LENGTH_SHORT).show()
-            }
+            .addOnFailureListener(::showError)
+            .addOnSuccessListener { this.signIn() }
+            .addOnCompleteListener { this.dismissLoadingAlert() }
     }
 
     fun signIn()

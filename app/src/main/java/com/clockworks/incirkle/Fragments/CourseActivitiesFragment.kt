@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.User
@@ -23,8 +24,8 @@ class CourseActivitiesFragment(): Fragment()
 {
     companion object
     {
-        val IDENTIFIER_COURSE_PATH = "Course Path"
-        val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_COURSE_PATH = "Course Path"
+        const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
 
     class ActivityPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ActivityPost>): BaseAdapter()
@@ -150,16 +151,18 @@ class CourseActivitiesFragment(): Fragment()
             {
                 FirebaseAuth.getInstance().currentUser?.let()
                 {
+                    (this.activity as AppActivity).showLoadingAlert()
                     activityPostsReference.add(ActivityPost(description, it.documentReference()))
                         .addOnSuccessListener { this.resetPostLayout() }
-                        .addOnFailureListener { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
+                        .addOnFailureListener { (this.activity as AppActivity).showError (it) }
+                        .addOnCompleteListener { (this.activity as AppActivity).dismissLoadingAlert() }
                 }
             }
         }
         activityPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
         {
             result, e ->
-            e?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
+            e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
             { listView_courseFeed_activities.adapter = ActivityPostAdapter(context!!, isAdmin, it) }
         }

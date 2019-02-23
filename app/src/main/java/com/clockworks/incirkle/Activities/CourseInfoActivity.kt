@@ -24,8 +24,8 @@ class CourseInfoActivity : AppActivity()
 {
     companion object
     {
-        val IDENTIFIER_COURSES_PATH = "Courses Path"
-        val IDENTIFIER_COURSE_ID = "Course ID"
+        const val IDENTIFIER_COURSES_PATH = "Courses Path"
+        const val IDENTIFIER_COURSE_ID = "Course ID"
     }
 
     enum class PRIVILEGE { FULL, SEMI, NONE; }
@@ -66,6 +66,7 @@ class CourseInfoActivity : AppActivity()
         {
             firebaseUser ->
 
+            this.showLoadingAlert()
             firebaseUser.documentReference().get()
                 .addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -75,17 +76,18 @@ class CourseInfoActivity : AppActivity()
                         this.courseID?.let()
                         { courseID ->
 
+                            this.showLoadingAlert()
                             this.coursesCollectionReference.document(courseID).get()
                                 .addOnFailureListener(::showError)
                                 .addOnSuccessListener()
                                 {
-
                                     // Update Button
                                     this.isCourseEnrolled = user.courses.contains(it.reference)
                                     button_finish.setText(if (this.isCourseEnrolled) R.string.text_finish else R.string.title_activity_enrolCourse)
                                     this.performThrowable { it.serialize(Course::class.java) }?.let()
                                     {
                                         course ->
+                                        this.showLoadingAlert()
                                         course.teacher.get()
                                             .addOnFailureListener(::showError)
                                             .addOnSuccessListener()
@@ -93,9 +95,11 @@ class CourseInfoActivity : AppActivity()
                                                 this.performThrowable { it.serialize(User::class.java) }
                                                     ?.let { textView_teacherName.text = it.fullName() }
                                             }
+                                            .addOnCompleteListener { this.dismissLoadingAlert() }
                                         this.updateCourse(course)
                                     }
                                 }
+                                .addOnCompleteListener { this.dismissLoadingAlert() }
                         } ?: run()
                         {
                             // Create New Course
@@ -106,6 +110,7 @@ class CourseInfoActivity : AppActivity()
                         }
                     }
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 
@@ -128,7 +133,8 @@ class CourseInfoActivity : AppActivity()
         {
             User.iterate(ArrayList(allUsers))
             {
-                index, key, task ->
+                index, _, task ->
+                this.showLoadingAlert()
                 task.addOnFailureListener(::showError)
                     .addOnSuccessListener()
                     {
@@ -143,27 +149,8 @@ class CourseInfoActivity : AppActivity()
                         if (index == (allUsers.size - 1))
                             goHome()
                     }
+                    .addOnCompleteListener { this.dismissLoadingAlert() }
             }
-        }
-    }
-
-    private fun updateUser(courseReference: DocumentReference)
-    {
-        FirebaseAuth.getInstance().currentUser?.let()
-        {
-            it.documentReference().get()
-                .addOnFailureListener(::showError)
-                .addOnSuccessListener()
-                {
-                    this.performThrowable { it.serialize(User::class.java) }?.let()
-                    {
-                        if (this.courseID == null)
-                            it.courses.add(courseReference)
-                        it.reference!!.set(it)
-                            .addOnFailureListener(::showError)
-                            .addOnSuccessListener { this.updateAllUsers(courseReference) }
-                    }
-                }
         }
     }
 
@@ -171,9 +158,38 @@ class CourseInfoActivity : AppActivity()
     {
         val courseReference = this.courseID?.let { this.coursesCollectionReference.document(it) }
             ?: run { this.coursesCollectionReference.document() }
+        this.showLoadingAlert()
         courseReference.set(this.course)
             .addOnFailureListener(::showError)
-            .addOnSuccessListener { this.updateUser(courseReference) }
+            .addOnSuccessListener()
+            {
+                FirebaseAuth.getInstance().currentUser?.let()
+                {
+                    this.showLoadingAlert()
+                    it.documentReference().get()
+                        .addOnFailureListener(::showError)
+                        .addOnSuccessListener()
+                        {
+                            this.performThrowable { it.serialize(User::class.java) }?.let()
+                            {
+                                if (this.courseID == null)
+                                    it.courses.add(courseReference)
+
+                                this.showLoadingAlert()
+                                it.reference!!.set(it)
+                                    .addOnFailureListener(::showError)
+                                    .addOnSuccessListener { this.updateAllUsers(courseReference) }
+                                    .addOnCompleteListener()
+                                    {
+                                        this.dismissLoadingAlert()
+                                        this.finish()
+                                    }
+                            }
+                        }
+                        .addOnCompleteListener { this.dismissLoadingAlert() }
+                }
+            }
+            .addOnCompleteListener { this.dismissLoadingAlert() }
     }
 
     private fun showEnrolmentAlert()
@@ -307,10 +323,10 @@ class CourseInfoActivity : AppActivity()
             this.course.code = courseCode
             this.course.name = courseName
 
-            if (this.isCourseEnrolled || this.privilege == PRIVILEGE.FULL)
+            if (this.privilege == PRIVILEGE.FULL || this.isCourseEnrolled)
                 saveCourse()
             else
-                showEnrolmentAlert()
+                this.showEnrolmentAlert()
         }
     }
 }

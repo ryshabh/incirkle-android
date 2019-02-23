@@ -45,19 +45,16 @@ class LoginEmailActivity : AppActivity()
             this.showError("Invalid Email Address", textView_email_address)
         else
         {
-            progressBar_sign_in.visibility = View.VISIBLE
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(emailAddress, password).addOnCompleteListener()
-            {
-                progressBar_sign_in.visibility = View.INVISIBLE
-                if (it.isSuccessful)
+            this.showLoadingAlert()
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(emailAddress, password)
+                .addOnFailureListener(::showError)
+                .addOnSuccessListener()
                 {
                     val homeActivityIntent = Intent(this, HomeActivity::class.java)
                     homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(homeActivityIntent)
                 }
-                else
-                    this.showError(it.exception!!)
-            }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 }

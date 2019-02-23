@@ -47,7 +47,6 @@ class LoginPhoneActivity : AppActivity()
     {
         editText_phone_number.isEnabled = !case
         button_next.isEnabled = !case
-        progressBar_get_code.visibility = if (case) View.VISIBLE else View.INVISIBLE
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -70,6 +69,7 @@ class LoginPhoneActivity : AppActivity()
         {
             this.setProgress(true)
             val countryCode = getString(R.string.phone_country_code)
+            this.showLoadingAlert()
             PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 "$countryCode$number",
                 60,
@@ -77,7 +77,7 @@ class LoginPhoneActivity : AppActivity()
                 TaskExecutors.MAIN_THREAD,
                 object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                        this@LoginPhoneActivity.setProgress(false)
+                        this@LoginPhoneActivity.dismissLoadingAlert()
                         FirebaseAuth.getInstance().signInWithCredential(credential)
                             .addOnCompleteListener()
                             {
@@ -89,13 +89,13 @@ class LoginPhoneActivity : AppActivity()
 
                     override fun onVerificationFailed(e: FirebaseException)
                     {
-                        this@LoginPhoneActivity.setProgress(false)
+                        this@LoginPhoneActivity.dismissLoadingAlert()
                         this@LoginPhoneActivity.showError(e)
                     }
 
                     override fun onCodeSent(verificationId: String?, token: PhoneAuthProvider.ForceResendingToken?)
                     {
-                        this@LoginPhoneActivity.setProgress(false)
+                        this@LoginPhoneActivity.dismissLoadingAlert()
                         verificationId?.let()
                         {
                             code ->

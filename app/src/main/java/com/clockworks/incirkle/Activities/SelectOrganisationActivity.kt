@@ -74,6 +74,7 @@ class SelectOrganisationActivity : AppActivity()
                     return@setOnClickListener
                 }
 
+                this.showLoadingAlert()
                 val organisation = Organisation(name, location)
                 Organisation.reference.add(organisation)
                     .addOnFailureListener(::showError)
@@ -82,6 +83,7 @@ class SelectOrganisationActivity : AppActivity()
                         Toast.makeText(this, "Successfully added $name", Toast.LENGTH_LONG).show()
                         dialogInterface.dismiss()
                     }
+                    .addOnCompleteListener { this.dismissLoadingAlert() }
             }
         }
         alert.show()

@@ -41,7 +41,8 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
         val assistants = ArrayList<Pair<String, String>>()
         User.iterate(this.teachingAssistants)
         {
-            index, key, task ->
+            index, _, task ->
+            this.showLoadingAlert()
             task.addOnFailureListener(::showError)
                 .addOnSuccessListener()
                 {
@@ -51,6 +52,7 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
                     if (assistants.size == this.teachingAssistants.size)
                         this.updateTeachingAssistantsListView(assistants)
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 

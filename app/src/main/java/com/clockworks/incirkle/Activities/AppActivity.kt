@@ -11,6 +11,7 @@ import java.lang.Exception
 abstract class AppActivity: AppCompatActivity()
 {
     private var currentAlert: AlertDialog? = null
+    private var progressDialogCount = 0
 
     private fun rootView(): View
     {
@@ -37,10 +38,12 @@ abstract class AppActivity: AppCompatActivity()
             .setAction("Dismiss") { }.show()
     }
 
-    private fun showLoadingAlert()
+    fun showLoadingAlert()
     {
         if (this.currentAlert != null)
             return
+
+        ++this.progressDialogCount
 
         this.window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -52,9 +55,14 @@ abstract class AppActivity: AppCompatActivity()
         this.currentAlert?.show()
     }
 
-    private fun dismissLoadingAlert()
+    fun dismissLoadingAlert()
     {
         if (this.currentAlert == null)
+            return
+
+        --this.progressDialogCount
+
+        if (this.progressDialogCount != 0)
             return
 
         this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)

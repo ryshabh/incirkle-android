@@ -61,11 +61,5 @@
                 android:onClick="login"
                 android:textStyle="bold" />
 
-        <ProgressBar
-                android:id="@+id/progressBar_sign_in"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="invisible"/>
-
     </LinearLayout>
 </LinearLayout>

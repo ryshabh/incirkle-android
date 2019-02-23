@@ -18,9 +18,9 @@ class TimingsActivity : AppCompatActivity(), DetailedListAdapter.DeleteListener
 {
     companion object
     {
-        val REQUEST_CODE = 3
-        val IDENTIFIER_CAN_MODIFY = "Can Modify"
-        val IDENTIFIER_TIMINGS = "Timings"
+        const val REQUEST_CODE = 3
+        const val IDENTIFIER_CAN_MODIFY = "Can Modify"
+        const val IDENTIFIER_TIMINGS = "Timings"
     }
 
     private var timings = ArrayList<Course.Timing>()

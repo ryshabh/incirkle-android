@@ -4,24 +4,21 @@ import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
 import kotlinx.android.synthetic.main.activity_timing.*
 
-class TimingActivity : AppCompatActivity()
+class TimingActivity : AppActivity()
 {
     companion object
     {
-        val REQUEST_CODE = 4
-        val IDENTIFIER_TIMING = "Timing"
-        val IDENTIFIER_TIMING_INDEX = "Timing Index"
+        const val REQUEST_CODE = 4
+        const val IDENTIFIER_TIMING = "Timing"
+        const val IDENTIFIER_TIMING_INDEX = "Timing Index"
     }
 
     private lateinit var timing: Course.Timing
@@ -66,13 +63,12 @@ class TimingActivity : AppCompatActivity()
             }
             catch (e: Exception)
             {
-                Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
+                this.showError(e)
                 timePicker.hour = time.hour
                 timePicker.minute = time.minute
             }
         }
-        val dialog = TimePickerDialog(context, listener, time.hour, time.minute, false)
-        return dialog
+        return TimePickerDialog(context, listener, time.hour, time.minute, false)
     }
 
     fun selectStartTime(v: View)

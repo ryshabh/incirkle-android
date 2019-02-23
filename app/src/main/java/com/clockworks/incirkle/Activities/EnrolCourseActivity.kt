@@ -30,6 +30,7 @@ class EnrolCourseActivity : AppActivity()
     private fun fetchAvailableCoursesForUser(user: User)
     {
         val organisationID = intent.getStringExtra(EnrolCourseActivity.IDENTIFIER_SELECTED_ORGANISATION)
+        this.showLoadingAlert()
         Organisation.reference.document(organisationID).collection("Courses").get()
             .addOnFailureListener()
             {
@@ -60,6 +61,7 @@ class EnrolCourseActivity : AppActivity()
                 this.availableCourses = courses
                 listView_available_courses.adapter = AvailableCourseListAdapter(this, this.availableCourses)
             }
+            .addOnCompleteListener { this.dismissLoadingAlert() }
 
         listView_available_courses.setOnItemClickListener()
         {
@@ -79,6 +81,7 @@ class EnrolCourseActivity : AppActivity()
 
         FirebaseAuth.getInstance().currentUser?.let()
         {
+            this.showLoadingAlert()
             it.documentReference().get()
                 .addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -89,6 +92,7 @@ class EnrolCourseActivity : AppActivity()
                         this.fetchAvailableCoursesForUser(it)
                     }
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 

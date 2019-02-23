@@ -42,6 +42,7 @@ class UserProfileActivity : AppActivity()
         FirebaseAuth.getInstance().currentUser?.let()
         {
             firebaseUser ->
+            this.showLoadingAlert()
             firebaseUser.documentReference().get()
                 .addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -61,12 +62,14 @@ class UserProfileActivity : AppActivity()
                         newUser.reference = FirebaseAuth.getInstance().currentUser?.documentReference()
                         this.update(newUser)
 
+                        this.showLoadingAlert()
                         Organisation.reference.get()
                             .addOnFailureListener(::showError)
                             .addOnSuccessListener()
                             {
                                 it.forEach()
                                 {
+                                    this.showLoadingAlert()
                                     it.reference.collection("Courses").get()
                                         .addOnFailureListener(::showError)
                                         .addOnSuccessListener()
@@ -80,8 +83,10 @@ class UserProfileActivity : AppActivity()
                                                 }
                                             }
                                         }
+                                        .addOnCompleteListener { this.dismissLoadingAlert() }
                                 }
                             }
+                            .addOnCompleteListener { this.dismissLoadingAlert() }
                     }
                     else
                     {
@@ -93,6 +98,7 @@ class UserProfileActivity : AppActivity()
                         }
                     }
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 
@@ -133,6 +139,7 @@ class UserProfileActivity : AppActivity()
         this.user.gender = this.selectedGender()
         this.user.type = this.selectedType()
 
+        this.showLoadingAlert()
         this.user.reference?.set(this.user)
             ?.addOnFailureListener(::showError)
             ?.addOnSuccessListener()
@@ -142,5 +149,6 @@ class UserProfileActivity : AppActivity()
                 startActivity(homeActivityIntent)
                 finish()
             }
+            ?.addOnCompleteListener { this.dismissLoadingAlert() }
     }
 }

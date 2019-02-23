@@ -31,6 +31,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         user.courses.forEach()
         {
             courseReference ->
+            this.showLoadingAlert()
             courseReference.get()
                 .addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -41,6 +42,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                         courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 
@@ -63,6 +65,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         FirebaseApp.initializeApp(this)
         FirebaseAuth.getInstance().currentUser?.let()
         {
+            this.showLoadingAlert()
             it.documentReference().get()
                 .addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -92,6 +95,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                         }
                     }
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
         ?: run()
         {

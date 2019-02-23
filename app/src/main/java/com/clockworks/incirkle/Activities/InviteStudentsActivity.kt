@@ -39,6 +39,7 @@ class InviteStudentsActivity : AppActivity()
         User.iterate(this.invitedStudents)
         {
             index, _, task ->
+            this.showLoadingAlert()
             task.addOnFailureListener(::showError)
                 .addOnSuccessListener()
                 {
@@ -48,6 +49,7 @@ class InviteStudentsActivity : AppActivity()
                     if (students.size == this.invitedStudents.size)
                         this.updateInvitedStudentsListView(students)
                 }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
         }
     }
 
