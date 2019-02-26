@@ -11,7 +11,7 @@
             android:orientation="horizontal">
 
         <ImageView
-                android:id="@+id/imageView_forumPost_posterPicture"
+                android:id="@+id/imageView_assignmentPost_posterPicture"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_gravity="center"
@@ -27,7 +27,7 @@
                 android:gravity="center">
 
             <TextView
-                    android:id="@+id/textView_forumPost_posterName"
+                    android:id="@+id/textView_assignmentPost_posterName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -35,7 +35,7 @@
                     android:textSize="18sp"/>
 
             <TextView
-                    android:id="@+id/textView_forumPost_timestamp"
+                    android:id="@+id/textView_assignmentPost_timestamp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/text_timestamp"/>
@@ -43,7 +43,7 @@
         </LinearLayout>
 
         <ImageButton
-                android:id="@+id/button_forumPost_delete"
+                android:id="@+id/button_assignmentPost_delete"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_margin="5dp"
@@ -54,21 +54,21 @@
     </LinearLayout>
 
     <TextView
-            android:id="@+id/textView_forumPost_name"
+            android:id="@+id/textView_assignmentPost_name"
             android:text="@string/text_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp" />
 
     <TextView
-            android:id="@+id/textView_forumPost_details"
+            android:id="@+id/textView_assignmentPost_details"
             android:text="@string/text_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp" />
 
     <TextView
-            android:id="@+id/textView_forumPost_dueDate"
+            android:id="@+id/textView_assignmentPost_dueDate"
             android:text="@string/text_dueDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
