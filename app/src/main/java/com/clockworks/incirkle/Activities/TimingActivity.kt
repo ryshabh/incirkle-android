@@ -64,8 +64,6 @@ class TimingActivity : AppActivity()
             catch (e: Exception)
             {
                 this.showError(e)
-                timePicker.hour = time.hour
-                timePicker.minute = time.minute
             }
         }
         return TimePickerDialog(context, listener, time.hour, time.minute, false)
