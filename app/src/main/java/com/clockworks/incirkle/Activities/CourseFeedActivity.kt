@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.clockworks.incirkle.Fragments.CourseActivitiesFragment
+import com.clockworks.incirkle.Fragments.CourseAssignmentsFragment
 import com.clockworks.incirkle.Fragments.CourseDocumentsFragment
 import com.clockworks.incirkle.Fragments.CourseForumFragment
 import com.clockworks.incirkle.Interfaces.serialize
@@ -113,7 +114,12 @@ class CourseFeedActivity : AppActivity()
                 }
                 else ->
                 {
-                    return Fragment()
+                    val fragment = CourseAssignmentsFragment()
+                    val bundle = Bundle()
+                    bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
+                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_ADMIN, isAdmin)
+                    fragment.arguments = bundle
+                    return fragment
                 }
             }
         }
