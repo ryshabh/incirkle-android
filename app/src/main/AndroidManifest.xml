@@ -23,18 +23,15 @@
         <activity android:name=".Activities.TimingsActivity">
         </activity>
         <activity
-                android:name=".Activities.TeachingAssistantsActivity"
-                android:parentActivityName=".Activities.CourseInfoActivity">
+                android:name=".Activities.TeachingAssistantsActivity">
         </activity>
         <activity
-                android:name=".Activities.InviteStudentsActivity"
-                android:parentActivityName=".Activities.CourseInfoActivity">
+                android:name=".Activities.InviteStudentsActivity">
         </activity>
         <activity android:name=".Activities.CourseInfoActivity">
         </activity>
         <activity
-                android:name=".Activities.EnrolCourseActivity"
-                android:parentActivityName=".Activities.SelectOrganisationActivity">
+                android:name=".Activities.EnrolCourseActivity">
         </activity>
         <activity
                 android:name=".Activities.SelectOrganisationActivity"
@@ -42,23 +39,19 @@
         </activity>
         <activity
                 android:name=".Activities.UserProfileActivity"
-                android:parentActivityName=".Activities.LoginActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:name=".Activities.LoginEmailActivity"
-                android:parentActivityName=".Activities.LoginActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:name=".Activities.LoginPhoneVerificationActivity"
-                android:parentActivityName=".Activities.LoginPhoneActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:name=".Activities.LoginPhoneActivity"
                 android:label="@string/button_login_phone"
-                android:parentActivityName=".Activities.LoginActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
