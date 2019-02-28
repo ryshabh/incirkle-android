@@ -67,4 +67,11 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp" />
 
+    <Button
+            android:id="@+id/button_documentPost_download_attachment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/text_download_attachment" />
+
 </LinearLayout>

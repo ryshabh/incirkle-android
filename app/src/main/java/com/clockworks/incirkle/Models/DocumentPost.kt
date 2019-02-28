@@ -11,7 +11,7 @@ class DocumentPost(): FirebaseDocument
 
     lateinit var name: String
     lateinit var details: String
-    // TODO: - Attachment
+    var attachmentPath: String = ""
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
 

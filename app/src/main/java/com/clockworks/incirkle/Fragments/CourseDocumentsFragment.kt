@@ -2,6 +2,8 @@ package com.clockworks.incirkle.Fragments
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -17,10 +19,13 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_documents.*
+import kotlinx.android.synthetic.main.fragment_course_documents.view.*
 import kotlinx.android.synthetic.main.list_item_post_document.view.*
 
-class CourseDocumentsFragment(): Fragment()
+class CourseDocumentsFragment(): FileUploaderFragment()
 {
     companion object
     {
@@ -38,6 +43,7 @@ class CourseDocumentsFragment(): Fragment()
             lateinit var deleteButton: ImageButton
             lateinit var nameTextView: TextView
             lateinit var detailsTextView: TextView
+            lateinit var downloadAttachmentButton: Button
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -50,7 +56,13 @@ class CourseDocumentsFragment(): Fragment()
             builder.setPositiveButton("Delete",
             {
                 _, _ ->
-                post.reference?.delete()?.addOnFailureListener() { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                post.reference?.delete()
+                    ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    ?.addOnSuccessListener()
+                    {
+                        FirebaseStorage.getInstance().getReference("Document Attachments").child(post.reference!!.id).delete()
+                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    }
             })
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
@@ -88,6 +100,7 @@ class CourseDocumentsFragment(): Fragment()
                 viewModel.deleteButton = view.button_documentPost_delete
                 viewModel.nameTextView= view.textView_documentPost_name
                 viewModel.detailsTextView = view.textView_documentPost_details
+                viewModel.downloadAttachmentButton = view.button_documentPost_download_attachment
                 view.tag = viewModel
             }
             else
@@ -116,6 +129,7 @@ class CourseDocumentsFragment(): Fragment()
             viewModel.detailsTextView.setText(post.details)
             viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteDocumentPost(post) }
+            viewModel.downloadAttachmentButton.setOnClickListener { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(post.attachmentPath))) }
 
             return view
         }
@@ -133,13 +147,24 @@ class CourseDocumentsFragment(): Fragment()
         this.initialize()
     }
 
+    override fun storageReference(): StorageReference
+    {
+        return FirebaseStorage.getInstance().getReference("Document Attachments")
+    }
+
+    override fun didSelectFile()
+    {
+        button_document_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+    }
+
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
         layout_post_document_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
 
-        val documentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Document Posts")
+        button_document_selectAttachment.setOnClickListener { this.selectFile() }
 
+        val documentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Document Posts")
         button_post_document.setOnClickListener()
         {
             editText_post_document_name.error = null
@@ -157,15 +182,24 @@ class CourseDocumentsFragment(): Fragment()
                 editText_post_document_details.error = "Document description cannot be empty"
                 return@setOnClickListener
             }
+            else if (this.selectedFileUri == null)
+            {
+                button_document_selectAttachment.error = "Attachment is missing"
+            }
             else
             {
                 FirebaseAuth.getInstance().currentUser?.let()
                 {
-                    (this.activity as AppActivity).showLoadingAlert()
+                    val appActivity = this.activity as AppActivity
+                    appActivity.showLoadingAlert()
                     documentPostsReference.add(DocumentPost(name, details, it.documentReference()))
-                        .addOnSuccessListener { this.resetPostLayout() }
-                        .addOnFailureListener { (this.activity as AppActivity).showError(it) }
-                        .addOnCompleteListener { (this.activity as AppActivity).dismissLoadingAlert() }
+                        .addOnFailureListener { appActivity.showError (it) }
+                        .addOnCompleteListener { appActivity.dismissLoadingAlert() }
+                        .addOnSuccessListener()
+                        {
+                            this.resetPostLayout()
+                            this.updateAttachmentPath(it, "attachmentPath")
+                        }
                 }
             }
         }
