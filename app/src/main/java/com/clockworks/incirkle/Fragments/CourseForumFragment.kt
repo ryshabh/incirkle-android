@@ -5,12 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.clockworks.incirkle.Activities.AppActivity
+import com.clockworks.incirkle.Activities.CommentsActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ForumPost
 import com.clockworks.incirkle.Models.User
@@ -22,15 +23,14 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_forum.*
-import kotlinx.android.synthetic.main.fragment_course_forum.view.*
 import kotlinx.android.synthetic.main.list_item_post_forum.view.*
 
 class CourseForumFragment(): FileUploaderFragment()
 {
     companion object
     {
-        val IDENTIFIER_COURSE_PATH = "Course Path"
-        val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_COURSE_PATH = "Course Path"
+        const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
 
     class ForumPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ForumPost>): BaseAdapter()
@@ -132,6 +132,14 @@ class CourseForumFragment(): FileUploaderFragment()
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
+            view.setOnClickListener()
+            {
+                val intent = Intent(context, CommentsActivity::class.java)
+                intent.putExtra(CommentsActivity.IDENTIFIER_IS_ADMIN, isAdmin)
+                intent.putExtra(CommentsActivity.IDENTIFIER_POST_PATH, post.reference!!.path)
+                context.startActivity(intent)
+            }
+
             return view
         }
     }
@@ -205,13 +213,6 @@ class CourseForumFragment(): FileUploaderFragment()
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
             { listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, it) }
-        }
-        listView_courseFeed_forum.setOnItemClickListener()
-        {
-            _, _, position, _ ->
-
-            // TODO: - Show comments page
-            val post = listView_courseFeed_forum.adapter.getItem(position) as ForumPost
         }
     }
 
