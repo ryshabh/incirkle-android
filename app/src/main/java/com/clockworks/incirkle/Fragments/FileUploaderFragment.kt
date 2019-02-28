@@ -71,6 +71,9 @@ abstract class FileUploaderFragment: Fragment()
         val appActivity = activity as AppActivity
         this.selectedFileUri?.let()
         {
+            this.selectedFileUri = null
+            this.didSelectFile()
+
             appActivity.showLoadingAlert()
 
             try
