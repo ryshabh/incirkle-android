@@ -13,6 +13,8 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity android:name=".Activities.CommentsActivity">
+        </activity>
         <activity
                 android:name=".Activities.CourseFeedActivity"
                 android:label="@string/title_activity_course_feed"
@@ -22,16 +24,13 @@
         </activity>
         <activity android:name=".Activities.TimingsActivity">
         </activity>
-        <activity
-                android:name=".Activities.TeachingAssistantsActivity">
+        <activity android:name=".Activities.TeachingAssistantsActivity">
         </activity>
-        <activity
-                android:name=".Activities.InviteStudentsActivity">
+        <activity android:name=".Activities.InviteStudentsActivity">
         </activity>
         <activity android:name=".Activities.CourseInfoActivity">
         </activity>
-        <activity
-                android:name=".Activities.EnrolCourseActivity">
+        <activity android:name=".Activities.EnrolCourseActivity">
         </activity>
         <activity
                 android:name=".Activities.SelectOrganisationActivity"
