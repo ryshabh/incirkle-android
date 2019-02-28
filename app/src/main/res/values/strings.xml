@@ -110,4 +110,7 @@
     <string name="text_date">Date</string>
     <string name="text_time">Time</string>
 
+    <string name="text_select_attachment">Select Attachment</string>
+    <string name="text_download_attachment">Download Attachment</string>
+
 </resources>
