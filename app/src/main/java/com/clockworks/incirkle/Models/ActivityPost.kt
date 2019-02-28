@@ -11,7 +11,7 @@ class ActivityPost(): FirebaseDocument
 
     lateinit var description: String
     lateinit var poster: DocumentReference
-    // TODO: - Attachment
+    var attachmentPath: String? = null
     lateinit var timestamp: Timestamp
 
     constructor(description: String, poster: DocumentReference) : this()

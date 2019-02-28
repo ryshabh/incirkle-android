@@ -60,4 +60,12 @@
             android:layout_margin="5dp"
             android:text="@string/text_description" />
 
+    <Button
+            android:id="@+id/button_activityPost_download_attachment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            android:text="@string/text_download_attachment" />
+
 </LinearLayout>
