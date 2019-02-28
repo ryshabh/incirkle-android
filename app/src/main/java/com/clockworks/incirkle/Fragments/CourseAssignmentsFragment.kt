@@ -4,8 +4,9 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,12 +20,14 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_assignments.*
+import kotlinx.android.synthetic.main.fragment_course_assignments.view.*
 import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
 import java.util.*
-import kotlin.properties.Delegates
 
-class CourseAssignmentsFragment(): Fragment()
+class CourseAssignmentsFragment(): FileUploaderFragment()
 {
     companion object
     {
@@ -44,6 +47,7 @@ class CourseAssignmentsFragment(): Fragment()
             lateinit var nameTextView: TextView
             lateinit var detailsTextView: TextView
             lateinit var dueDateTextView: TextView
+            lateinit var downloadAttachmentButton: Button
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -56,7 +60,13 @@ class CourseAssignmentsFragment(): Fragment()
             builder.setPositiveButton("Delete",
             {
                 _, _ ->
-                post.reference?.delete()?.addOnFailureListener() { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                post.reference?.delete()
+                    ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    ?.addOnSuccessListener()
+                    {
+                        FirebaseStorage.getInstance().getReference("Assignment Attachments").child(post.reference!!.id).delete()
+                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    }
             })
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
@@ -95,6 +105,7 @@ class CourseAssignmentsFragment(): Fragment()
                 viewModel.nameTextView= view.textView_assignmentPost_name
                 viewModel.detailsTextView = view.textView_assignmentPost_details
                 viewModel.dueDateTextView = view.textView_assignmentPost_dueDate
+                viewModel.downloadAttachmentButton = view.button_assignmentPost_download_attachment
                 view.tag = viewModel
             }
             else
@@ -129,6 +140,8 @@ class CourseAssignmentsFragment(): Fragment()
             viewModel.dueDateTextView.text = dueDate
             viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener { this.deleteAssignmentPost(post) }
+            viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+            viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
             return view
         }
@@ -146,11 +159,20 @@ class CourseAssignmentsFragment(): Fragment()
         this.initialize()
     }
 
+    override fun storageReference(): StorageReference
+    {
+        return FirebaseStorage.getInstance().getReference("Activity Attachments")
+    }
+
+    override fun didSelectFile()
+    {
+        button_assignment_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+    }
+
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
         layout_post_assignment_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
-
 
         this.button_post_assignment_dueDate.text = android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
         button_post_assignment_dueDate.setOnClickListener()
@@ -184,8 +206,9 @@ class CourseAssignmentsFragment(): Fragment()
             TimePickerDialog(context, listener, hour, minute, false).show()
         }
 
-        val assignmentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Assignment Posts")
+        button_assignment_selectAttachment.setOnClickListener { this.selectFile() }
 
+        val assignmentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Assignment Posts")
         button_post_assignment.setOnClickListener()
         {
             editText_post_assignment_name.error = null
@@ -208,11 +231,16 @@ class CourseAssignmentsFragment(): Fragment()
             {
                 FirebaseAuth.getInstance().currentUser?.let()
                 {
-                    (this.activity as AppActivity).showLoadingAlert()
+                    val appActivity = this.activity as AppActivity
+                    appActivity.showLoadingAlert()
                     assignmentPostsReference.add(AssignmentPost(name, details, this.calendar.time, it.documentReference()))
-                        .addOnSuccessListener { this.resetPostLayout() }
-                        .addOnFailureListener { (this.activity as AppActivity).showError(it) }
-                        .addOnCompleteListener { (this.activity as AppActivity).dismissLoadingAlert() }
+                        .addOnFailureListener { appActivity.showError (it) }
+                        .addOnCompleteListener { appActivity.dismissLoadingAlert() }
+                        .addOnSuccessListener()
+                        {
+                            this.resetPostLayout()
+                            this.updateAttachmentPath(it, "attachmentPath")
+                        }
                 }
             }
         }
