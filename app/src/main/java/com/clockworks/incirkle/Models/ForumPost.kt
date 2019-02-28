@@ -12,7 +12,7 @@ class ForumPost(): FirebaseDocument
 
     lateinit var name: String
     lateinit var description: String
-    // TODO: - Attachment
+    var attachmentPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
     var comments = ArrayList<Comment>()

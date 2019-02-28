@@ -2,6 +2,8 @@ package com.clockworks.incirkle.Fragments
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -17,10 +19,13 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_forum.*
+import kotlinx.android.synthetic.main.fragment_course_forum.view.*
 import kotlinx.android.synthetic.main.list_item_post_forum.view.*
 
-class CourseForumFragment(): Fragment()
+class CourseForumFragment(): FileUploaderFragment()
 {
     companion object
     {
@@ -38,6 +43,7 @@ class CourseForumFragment(): Fragment()
             lateinit var deleteButton: ImageButton
             lateinit var nameTextView: TextView
             lateinit var descriptionTextView: TextView
+            lateinit var downloadAttachmentButton: Button
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -50,7 +56,13 @@ class CourseForumFragment(): Fragment()
             builder.setPositiveButton("Delete")
             {
                 _, _ ->
-                post.reference?.delete()?.addOnFailureListener() { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                post.reference?.delete()
+                    ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    ?.addOnSuccessListener()
+                    {
+                        FirebaseStorage.getInstance().getReference("Forum Attachments").child(post.reference!!.id).delete()
+                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    }
             }
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
@@ -88,6 +100,7 @@ class CourseForumFragment(): Fragment()
                 viewModel.deleteButton = view.button_forumPost_delete
                 viewModel.nameTextView= view.textView_forumPost_name
                 viewModel.descriptionTextView = view.textView_forumPost_details
+                viewModel.downloadAttachmentButton = view.button_forumPost_download_attachment
                 view.tag = viewModel
             }
             else
@@ -116,6 +129,8 @@ class CourseForumFragment(): Fragment()
             viewModel.descriptionTextView.setText(post.description)
             viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteForumPost(post) }
+            viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+            viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
             return view
         }
@@ -133,11 +148,23 @@ class CourseForumFragment(): Fragment()
         this.initialize()
     }
 
+    override fun storageReference(): StorageReference
+    {
+        return FirebaseStorage.getInstance().getReference("Forum Attachments")
+    }
+
+    override fun didSelectFile()
+    {
+        button_forum_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+    }
+
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
-        val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
 
+        button_forum_selectAttachment.setOnClickListener { this.selectFile() }
+
+        val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
         button_post_forum.setOnClickListener()
         {
             editText_post_forum_name.error = null
@@ -159,11 +186,16 @@ class CourseForumFragment(): Fragment()
             {
                 FirebaseAuth.getInstance().currentUser?.let()
                 {
-                    (this.activity as AppActivity).showLoadingAlert()
+                    val appActivity = this.activity as AppActivity
+                    appActivity.showLoadingAlert()
                     forumPostsReference.add(ForumPost(name, description, it.documentReference()))
-                        .addOnSuccessListener { this.resetPostLayout() }
-                        .addOnFailureListener { (this.activity as AppActivity).showError(it) }
-                        .addOnCompleteListener { (this.activity as AppActivity).dismissLoadingAlert() }
+                        .addOnFailureListener { appActivity.showError (it) }
+                        .addOnCompleteListener { appActivity.dismissLoadingAlert() }
+                        .addOnSuccessListener()
+                        {
+                            this.resetPostLayout()
+                            this.updateAttachmentPath(it, "attachmentPath")
+                        }
                 }
             }
         }
