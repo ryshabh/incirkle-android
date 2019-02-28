@@ -56,7 +56,7 @@ class CourseAssignmentsFragment(): Fragment()
             builder.setPositiveButton("Delete",
             {
                 _, _ ->
-                post.reference?.delete()?.addOnFailureListener() { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
+                post.reference?.delete()?.addOnFailureListener() { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
             })
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
@@ -107,7 +107,7 @@ class CourseAssignmentsFragment(): Fragment()
             {
                 task ->
 
-                task.exception?.let { Toast.makeText(context, it.toString(), Toast.LENGTH_LONG).show() }
+                task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
                 ?: task.result?.serialize(User::class.java)?.let()
                 {
                     viewModel.posterNameTextView.setText(it.fullName())

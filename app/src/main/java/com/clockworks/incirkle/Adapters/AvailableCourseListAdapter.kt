@@ -63,7 +63,7 @@ class AvailableCourseListAdapter(context: Context, private var dataSource: Array
         course.teacher.addSnapshotListener()
         {
             task, e ->
-            viewModel.teacherName.error = e?.toString()
+            viewModel.teacherName.error = e?.localizedMessage
             viewModel.teacherName.text = task?.serialize(User::class.java)?.fullName() ?: ""
         }
 
