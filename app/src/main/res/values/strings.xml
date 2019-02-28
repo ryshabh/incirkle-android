@@ -113,4 +113,6 @@
     <string name="text_select_attachment">Select Attachment</string>
     <string name="text_download_attachment">Download Attachment</string>
 
+    <string name="text_content">Content</string>
+
 </resources>
