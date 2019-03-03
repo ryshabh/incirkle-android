@@ -30,15 +30,17 @@ class CourseForumFragment(): FileUploaderFragment()
     companion object
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
+        const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
 
-    class ForumPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ForumPost>): BaseAdapter()
+    class ForumPostAdapter(private val context: Context, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<ForumPost>): BaseAdapter()
     {
         private class ViewModel
         {
             lateinit var posterPictureImageView: ImageView
             lateinit var posterNameTextView: TextView
+            lateinit var instructorTextView: TextView
             lateinit var timestampTextView: TextView
             lateinit var deleteButton: ImageButton
             lateinit var nameTextView: TextView
@@ -96,6 +98,7 @@ class CourseForumFragment(): FileUploaderFragment()
                 viewModel = ViewModel()
                 viewModel.posterPictureImageView = view.imageView_forumPost_posterPicture
                 viewModel.posterNameTextView = view.textView_forumPost_posterName
+                viewModel.instructorTextView = view.textView_forumPost_instructor
                 viewModel.timestampTextView = view.textView_forumPost_timestamp
                 viewModel.deleteButton = view.button_forumPost_delete
                 viewModel.nameTextView= view.textView_forumPost_name
@@ -121,6 +124,7 @@ class CourseForumFragment(): FileUploaderFragment()
                 }
             }
 
+            viewModel.instructorTextView.visibility = if (post.poster.path == teacherPath) View.VISIBLE else View.GONE
             val date = android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
             val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
             val timestamp = "$time $date"
@@ -212,7 +216,8 @@ class CourseForumFragment(): FileUploaderFragment()
             result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
-            { listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, it) }
+            { listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, arguments?.getString(
+                IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
         }
     }
 
