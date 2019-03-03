@@ -115,4 +115,6 @@
 
     <string name="text_content">Content</string>
 
+    <string name="text_instructor">(Instructor)</string>
+
 </resources>
