@@ -28,6 +28,7 @@ class CourseFeedActivity : AppActivity()
     companion object
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
+        const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
     }
 
     private lateinit var courseReference: DocumentReference
@@ -99,6 +100,8 @@ class CourseFeedActivity : AppActivity()
                     val fragment = CourseForumFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
+                    bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
+                        IDENTIFIER_COURSE_TEACHER_PATH))
                     bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_ADMIN, isAdmin)
                     fragment.arguments = bundle
                     return fragment

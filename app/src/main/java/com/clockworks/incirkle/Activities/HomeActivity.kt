@@ -110,6 +110,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
             val course = this.courses[position]
             val intent = Intent(this, CourseFeedActivity::class.java)
             intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_PATH, course.reference!!.path)
+            intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_TEACHER_PATH, course.teacher.path)
             startActivity(intent)
         }
     }
