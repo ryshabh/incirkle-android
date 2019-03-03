@@ -15,6 +15,7 @@ import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
@@ -24,26 +25,33 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 {
     private var courses = ArrayList<Course>()
     private var isUserTeacher = false
+    private var listenerRegistrations = ArrayList<ListenerRegistration>()
 
-    private fun getCoursesForUser(user: User)
+    private fun autofetchCourses(user: User)
     {
-        this.courses = ArrayList<Course>()
-        user.courses.forEach()
+        this.courses = ArrayList()
+        this.listenerRegistrations.forEach { it.remove() }
+        this.listenerRegistrations = ArrayList(user.courses.map()
         {
-            courseReference ->
-            this.showLoadingAlert()
-            courseReference.get()
-                .addOnFailureListener(::showError)
-                .addOnSuccessListener()
+            it.addSnapshotListener()
+            {
+                result, exception ->
+                exception?.let { this.showError(it) }
+                ?: result?.let()
                 {
                     this.performThrowable { it.serialize(Course::class.java) }?.let()
                     {
-                        this.courses.add(it)
+                        course ->
+                        val existingCourses = this.courses.filter { c -> c.reference == it }
+                        if (existingCourses.isEmpty())
+                            this.courses.add(course)
+                        else
+                            existingCourses.forEach { this.courses[this.courses.indexOf(it)] = course }
                         courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
                 }
-                .addOnCompleteListener { this.dismissLoadingAlert() }
-        }
+            }
+        })
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -65,20 +73,21 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         FirebaseApp.initializeApp(this)
         FirebaseAuth.getInstance().currentUser?.let()
         {
-            this.showLoadingAlert()
-            it.documentReference().get()
-                .addOnFailureListener(::showError)
-                .addOnSuccessListener()
+            it.documentReference().addSnapshotListener()
+            {
+                result, exception ->
+
+                exception?.let { this.showError(it) }
+                result?.let()
                 {
-                    snapshot ->
-                    if (snapshot.data.isNullOrEmpty())
+                    if (it.data.isNullOrEmpty())
                     {
                         startActivity(Intent(this, UserProfileActivity::class.java))
                         finish()
                     }
                     else
                     {
-                        this.performThrowable { snapshot.serialize(User::class.java) }?.let()
+                        this.performThrowable { it.serialize(User::class.java) }?.let()
                         { user ->
                             textView_user_name.text = user.fullName()
                             textView_user_id.text = user.userID()
@@ -91,11 +100,11 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                                 finish()
                             }
                             else
-                                this.getCoursesForUser(user)
+                                this.autofetchCourses(user)
                         }
                     }
                 }
-                .addOnCompleteListener { this.dismissLoadingAlert() }
+            }
         }
         ?: run()
         {
