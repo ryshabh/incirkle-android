@@ -117,4 +117,8 @@
 
     <string name="text_instructor">(Instructor)</string>
 
+    <string name="text_submit_solution">Submit Solution</string>
+    <string name="text_view_submitted_solution">View Submitted Solution</string>
+    <string name="text_resubmit_solution">Re-Submit Solution</string>
+
 </resources>
