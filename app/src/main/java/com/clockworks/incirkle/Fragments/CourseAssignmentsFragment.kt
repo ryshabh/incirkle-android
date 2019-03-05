@@ -31,10 +31,11 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
     }
     private val calendar = Calendar.getInstance()
 
-    class AssignmentPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<AssignmentPost>): BaseAdapter()
+    class AssignmentPostAdapter(private val context: Context, val uploaderFragment: FileUploaderFragment, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<AssignmentPost>): BaseAdapter()
     {
         private class ViewModel
         {
@@ -46,6 +47,9 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var detailsTextView: TextView
             lateinit var dueDateTextView: TextView
             lateinit var downloadAttachmentButton: Button
+            lateinit var submitSolutionButton: Button
+            lateinit var viewSubmissionButton: Button
+            lateinit var resubmitSolutionButton: Button
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -104,6 +108,9 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.detailsTextView = view.textView_assignmentPost_details
                 viewModel.dueDateTextView = view.textView_assignmentPost_dueDate
                 viewModel.downloadAttachmentButton = view.button_assignmentPost_download_attachment
+                viewModel.submitSolutionButton= view.button_assignmentPost_submit_solution
+                viewModel.viewSubmissionButton = view.button_assignmentPost_view_submitted_solution
+                viewModel.resubmitSolutionButton = view.button_assignmentPost_resubmit_solution
                 view.tag = viewModel
             }
             else
@@ -140,6 +147,49 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             viewModel.deleteButton.setOnClickListener { this.deleteAssignmentPost(post) }
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+
+            FirebaseAuth.getInstance().currentUser?.documentReference()?.let()
+            {
+                val isTeacher = it.path == teacherPath
+                val submissionReference = post.submissionsReferece().document(it.id)
+                submissionReference.get()
+                    .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    .addOnSuccessListener()
+                    {
+                        val isSubmitted = it.exists()
+                        viewModel.submitSolutionButton.visibility = if (isTeacher || isSubmitted) View.GONE else View.VISIBLE
+                        view.linearLayout_submitted_solution.visibility = if (isTeacher || !isSubmitted) View.GONE else View.VISIBLE
+                    }
+
+                val postAssignmentsStorage = FirebaseStorage.getInstance().getReference("Assignments").child(post.reference!!.id)
+                val submissionStorageReference = postAssignmentsStorage.child("Submissions").child(it.id)
+                viewModel.submitSolutionButton.setOnClickListener()
+                {
+                    uploaderFragment.selectFile()
+                    {
+                        submissionReference.set(AssignmentPost.Submission())
+                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                            .addOnSuccessListener()
+                            {
+                                uploaderFragment.updateAttachmentPath(submissionReference, submissionStorageReference, "submissionPath")
+                                {
+                                    viewModel.submitSolutionButton.visibility = View.GONE
+                                    view.linearLayout_submitted_solution.visibility = View.VISIBLE
+                                }
+                            }
+                    }
+                }
+                viewModel.viewSubmissionButton.setOnClickListener()
+                {
+                    submissionReference.get()
+                        .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                        .addOnSuccessListener { it.serialize(AssignmentPost.Submission::class.java).let { it.submissionPath.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } } }
+                }
+                viewModel.resubmitSolutionButton
+                    .setOnClickListener { uploaderFragment
+                        .selectFile { uploaderFragment
+                            .updateAttachmentPath(submissionReference, submissionStorageReference, "submissionPath") } }
+            }
 
             return view
         }
@@ -237,7 +287,8 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(AssignmentPost::class.java) }?.let()
-            { listView_courseFeed_assignments.adapter = AssignmentPostAdapter(context!!, isAdmin, it) }
+            { listView_courseFeed_assignments.adapter = AssignmentPostAdapter(context!!, this, isAdmin, arguments?.getString(
+                IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
         }
     }
 

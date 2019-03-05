@@ -82,4 +82,38 @@
             android:visibility="gone"
             android:text="@string/text_download_attachment" />
 
+    <Button
+            android:id="@+id/button_assignmentPost_submit_solution"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="visible"
+            android:text="@string/text_submit_solution" />
+
+    <LinearLayout
+            android:id="@+id/linearLayout_submitted_solution"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <Button
+                android:id="@+id/button_assignmentPost_view_submitted_solution"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="5dp"
+                android:visibility="visible"
+                android:text="@string/text_view_submitted_solution" />
+
+        <Button
+                android:id="@+id/button_assignmentPost_resubmit_solution"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="5dp"
+                android:visibility="visible"
+                android:text="@string/text_resubmit_solution" />
+
+    </LinearLayout>
+
 </LinearLayout>

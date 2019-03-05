@@ -120,6 +120,8 @@ class CourseFeedActivity : AppActivity()
                     val fragment = CourseAssignmentsFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
+                    bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
+                        IDENTIFIER_COURSE_TEACHER_PATH))
                     bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_ADMIN, isAdmin)
                     fragment.arguments = bundle
                     return fragment
