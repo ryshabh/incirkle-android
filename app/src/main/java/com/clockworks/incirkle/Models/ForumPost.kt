@@ -15,7 +15,6 @@ class ForumPost(): FirebaseDocument
     var attachmentPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
-    var comments = ArrayList<Comment>()
 
     constructor(name: String, description: String, poster: DocumentReference) : this()
     {
