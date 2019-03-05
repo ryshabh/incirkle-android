@@ -21,9 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_assignments.*
-import kotlinx.android.synthetic.main.fragment_course_assignments.view.*
 import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
 import java.util.*
 
@@ -159,16 +157,6 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
         this.initialize()
     }
 
-    override fun storageReference(): StorageReference
-    {
-        return FirebaseStorage.getInstance().getReference("Activity Attachments")
-    }
-
-    override fun didSelectFile()
-    {
-        button_assignment_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
-    }
-
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
@@ -206,7 +194,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             TimePickerDialog(context, listener, hour, minute, false).show()
         }
 
-        button_assignment_selectAttachment.setOnClickListener { this.selectFile() }
+        button_assignment_selectAttachment.setOnClickListener { this.selectFile { button_assignment_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
 
         val assignmentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Assignment Posts")
         button_post_assignment.setOnClickListener()
@@ -239,7 +227,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                         .addOnSuccessListener()
                         {
                             this.resetPostLayout()
-                            this.updateAttachmentPath(it, "attachmentPath")
+                            this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id), "attachmentPath")
                         }
                 }
             }

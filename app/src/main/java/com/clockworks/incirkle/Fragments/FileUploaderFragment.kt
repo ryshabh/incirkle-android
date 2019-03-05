@@ -43,16 +43,17 @@ abstract class FileUploaderFragment: Fragment()
 {
     private val PICK_FILE_REQUEST = 1
 
-    abstract fun storageReference(): StorageReference
-
     var selectedFileUri: Uri? = null
+        private set
+    private var didSelectFile: () -> Unit = { }
 
-    fun selectFile()
+    fun selectFile(onSelection: () -> Unit)
     {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.flags = FLAG_GRANT_READ_URI_PERMISSION
         intent.type = "*/*"
         (this.activity as? AppActivity)?.performThrowable { startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), PICK_FILE_REQUEST) }
+        this.didSelectFile = onSelection
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
@@ -64,9 +65,7 @@ abstract class FileUploaderFragment: Fragment()
         }
     }
 
-    abstract fun didSelectFile()
-
-    fun updateAttachmentPath(documentReference: DocumentReference, fieldPath: String)
+    fun updateAttachmentPath(documentReference: DocumentReference, fileReference: StorageReference, fieldPath: String, onSuccess: () -> Unit = { })
     {
         val appActivity = activity as AppActivity
         this.selectedFileUri?.let()
@@ -78,7 +77,6 @@ abstract class FileUploaderFragment: Fragment()
 
             try
             {
-                val fileReference = this.storageReference().child(documentReference.id)
                 fileReference.putFile(it).continueWith()
                 {
                     if (!it.isSuccessful)

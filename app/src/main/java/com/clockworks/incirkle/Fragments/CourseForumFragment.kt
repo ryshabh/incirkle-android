@@ -160,21 +160,11 @@ class CourseForumFragment(): FileUploaderFragment()
         this.initialize()
     }
 
-    override fun storageReference(): StorageReference
-    {
-        return FirebaseStorage.getInstance().getReference("Forum Attachments")
-    }
-
-    override fun didSelectFile()
-    {
-        button_forum_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
-    }
-
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
 
-        button_forum_selectAttachment.setOnClickListener { this.selectFile() }
+        button_forum_selectAttachment.setOnClickListener { this.selectFile { button_forum_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
 
         val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
         button_post_forum.setOnClickListener()
@@ -206,7 +196,7 @@ class CourseForumFragment(): FileUploaderFragment()
                         .addOnSuccessListener()
                         {
                             this.resetPostLayout()
-                            this.updateAttachmentPath(it, "attachmentPath")
+                            this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Forum Attachments").child(it.id), "attachmentPath")
                         }
                 }
             }

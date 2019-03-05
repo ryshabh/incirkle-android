@@ -144,22 +144,12 @@ class CourseActivitiesFragment(): FileUploaderFragment()
         this.initialize()
     }
 
-    override fun storageReference(): StorageReference
-    {
-        return FirebaseStorage.getInstance().getReference("Activity Attachments")
-    }
-
-    override fun didSelectFile()
-    {
-        button_activity_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
-    }
-
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
         layout_post_activity_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
 
-        button_activity_selectAttachment.setOnClickListener { this.selectFile() }
+        button_activity_selectAttachment.setOnClickListener { this.selectFile { button_activity_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
 
         val activityPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Activity Posts")
         button_post_activity.setOnClickListener()
@@ -184,7 +174,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                         .addOnSuccessListener()
                         {
                             this.resetPostLayout()
-                            this.updateAttachmentPath(it, "attachmentPath")
+                            this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id), "attachmentPath")
                         }
                 }
             }
