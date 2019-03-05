@@ -2,16 +2,15 @@ package com.clockworks.incirkle.Activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.View
-import android.widget.Toast
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.android.synthetic.main.activity_login_phone_verification.*
+
 
 class LoginPhoneVerificationActivity : AppActivity()
 {
@@ -57,10 +56,10 @@ class LoginPhoneVerificationActivity : AppActivity()
             .addOnCompleteListener { this.dismissLoadingAlert() }
     }
 
-    fun signIn()
+    private fun signIn()
     {
         val homeActivityIntent = Intent(this, HomeActivity::class.java)
-        homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(homeActivityIntent)
         finish()
     }

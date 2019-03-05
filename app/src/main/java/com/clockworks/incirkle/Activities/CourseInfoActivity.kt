@@ -36,6 +36,14 @@ class CourseInfoActivity : AppActivity()
     private var privilege = PRIVILEGE.NONE
     private var isCourseEnrolled = false
 
+    private fun goHome()
+    {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(intent)
+        finish()
+    }
+
     private fun updateCourse(course: Course)
     {
         this.course = course
@@ -116,14 +124,6 @@ class CourseInfoActivity : AppActivity()
 
     private fun updateAllUsers(courseReference: DocumentReference)
     {
-        fun goHome()
-        {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
-
         // Update all Invited Students & Teachers
         val allUsers = (this.course.teachingAssistants + this.course.invitedStudents)
 
@@ -182,7 +182,7 @@ class CourseInfoActivity : AppActivity()
                                     .addOnCompleteListener()
                                     {
                                         this.dismissLoadingAlert()
-                                        this.finish()
+                                        this.goHome()
                                     }
                             }
                         }
@@ -238,8 +238,8 @@ class CourseInfoActivity : AppActivity()
                     _ ->
                     if (courseIDString.equals(course.password, false))
                     {
-                        saveCourse()
                         dialogInterface.dismiss()
+                        saveCourse()
                     }
                     else
                         coursePasswordEditText.error = "Incorrect Course Password"
