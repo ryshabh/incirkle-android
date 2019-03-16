@@ -41,6 +41,12 @@ class LoginPhoneActivity : AppActivity()
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
         })
+        var user = FirebaseAuth.getInstance().currentUser;
+
+        if (user != null) {
+            signIn()
+            // User is signed in.
+        }
     }
 
     private fun setProgress(case: Boolean)
@@ -81,9 +87,17 @@ class LoginPhoneActivity : AppActivity()
                         FirebaseAuth.getInstance().signInWithCredential(credential)
                             .addOnCompleteListener()
                             {
+
                                 task ->
                                 task.exception?.let { this@LoginPhoneActivity.showError(it) }
+
                                 ?: run { Toast.makeText(this@LoginPhoneActivity, "Successfully Verified", Toast.LENGTH_LONG).show() }
+
+                                setProgress(false)
+                                val homeActivityIntent = Intent(applicationContext, HomeActivity::class.java)
+                                homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                startActivity(homeActivityIntent)
+                                finish()
                             }
                     }
 
@@ -111,5 +125,12 @@ class LoginPhoneActivity : AppActivity()
                     }
                 })
         }
+    }
+    private fun signIn()
+    {
+        val homeActivityIntent = Intent(this, HomeActivity::class.java)
+        homeActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(homeActivityIntent)
+        finish()
     }
 }

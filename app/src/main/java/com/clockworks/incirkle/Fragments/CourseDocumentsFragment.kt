@@ -43,7 +43,7 @@ class CourseDocumentsFragment(): FileUploaderFragment()
             lateinit var deleteButton: ImageButton
             lateinit var nameTextView: TextView
             lateinit var detailsTextView: TextView
-            lateinit var downloadAttachmentButton: Button
+            lateinit var downloadAttachmentButton: TextView
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

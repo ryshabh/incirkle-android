@@ -101,6 +101,7 @@
     <string name="text_timestamp">Timestamp</string>
     <string name="text_post">Post</string>
 
+    <string name="text_title">Description</string>
     <string name="text_description">Description</string>
 
     <string name="text_name">Name</string>
@@ -111,7 +112,7 @@
     <string name="text_time">Time</string>
 
     <string name="text_select_attachment">Select Attachment</string>
-    <string name="text_download_attachment">Download Attachment</string>
+    <string name="text_download_attachment">Attachment</string>
 
     <string name="text_content">Content</string>
 
@@ -120,5 +121,9 @@
     <string name="text_submit_solution">Submit Solution</string>
     <string name="text_view_submitted_solution">View Submitted Solution</string>
     <string name="text_resubmit_solution">Re-Submit Solution</string>
+
+    <string name="text_post_solution">Post Solution</string>
+    <string name="text_view_solution">View Solution</string>
+    <string name="text_attachment">1 Attachment</string>
 
 </resources>

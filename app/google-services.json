@@ -1,0 +1,71 @@
+{
+  "project_info": {
+    "project_number": "1060165628098",
+    "firebase_url": "https://incirkle-android-app.firebaseio.com",
+    "project_id": "incirkle-android-app",
+    "storage_bucket": "incirkle-android-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060165628098:android:5a0065e0daa74b0a",
+        "android_client_info": {
+          "package_name": "com.clockworks.incirkle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1060165628098-jdstuef8hfs4r2uito0qethocn81al31.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clockworks.incirkle",
+            "certificate_hash": "a3ed32ceb1b6e5dad5b8b3cd39fc6fff72a64701"
+          }
+        },
+        {
+          "client_id": "1060165628098-kfcqdo6jbp1ne56omhnboc7glk8f2de2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clockworks.incirkle",
+            "certificate_hash": "768e714beb49047d4707647c1a7bfb0f63b146a4"
+          }
+        },
+        {
+          "client_id": "1060165628098-q2t709bi7h5ced9pl0p1staajcnulpbl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clockworks.incirkle",
+            "certificate_hash": "63129ad308b22d5efabfded4f95424af12a89ee6"
+          }
+        },
+        {
+          "client_id": "1060165628098-kg259tt0lcb6i87u2anvl4dvqc2e5p39.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8ATISOG7b5uhxuWFjN8dO4m_mGl1U_Tw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1060165628098-kg259tt0lcb6i87u2anvl4dvqc2e5p39.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

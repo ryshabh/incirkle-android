@@ -172,7 +172,7 @@ class CourseInfoActivity : AppActivity()
                         {
                             this.performThrowable { it.serialize(User::class.java) }?.let()
                             {
-                                if (this.courseID == null)
+                                if (this.courseID != null)
                                     it.courses.add(courseReference)
 
                                 this.showLoadingAlert()

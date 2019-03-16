@@ -24,6 +24,8 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_forum.*
 import kotlinx.android.synthetic.main.list_item_post_forum.view.*
+import kotlinx.android.synthetic.main.fragment_course_forum.view.*
+import kotlinx.android.synthetic.main.list_item_post_forum.view.*
 
 class CourseForumFragment(): FileUploaderFragment()
 {
@@ -33,6 +35,8 @@ class CourseForumFragment(): FileUploaderFragment()
         const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
+    private var root: View? = null
+
 
     class ForumPostAdapter(private val context: Context, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<ForumPost>): BaseAdapter()
     {
@@ -150,8 +154,8 @@ class CourseForumFragment(): FileUploaderFragment()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
-        val rootView = inflater.inflate(R.layout.fragment_course_forum, container, false)
-        return rootView
+        root = inflater.inflate(R.layout.fragment_course_forum, container, false)
+        return root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?)
@@ -206,7 +210,7 @@ class CourseForumFragment(): FileUploaderFragment()
             result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
-            { listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, arguments?.getString(
+            { root!!.listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, arguments?.getString(
                 IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
         }
     }

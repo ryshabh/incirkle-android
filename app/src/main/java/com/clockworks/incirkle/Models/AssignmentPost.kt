@@ -15,6 +15,7 @@ class AssignmentPost(): FirebaseDocument
     lateinit var details: String
     lateinit var dueDate: Timestamp
     var attachmentPath: String? = null
+    var solutionPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
 

@@ -48,7 +48,8 @@ class LoginPhoneVerificationActivity : AppActivity()
 
     fun verify(v: View)
     {
-        val credential = PhoneAuthProvider.getCredential(this.mVerificationId, this.editText_verification_code.text.toString())
+
+       val credential = PhoneAuthProvider.getCredential(this.mVerificationId, this.editText_verification_code.text.toString())
         this.showLoadingAlert()
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnFailureListener(::showError)

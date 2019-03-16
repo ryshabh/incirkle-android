@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.v7.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/card_view"
+        android:layout_margin="10dp"
+        app:cardBackgroundColor="@color/cardview_light_background"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:contentPadding="4dp" >
+
+
+<LinearLayout
               android:orientation="vertical"
               android:layout_width="match_parent"
+              android:layout_margin="5dp"
               android:layout_height="match_parent">
+
+
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -42,6 +57,12 @@
 
         </LinearLayout>
 
+        <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_menu"
+                android:layout_gravity="end"/>
+
         <ImageButton
                 android:id="@+id/button_assignmentPost_delete"
                 android:layout_width="25dp"
@@ -53,24 +74,53 @@
 
     </LinearLayout>
 
+<LinearLayout
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="0.7">
     <TextView
             android:id="@+id/textView_assignmentPost_name"
             android:text="@string/text_name"
             android:layout_width="match_parent"
+            android:textSize="18dp"
+            android:textStyle="bold"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_margin="5dp" />
 
-    <TextView
-            android:id="@+id/textView_assignmentPost_details"
-            android:text="@string/text_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="0.3"
+            android:layout_height="match_parent">
 
     <TextView
             android:id="@+id/textView_assignmentPost_dueDate"
             android:text="@string/text_dueDate"
+            android:layout_weight="0.8"
+            android:textSize="12dp"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp" />
+    </LinearLayout>
+</LinearLayout>
+
+    <TextView
+            android:id="@+id/textView_assignmentPost_details"
+            android:text="@string/text_details"
+            android:layout_weight="1"
+              android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp" />
 
@@ -83,17 +133,75 @@
             android:text="@string/text_download_attachment" />
 
     <Button
+            android:id="@+id/button_assignmentPost_post_solution"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            android:text="@string/text_post_solution" />
+
+    <Button
+            android:id="@+id/button_assignmentPost_view_solution"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            android:text="@string/text_view_solution" />
+
+    <Button
             android:id="@+id/button_assignmentPost_submit_solution"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:visibility="visible"
+            android:visibility="gone"
             android:text="@string/text_submit_solution" />
+
+    <View android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:background="@android:color/darker_gray"/>
+
+
+    <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+         >
+
+<LinearLayout
+        android:id="@+id/linearLayout_submit_solution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_marginStart="15dp"
+                   android:src="@drawable/ic_navigation"/>
+
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Submit"/>
+</LinearLayout>
+        <TextView
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|end"
+                android:gravity="end|right"
+                android:text="last Submitted,8:22AM/2/2/2019"/>
+
+
+    </LinearLayout>
 
     <LinearLayout
             android:id="@+id/linearLayout_submitted_solution"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="horizontal">
 
         <Button
@@ -102,7 +210,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="5dp"
-                android:visibility="visible"
                 android:text="@string/text_view_submitted_solution" />
 
         <Button
@@ -111,9 +218,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="5dp"
-                android:visibility="visible"
                 android:text="@string/text_resubmit_solution" />
 
     </LinearLayout>
 
 </LinearLayout>
+
+</android.support.v7.widget.CardView>

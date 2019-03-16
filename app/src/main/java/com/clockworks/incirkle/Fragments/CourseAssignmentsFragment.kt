@@ -47,6 +47,8 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var detailsTextView: TextView
             lateinit var dueDateTextView: TextView
             lateinit var downloadAttachmentButton: Button
+            lateinit var postSolutionButton: Button
+            lateinit var viewSolutionButton: Button
             lateinit var submitSolutionButton: Button
             lateinit var viewSubmissionButton: Button
             lateinit var resubmitSolutionButton: Button
@@ -108,6 +110,8 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.detailsTextView = view.textView_assignmentPost_details
                 viewModel.dueDateTextView = view.textView_assignmentPost_dueDate
                 viewModel.downloadAttachmentButton = view.button_assignmentPost_download_attachment
+                viewModel.postSolutionButton= view.button_assignmentPost_post_solution
+                viewModel.viewSolutionButton= view.button_assignmentPost_view_solution
                 viewModel.submitSolutionButton= view.button_assignmentPost_submit_solution
                 viewModel.viewSubmissionButton = view.button_assignmentPost_view_submitted_solution
                 viewModel.resubmitSolutionButton = view.button_assignmentPost_resubmit_solution
@@ -148,10 +152,29 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
+            viewModel.viewSolutionButton.visibility = if (post.solutionPath != null) View.VISIBLE else View.GONE
+            viewModel.viewSolutionButton.setOnClickListener { post.solutionPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+
+            val postAssignmentsStorage = FirebaseStorage.getInstance().getReference("Assignments").child(post.reference!!.id)
+            viewModel.postSolutionButton.setOnClickListener()
+            {
+                uploaderFragment.selectFile()
+                {
+                    uploaderFragment.updateAttachmentPath(post.reference!!, postAssignmentsStorage.child("Solution"), "solutionPath")
+                    {
+                        viewModel.postSolutionButton.visibility = View.GONE
+                        viewModel.viewSolutionButton.visibility = View.VISIBLE
+                    }
+                }
+            }
+
             FirebaseAuth.getInstance().currentUser?.documentReference()?.let()
             {
                 val isTeacher = it.path == teacherPath
                 val submissionReference = post.submissionsReferece().document(it.id)
+
+                viewModel.postSolutionButton.visibility = if (isTeacher && post.solutionPath == null) View.VISIBLE else View.GONE
+
                 submissionReference.get()
                     .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
                     .addOnSuccessListener()
@@ -161,7 +184,6 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                         view.linearLayout_submitted_solution.visibility = if (isTeacher || !isSubmitted) View.GONE else View.VISIBLE
                     }
 
-                val postAssignmentsStorage = FirebaseStorage.getInstance().getReference("Assignments").child(post.reference!!.id)
                 val submissionStorageReference = postAssignmentsStorage.child("Submissions").child(it.id)
                 viewModel.submitSolutionButton.setOnClickListener()
                 {

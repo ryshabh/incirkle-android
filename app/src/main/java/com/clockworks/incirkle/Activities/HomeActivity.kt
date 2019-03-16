@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
@@ -27,6 +28,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     private var isUserTeacher = false
     private var listenerRegistrations = ArrayList<ListenerRegistration>()
 
+    private var userListenerRegistration: ListenerRegistration? = null
+
     private fun autofetchCourses(user: User)
     {
         this.courses = ArrayList()
@@ -42,7 +45,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                     this.performThrowable { it.serialize(Course::class.java) }?.let()
                     {
                         course ->
-                        val existingCourses = this.courses.filter { c -> c.reference == it }
+                        val existingCourses = this.courses.filter { c -> c.reference == it.reference }
                         if (existingCourses.isEmpty())
                             this.courses.add(course)
                         else
@@ -50,6 +53,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                         courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
                     }
                 }
+
+                Log.d("end","end")
             }
         })
     }
@@ -57,6 +62,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(this)
         setContentView(R.layout.activity_home)
         setSupportActionBar(toolbar)
 
@@ -70,10 +77,9 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 
         nav_view.setNavigationItemSelectedListener(this)
 
-        FirebaseApp.initializeApp(this)
         FirebaseAuth.getInstance().currentUser?.let()
         {
-            it.documentReference().addSnapshotListener()
+            this.userListenerRegistration = it.documentReference().addSnapshotListener()
             {
                 result, exception ->
 
@@ -100,7 +106,10 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                                 finish()
                             }
                             else
+                            {
                                 this.autofetchCourses(user)
+                                Log.d("end fetch","end fetch");
+                            }
                         }
                     }
                 }
@@ -122,6 +131,12 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
             intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_TEACHER_PATH, course.teacher.path)
             startActivity(intent)
         }
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
+        this.userListenerRegistration?.remove()
     }
 
     override fun onBackPressed()
