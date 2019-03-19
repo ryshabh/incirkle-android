@@ -3,6 +3,7 @@ package com.clockworks.incirkle.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.util.Log
@@ -10,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
 import com.clockworks.incirkle.Interfaces.serialize
+import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
@@ -20,6 +22,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
+import kotlinx.android.synthetic.main.list_item_added_course.*
 import kotlinx.android.synthetic.main.nav_header_home.*
 
 class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListener
@@ -29,11 +32,12 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     private var listenerRegistrations = ArrayList<ListenerRegistration>()
 
     private var userListenerRegistration: ListenerRegistration? = null
-
+    lateinit var  addedCourseListAdapter : AddedCourseListAdapter
     private fun autofetchCourses(user: User)
     {
         this.courses = ArrayList()
         this.listenerRegistrations.forEach { it.remove() }
+        this.courses.clear()
         this.listenerRegistrations = ArrayList(user.courses.map()
         {
             it.addSnapshotListener()
@@ -42,15 +46,88 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                 exception?.let { this.showError(it) }
                 ?: result?.let()
                 {
+
+
                     this.performThrowable { it.serialize(Course::class.java) }?.let()
                     {
                         course ->
-                        val existingCourses = this.courses.filter { c -> c.reference == it.reference }
-                        if (existingCourses.isEmpty())
+
+
+                        if(!this.courses.any{ tempcourse -> tempcourse.reference == course.reference })
+                        {
+
+
+
+
+                            course.reference!!.collection("Activity Posts").get()
+                                .addOnFailureListener(::showError)
+                                .addOnSuccessListener()
+                                {
+                                   course.activitypostsize =  it.size()
+                                    if(!addedCourseListAdapter.isEmpty)
+                                    {
+                                        addedCourseListAdapter.notifyDataSetChanged()
+                                    }
+                                    Log.d("activitypostsize",course.activitypostsize.toString())
+                                }
+                                .addOnCompleteListener()
+                                {
+                                //    Log.d("completed","completed")
+                                }
+                            course.reference!!.collection("Assignment Posts").get()
+                                .addOnFailureListener(::showError)
+                                .addOnSuccessListener()
+                                {
+                                    course.assignmentpostsize =  it.size()
+                                    if(!addedCourseListAdapter.isEmpty)
+                                    {
+                                        addedCourseListAdapter.notifyDataSetChanged()
+                                    }
+                                    Log.d("assignmentpostsize",course.assignmentpostsize.toString())
+                                }
+                                .addOnCompleteListener()
+                                {
+                                 //   Log.d("completed","completed")
+                                }
+                            course.reference!!.collection("Forum Posts").get()
+                                .addOnFailureListener(::showError)
+                                .addOnSuccessListener()
+                                {
+                                    course.forumpostsize =  it.size()
+                                    if(!addedCourseListAdapter.isEmpty)
+                                    {
+                                        addedCourseListAdapter.notifyDataSetChanged()
+                                    }
+                                    Log.d("forumpostsize",course.forumpostsize.toString())
+                                }
+                                .addOnCompleteListener()
+                                {
+                            //        Log.d("completed","completed")
+                                }
+                            course.reference!!.collection("Document Posts").get()
+                                .addOnFailureListener(::showError)
+                                .addOnSuccessListener()
+                                {
+                                    course.documentpostsize =  it.size()
+                                    if(!addedCourseListAdapter.isEmpty)
+                                    {
+                                        addedCourseListAdapter.notifyDataSetChanged()
+                                    }
+
+                                    Log.d("documentpostsize",course.documentpostsize.toString())
+                                }
+                                .addOnCompleteListener()
+                                {
+                           //         Log.d("completed","completed")
+                                }
                             this.courses.add(course)
-                        else
+                            addedCourseListAdapter  = AddedCourseListAdapter(this, this.courses)
+                            courses_list_view.adapter = addedCourseListAdapter
+                        }
+
+                       /* else
                             existingCourses.forEach { this.courses[this.courses.indexOf(it)] = course }
-                        courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)
+                        courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)*/
                     }
                 }
 

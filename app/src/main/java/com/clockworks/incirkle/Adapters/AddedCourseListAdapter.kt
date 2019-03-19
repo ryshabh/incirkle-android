@@ -16,6 +16,11 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
         lateinit var codeTextView: TextView
         lateinit var nameTextView: TextView
         lateinit var lastestUpdateTextView: TextView
+        lateinit var actcount: TextView
+        lateinit var assngcount: TextView
+        lateinit var forumcount: TextView
+        lateinit var doccount: TextView
+
     }
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -47,6 +52,10 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
             courseView.codeTextView = view.findViewById<TextView>(R.id.textView_course_code)
             courseView.nameTextView= view.findViewById<TextView>(R.id.textView_course_name)
             courseView.lastestUpdateTextView = view.findViewById<TextView>(R.id.textView_latest_update)
+            courseView.doccount = view.findViewById<TextView>(R.id.doccount)
+            courseView.assngcount = view.findViewById<TextView>(R.id.assngcount)
+            courseView.forumcount = view.findViewById<TextView>(R.id.forumcount)
+            courseView.actcount = view.findViewById<TextView>(R.id.actcount)
             view.tag = courseView
         }
         else
@@ -58,6 +67,10 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
         val course = this.getItem(position) as Course
         courseView.codeTextView.setText(course.code)
         courseView.nameTextView.setText(course.name)
+        courseView.doccount.text = "Doc - "+course.documentpostsize.toString()
+        courseView.assngcount.text = "Assng - "+course.assignmentpostsize.toString()
+        courseView.forumcount.text ="Forum - "+ course.forumpostsize.toString()
+        courseView.actcount.text ="Act - "+ course.activitypostsize.toString()
 
         return view
     }

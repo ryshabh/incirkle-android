@@ -3,6 +3,7 @@ package com.clockworks.incirkle.Models
 import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.model.value.IntegerValue
 import java.io.Serializable
 import java.lang.Exception
 import kotlin.math.sign
@@ -82,6 +83,11 @@ class Course(): FirebaseDocument
     lateinit var name: String
     lateinit var code: String
     lateinit var teacher: DocumentReference
+
+     var activitypostsize : Int = 0
+     var forumpostsize : Int = 0
+     var assignmentpostsize : Int = 0
+     var documentpostsize : Int = 0
 
     var timings = ArrayList<Timing>()
     var teachingAssistants = ArrayList<String>()

@@ -2,6 +2,7 @@ package com.clockworks.incirkle.Activities
 
 import android.app.AlertDialog
 import android.support.design.widget.Snackbar
+import android.support.v4.view.accessibility.AccessibilityEventCompat.setAction
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.WindowManager
@@ -34,8 +35,9 @@ abstract class AppActivity: AppCompatActivity()
 
     fun showError(exception: Exception)
     {
-        Snackbar.make(this.rootView(), exception.localizedMessage, Snackbar.LENGTH_INDEFINITE)
-            .setAction("Dismiss") { }.show()
+        exception.printStackTrace()
+      //  Snackbar.make(this.rootView(), exception.localizedMessage, Snackbar.LENGTH_INDEFINITE)
+        //    .setAction("Dismiss") { }.show()
     }
 
     fun showLoadingAlert()

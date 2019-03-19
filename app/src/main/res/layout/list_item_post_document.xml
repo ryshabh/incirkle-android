@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
 <android.support.v7.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,8 +13,8 @@
         android:id="@+id/card_view"
         android:layout_margin="10dp"
         app:cardBackgroundColor="@color/cardview_light_background"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="3dp"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="2dp"
         app:contentPadding="4dp" >
 
 
@@ -28,7 +34,7 @@
                 android:layout_height="60dp"
                 android:layout_gravity="center"
                 android:layout_margin="5dp"
-                app:srcCompat="@mipmap/ic_launcher_round"/>
+                app:srcCompat="@mipmap/ic_launcher"/>
 
         <LinearLayout
                 android:layout_width="0dp"
@@ -44,21 +50,29 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:text="@string/text_poster_name"
-                    android:textSize="18sp"/>
+                    android:fontFamily="@font/helvetica_neue_regular"
+                    android:textSize="13sp"
+                    android:textColor="#39393a"
+                    />
 
             <TextView
                     android:id="@+id/textView_documentPost_timestamp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/text_timestamp"/>
+                    android:text="@string/text_timestamp"
+                    android:fontFamily="@font/helvetica_neue_regular"
+                    android:textSize="8sp"
+                    android:textColor="#888888"/>
 
         </LinearLayout>
 
         <ImageView
+                android:id="@+id/popupicon2"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_menu"
-                android:layout_gravity="end"/>
+                android:layout_margin="5dp"
+                android:layout_gravity="end|center"
+                android:src="@drawable/ic_menu"/>
 
         <ImageButton
                 android:id="@+id/button_documentPost_delete"
@@ -78,14 +92,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textStyle="bold"
-            android:textSize="20dp"
+            android:textColor="#39393a"
+            android:textSize="16sp"
+            android:fontFamily="@font/helveticaneue_bold"
             android:text="@string/text_title" />
     <TextView
             android:id="@+id/textView_documentPost_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
+            android:fontFamily="@font/helvetica_neue_regular"
+            android:textSize="12sp"
+            android:textColor="#39393a"
             android:text="@string/text_description" />
 
     <TextView
@@ -93,6 +111,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
+            android:fontFamily="@font/helvetica_neue_regular"
+            android:textSize="12sp"
+            android:textColor="#39393a"
             android:text="@string/text_attachment" />
 
 
@@ -101,3 +122,5 @@
 </LinearLayout>
 
 </android.support.v7.widget.CardView>
+
+</LinearLayout>

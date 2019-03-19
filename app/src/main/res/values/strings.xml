@@ -124,6 +124,6 @@
 
     <string name="text_post_solution">Post Solution</string>
     <string name="text_view_solution">View Solution</string>
-    <string name="text_attachment">1 Attachment</string>
+    <string name="text_attachment">Attachment</string>
 
 </resources>

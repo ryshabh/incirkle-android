@@ -6,5 +6,6 @@
     <item android:id="@+id/action_course_info"
           android:title="@string/title_activity_courseInfo"
           android:orderInCategory="100"
+          android:iconTint="@color/md_white"
           app:showAsAction="never"/>
 </menu>

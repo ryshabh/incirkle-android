@@ -22,6 +22,7 @@
     <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="@string/button_login_email"
             android:onClick="emailLogin" />
 

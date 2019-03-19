@@ -14,6 +14,7 @@ import android.widget.*
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.AssignmentPost
+import com.clockworks.incirkle.Models.DocumentPost
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
@@ -22,7 +23,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_course_assignments.*
+import kotlinx.android.synthetic.main.fragment_course_documents.*
 import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
+import kotlinx.android.synthetic.main.popup_add_assigment.view.*
+import kotlinx.android.synthetic.main.popup_add_document.view.*
 import java.util.*
 
 class CourseAssignmentsFragment(): FileUploaderFragment()
@@ -35,6 +39,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
     }
     private val calendar = Calendar.getInstance()
 
+    lateinit var dialog: AlertDialog
     class AssignmentPostAdapter(private val context: Context, val uploaderFragment: FileUploaderFragment, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<AssignmentPost>): BaseAdapter()
     {
         private class ViewModel
@@ -232,8 +237,21 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
-        layout_post_assignment_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+    //    layout_post_assignment_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+      card_view_createforum_assignment.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        card_view_createforum_assignment.setOnClickListener {
+            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_assigment,null)
 
+
+            dialog = AlertDialog.Builder(activity)
+                .setView(view)
+                .setCancelable(true)
+                .create()
+
+
+
+            dialog.show()
+        }
         this.button_post_assignment_dueDate.text = android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
         button_post_assignment_dueDate.setOnClickListener()
         {

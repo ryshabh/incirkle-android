@@ -2,11 +2,10 @@ package com.clockworks.incirkle.Fragments
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
@@ -17,10 +16,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_activities.*
 import kotlinx.android.synthetic.main.list_item_post_activity.view.*
-import android.content.Intent
+import kotlinx.android.synthetic.main.popup_add_activity.*
+import kotlinx.android.synthetic.main.popup_add_activity.view.*
 import com.clockworks.incirkle.R
 
 
@@ -31,6 +30,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
         const val IDENTIFIER_COURSE_PATH = "Course Path"
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
+    lateinit var dialog: AlertDialog
 
     class ActivityPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ActivityPost>): BaseAdapter()
     {
@@ -42,6 +42,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             lateinit var deleteButton: ImageButton
             lateinit var descriptionTextView: TextView
             lateinit var downloadAttachmentButton: TextView
+            lateinit var popupicon : ImageView
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -90,7 +91,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
 
             if (convertView == null)
             {
-                view = inflater.inflate(R.layout.list_item_post_activity, parent, false)
+                view = inflater.inflate(com.clockworks.incirkle.R.layout.list_item_post_activity, parent, false)
                 viewModel = ViewModel()
                 viewModel.posterPictureImageView = view.imageView_activityPost_posterPicture
                 viewModel.posterNameTextView = view.textView_activityPost_posterName
@@ -98,6 +99,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 viewModel.deleteButton = view.button_activityPost_delete
                 viewModel.descriptionTextView = view.textView_activityPost_description
                 viewModel.downloadAttachmentButton = view.button_activityPost_download_attachment
+                viewModel.popupicon = view.popupicon
                 view.tag = viewModel
             }
             else
@@ -123,18 +125,47 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             val timestamp = "$time $date"
             viewModel.timestampTextView.setText(timestamp)
             viewModel.descriptionTextView.setText(post.description)
-            viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
+          //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
+            viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteActivityPost(post) }
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+            viewModel.popupicon.setOnClickListener(View.OnClickListener {
 
+                val popup = PopupMenu(context, it)
+                val inflater = popup.menuInflater
+                inflater.inflate(R.menu.actions, popup.menu)
+                popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
+
+                    val builder = AlertDialog.Builder(this.context)
+                    builder.setTitle("Delete Activity Post")
+                    builder.setMessage("Are you sure you wish to delete this post?")
+                    builder.setPositiveButton("Delete",
+                        {
+                                _, _ ->
+                            post.reference?.delete()
+                                ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                ?.addOnSuccessListener()
+                                {
+                                    FirebaseStorage.getInstance().getReference("Activity Attachments").child(post.reference!!.id).delete()
+                                        .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                }
+                        })
+                    builder.setNegativeButton("Cancel", null)
+                    builder.create().show()
+
+                    true
+                })
+                popup.show()
+            })
             return view
         }
     }
 
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
-        val rootView = inflater.inflate(R.layout.fragment_course_activities, container, false)
+        val rootView = inflater.inflate(com.clockworks.incirkle.R.layout.fragment_course_activities, container, false)
         return rootView
     }
 
@@ -147,38 +178,58 @@ class CourseActivitiesFragment(): FileUploaderFragment()
     private fun initialize()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
-        layout_post_activity_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        //layout_post_activity_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        card_view_createactivities.visibility = if(isAdmin) View.VISIBLE else View.GONE
 
-        button_activity_selectAttachment.setOnClickListener { this.selectFile { button_activity_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
+        card_view_createactivities.setOnClickListener {
+
+           var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity,null)
+
+           view.button_activity_selectAttachment.setOnClickListener { this.selectFile { button_activity_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(
+               com.clockworks.incirkle.R.string.text_select_attachment) } }
+            view.button_post_activity.setOnClickListener()
+            {
+                view.editText_post_activity_description.error = null
+
+                val description = view.editText_post_activity_description.text.toString().trim()
+                if (description.isBlank())
+                {
+                    view.editText_post_activity_description.error = "Activity description cannot be empty"
+                    return@setOnClickListener
+                }
+                else
+                {
+                    val activityPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Activity Posts")
+
+                    FirebaseAuth.getInstance().currentUser?.let()
+                    {
+                        val appActivity = this.activity as AppActivity
+                        appActivity.showLoadingAlert()
+                        activityPostsReference.add(ActivityPost(description, it.documentReference()))
+                            .addOnFailureListener { appActivity.showError (it) }
+                            .addOnCompleteListener { appActivity.dismissLoadingAlert() }
+                            .addOnSuccessListener()
+                            {
+                                view.editText_post_activity_description.setText("")
+                                this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id), "attachmentPath")
+                            }
+                    }
+                }
+                dialog.dismiss()
+            }
+            dialog = AlertDialog.Builder(activity)
+                .setView(view)
+                .setCancelable(true)
+                .create()
+
+
+
+            dialog.show()
+
+        }
 
         val activityPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Activity Posts")
-        button_post_activity.setOnClickListener()
-        {
-            editText_post_activity_description.error = null
 
-            val description = editText_post_activity_description.text.toString().trim()
-            if (description.isBlank())
-            {
-                editText_post_activity_description.error = "Activity description cannot be empty"
-                return@setOnClickListener
-            }
-            else
-            {
-                FirebaseAuth.getInstance().currentUser?.let()
-                {
-                    val appActivity = this.activity as AppActivity
-                    appActivity.showLoadingAlert()
-                    activityPostsReference.add(ActivityPost(description, it.documentReference()))
-                        .addOnFailureListener { appActivity.showError (it) }
-                        .addOnCompleteListener { appActivity.dismissLoadingAlert() }
-                        .addOnSuccessListener()
-                        {
-                            this.resetPostLayout()
-                            this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id), "attachmentPath")
-                        }
-                }
-            }
-        }
         activityPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
         {
             result, e ->
@@ -188,8 +239,5 @@ class CourseActivitiesFragment(): FileUploaderFragment()
         }
     }
 
-    private fun resetPostLayout()
-    {
-        editText_post_activity_description.setText("")
-    }
+
 }
