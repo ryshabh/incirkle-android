@@ -117,7 +117,13 @@
             android:text="@string/text_attachment" />
 
 
+    <ImageView
+            android:id="@+id/button_documentPost_download_images"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
 
+            />
 
 </LinearLayout>
 

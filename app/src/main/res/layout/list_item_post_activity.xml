@@ -117,6 +117,13 @@
                     android:layout_margin="5dp"
                     android:visibility="gone"
                     android:text="@string/text_download_attachment" />
+                <ImageView
+                        android:id="@+id/button_activityPost_download_images"
+                        android:layout_height="150dp"
+                        android:scaleType="centerCrop"
+                        android:layout_width="match_parent"
+
+                        />
             <ImageButton
                     android:id="@+id/button_activityPost_delete"
                     android:layout_width="25dp"

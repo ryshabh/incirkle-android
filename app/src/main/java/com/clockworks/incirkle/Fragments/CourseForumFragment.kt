@@ -3,14 +3,19 @@ package com.clockworks.incirkle.Fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Activities.CommentsActivity
 import com.clockworks.incirkle.Interfaces.serialize
@@ -22,15 +27,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_course_forum.*
-import kotlinx.android.synthetic.main.list_item_post_forum.view.*
 import kotlinx.android.synthetic.main.fragment_course_forum.view.*
-import kotlinx.android.synthetic.main.list_item_post_activity.view.*
 import kotlinx.android.synthetic.main.list_item_post_forum.view.*
-import kotlinx.android.synthetic.main.popup_add_forum.*
 import kotlinx.android.synthetic.main.popup_add_forum.view.*
-import java.lang.Exception
 
 
 class CourseForumFragment(): FileUploaderFragment()
@@ -59,6 +59,8 @@ class CourseForumFragment(): FileUploaderFragment()
             lateinit var popupicon: ImageView
             lateinit var button_activityForum_download_attachment: TextView
             lateinit var textview_forumPost_count: TextView
+            lateinit var downloadAttachmentImage: ImageView
+
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -117,6 +119,7 @@ class CourseForumFragment(): FileUploaderFragment()
                 viewModel.nameTextView= view.textView_forumPost_name
                 viewModel.descriptionTextView = view.textView_forumPost_details
                 viewModel.downloadAttachmentButton = view.button_forumPost_download_attachment
+                viewModel.downloadAttachmentImage = view.button_forumPost_download_images
                 viewModel.popupicon = view.popupicon1
                 viewModel.textview_forumPost_count = view.textview_forumPost_count
                 viewModel.button_activityForum_download_attachment = view.button_activityForum_download_attachment
@@ -158,15 +161,58 @@ class CourseForumFragment(): FileUploaderFragment()
             viewModel.deleteButton.setOnClickListener() { this.deleteForumPost(post) }
           //  viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.button_activityForum_download_attachment.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+            viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
 
             if(post.attachmentPath != null)
             {
+                post.attachmentPath?.let {
+
+
+                    Glide
+                        .with(context)
+                        .load(it)
+                        .listener(object  : RequestListener<Drawable>
+                        {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
+                                viewModel.downloadAttachmentImage.visibility = View.GONE
+                                return false
+
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.button_activityForum_download_attachment.visibility = View.GONE
+                                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                                return false
+                            }
+
+                        })
+                        .into(viewModel.downloadAttachmentImage);
+
+                }
                 viewModel.downloadAttachmentButton.setOnClickListener {
                     post.attachmentPath?.let {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse(it))
                         )
                     }
+
+
+
+
                 }
 
               /*  var metadata =

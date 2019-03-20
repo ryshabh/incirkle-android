@@ -3,15 +3,25 @@ package com.clockworks.incirkle.Fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
+import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -20,7 +30,6 @@ import kotlinx.android.synthetic.main.fragment_course_activities.*
 import kotlinx.android.synthetic.main.list_item_post_activity.view.*
 import kotlinx.android.synthetic.main.popup_add_activity.*
 import kotlinx.android.synthetic.main.popup_add_activity.view.*
-import com.clockworks.incirkle.R
 
 
 class CourseActivitiesFragment(): FileUploaderFragment()
@@ -42,6 +51,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             lateinit var deleteButton: ImageButton
             lateinit var descriptionTextView: TextView
             lateinit var downloadAttachmentButton: TextView
+            lateinit var downloadAttachmentImage: ImageView
             lateinit var popupicon : ImageView
         }
 
@@ -99,6 +109,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 viewModel.deleteButton = view.button_activityPost_delete
                 viewModel.descriptionTextView = view.textView_activityPost_description
                 viewModel.downloadAttachmentButton = view.button_activityPost_download_attachment
+                viewModel.downloadAttachmentImage = view.button_activityPost_download_images
                 viewModel.popupicon = view.popupicon
                 view.tag = viewModel
             }
@@ -129,7 +140,54 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteActivityPost(post) }
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+            viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+
+
+
+            if(post.attachmentPath != null)
+            {
+                post.attachmentPath?.let {
+
+
+                    Glide
+                        .with(context)
+                        .load(it)
+                        .listener(object : RequestListener<Drawable>
+                        {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
+                                viewModel.downloadAttachmentImage.visibility = View.GONE
+                                return false
+
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.downloadAttachmentButton.visibility = View.GONE
+                                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                                return false
+                            }
+
+                        })
+                        .into(viewModel.downloadAttachmentImage);
+
+                }
+            }
+
             viewModel.popupicon.setOnClickListener(View.OnClickListener {
 
                 val popup = PopupMenu(context, it)

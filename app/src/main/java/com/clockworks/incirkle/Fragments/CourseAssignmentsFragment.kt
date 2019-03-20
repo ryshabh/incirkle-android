@@ -5,16 +5,22 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.AssignmentPost
-import com.clockworks.incirkle.Models.DocumentPost
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
@@ -23,10 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_course_assignments.*
-import kotlinx.android.synthetic.main.fragment_course_documents.*
 import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
-import kotlinx.android.synthetic.main.popup_add_assigment.view.*
-import kotlinx.android.synthetic.main.popup_add_document.view.*
 import java.util.*
 
 class CourseAssignmentsFragment(): FileUploaderFragment()
@@ -51,12 +54,16 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var nameTextView: TextView
             lateinit var detailsTextView: TextView
             lateinit var dueDateTextView: TextView
-            lateinit var downloadAttachmentButton: Button
+            lateinit var downloadAttachmentButton: TextView
+            lateinit var button_assignmentPost_download_images: ImageView
             lateinit var postSolutionButton: Button
+            lateinit var linearLayout_submit_solution: LinearLayout
+            lateinit var linearLayout_view_solution: LinearLayout
             lateinit var viewSolutionButton: Button
             lateinit var submitSolutionButton: Button
             lateinit var viewSubmissionButton: Button
             lateinit var resubmitSolutionButton: Button
+            lateinit var popupicon : ImageView
         }
 
         private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -115,11 +122,15 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.detailsTextView = view.textView_assignmentPost_details
                 viewModel.dueDateTextView = view.textView_assignmentPost_dueDate
                 viewModel.downloadAttachmentButton = view.button_assignmentPost_download_attachment
+                viewModel.button_assignmentPost_download_images = view.button_assignmentPost_download_images
                 viewModel.postSolutionButton= view.button_assignmentPost_post_solution
+                viewModel.linearLayout_submit_solution = view.linearLayout_submit_solution
+                viewModel.linearLayout_view_solution = view.linearLayout_view_solution
                 viewModel.viewSolutionButton= view.button_assignmentPost_view_solution
                 viewModel.submitSolutionButton= view.button_assignmentPost_submit_solution
                 viewModel.viewSubmissionButton = view.button_assignmentPost_view_submitted_solution
                 viewModel.resubmitSolutionButton = view.button_assignmentPost_resubmit_solution
+                viewModel.popupicon = view.popupicon
                 view.tag = viewModel
             }
             else
@@ -154,21 +165,112 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             viewModel.dueDateTextView.text = dueDate
             viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener { this.deleteAssignmentPost(post) }
+
+
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+            viewModel.button_assignmentPost_download_images.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
-            viewModel.viewSolutionButton.visibility = if (post.solutionPath != null) View.VISIBLE else View.GONE
+          //  viewModel.viewSolutionButton.visibility = if (post.solutionPath != null) View.VISIBLE else View.GONE
+            viewModel.linearLayout_view_solution.visibility = if (post.solutionPath != null) View.VISIBLE else View.GONE
             viewModel.viewSolutionButton.setOnClickListener { post.solutionPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+            viewModel.linearLayout_view_solution.setOnClickListener { post.solutionPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+            viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
 
+            viewModel.popupicon.setOnClickListener(View.OnClickListener {
+
+                val popup = PopupMenu(context, it)
+                val inflater = popup.menuInflater
+                inflater.inflate(R.menu.actions, popup.menu)
+                popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
+
+                    val builder = AlertDialog.Builder(this.context)
+                    builder.setTitle("Delete Activity Post")
+                    builder.setMessage("Are you sure you wish to delete this post?")
+                    builder.setPositiveButton("Delete",
+                        {
+                                _, _ ->
+                            post.reference?.delete()
+                                ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                ?.addOnSuccessListener()
+                                {
+                                    FirebaseStorage.getInstance().getReference("Assignment Attachments").child(post.reference!!.id).delete()
+                                        .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                }
+
+                        })
+                    builder.setNegativeButton("Cancel", null)
+                    builder.create().show()
+
+                    true
+                })
+                popup.show()
+            })
             val postAssignmentsStorage = FirebaseStorage.getInstance().getReference("Assignments").child(post.reference!!.id)
-            viewModel.postSolutionButton.setOnClickListener()
+          /*  viewModel.postSolutionButton.setOnClickListener()
             {
                 uploaderFragment.selectFile()
                 {
                     uploaderFragment.updateAttachmentPath(post.reference!!, postAssignmentsStorage.child("Solution"), "solutionPath")
                     {
                         viewModel.postSolutionButton.visibility = View.GONE
+
+                        viewModel.linearLayout_submit_solution.visibility = View.GONE
                         viewModel.viewSolutionButton.visibility = View.VISIBLE
+                    }
+                }
+            } */
+            if(post.attachmentPath != null)
+            {
+                post.attachmentPath?.let {
+
+
+                    Glide
+                        .with(context)
+                        .load(it)
+                        .listener(object : RequestListener<Drawable>
+                        {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
+                                viewModel.button_assignmentPost_download_images.visibility = View.GONE
+                                return false
+
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.downloadAttachmentButton.visibility = View.GONE
+                                viewModel.button_assignmentPost_download_images.visibility = View.VISIBLE
+                                return false
+                            }
+
+                        })
+                        .into(viewModel.button_assignmentPost_download_images);
+
+                }
+            }
+            viewModel.linearLayout_submit_solution.setOnClickListener()
+            {
+                uploaderFragment.selectFile()
+                {
+                    uploaderFragment.updateAttachmentPath(post.reference!!, postAssignmentsStorage.child("Solution"), "solutionPath")
+                    {
+
+                        viewModel.linearLayout_submit_solution.visibility = View.GONE
+                      //  viewModel.viewSolutionButton.visibility = View.VISIBLE
+                        viewModel.linearLayout_view_solution.visibility = View.VISIBLE
                     }
                 }
             }
@@ -178,7 +280,8 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 val isTeacher = it.path == teacherPath
                 val submissionReference = post.submissionsReferece().document(it.id)
 
-                viewModel.postSolutionButton.visibility = if (isTeacher && post.solutionPath == null) View.VISIBLE else View.GONE
+             //   viewModel.postSolutionButton.visibility = if (isTeacher && post.solutionPath == null) View.VISIBLE else View.GONE
+                viewModel.linearLayout_submit_solution.visibility = if (isTeacher && post.solutionPath == null) View.VISIBLE else View.GONE
 
                 submissionReference.get()
                     .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }

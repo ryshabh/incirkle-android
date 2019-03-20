@@ -128,6 +128,14 @@
                 android:textSize="12sp"
                 android:textColor="#39393a"
                 android:text="" />
+        <ImageView
+                android:id="@+id/button_forumPost_download_images"
+                android:layout_height="150dp"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+
+                />
+
         <TextView
                 android:id="@+id/button_activityForum_download_attachment"
                 android:layout_width="wrap_content"
@@ -203,8 +211,6 @@
                     android:layout_margin="5dp"
                     android:visibility="gone"
                     android:text="@string/text_download_attachment" />
-<ImageView
-        android/>
 
 
             </FrameLayout>

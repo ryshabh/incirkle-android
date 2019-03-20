@@ -67,6 +67,7 @@
         </LinearLayout>
 
         <ImageView
+                android:id="@+id/popupicon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_margin="5dp"
@@ -137,13 +138,25 @@
             android:textSize="12sp"
             android:textColor="#39393a"/>
 
-    <Button
+
+    <TextView
             android:id="@+id/button_assignmentPost_download_attachment"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Attachment"
+            android:layout_gravity="start"
+            android:visibility="visible"
+            android:gravity="start"
+            android:fontFamily="@font/helvetica_neue_regular"
+            android:textSize="12sp"
+            android:textColor="#39393a"/>
+    <ImageView
+            android:id="@+id/button_assignmentPost_download_images"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:visibility="gone"
-            android:text="@string/text_download_attachment" />
+
+            />
 
     <Button
             android:id="@+id/button_assignmentPost_post_solution"
@@ -187,6 +200,7 @@
         android:layout_width="wrap_content"
         android:gravity="center"
         android:layout_gravity="center"
+        android:visibility="gone"
         android:layout_height="wrap_content">
 
         <ImageView android:layout_width="18dp"
@@ -195,17 +209,43 @@
                    android:src="@drawable/ic_navigation"/>
 
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Submit"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:fontFamily="@font/helvetica_neue_regular"
-                android:textSize="12sp"
-                android:textColor="#39393a"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:text="Submit"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:fontFamily="@font/helvetica_neue_regular"
+            android:textSize="12sp"
+            android:textColor="#39393a"/>
 </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/linearLayout_view_solution"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:visibility="visible"
+                android:layout_gravity="center"
+                android:layout_height="wrap_content">
+
+            <ImageView android:layout_width="18dp"
+                       android:layout_height="18dp"
+                       android:layout_marginStart="20dp"
+                       android:src="@drawable/ic_action_name"/>
+
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:text="View Solution"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:fontFamily="@font/helvetica_neue_regular"
+                    android:textSize="12sp"
+                    android:textColor="#39393a"/>
+        </LinearLayout>
         <TextView
                 android:layout_weight="1"
                 android:layout_width="0dp"

@@ -73,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <TextView
-                android:text="Act - 0"
+                android:text="Act"
                 android:layout_weight="1"
                 android:id="@+id/actcount"
                 android:gravity="center"
@@ -82,7 +82,7 @@
                 android:textSize="12sp"
                 android:layout_height="wrap_content"/>
         <TextView
-                android:text="Forum - 0"
+                android:text="Forum"
                 android:id="@+id/forumcount"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"/>
         <TextView
                 android:id="@+id/doccount"
-                android:text="Doc - 0"
+                android:text="Doc"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:fontFamily="@font/helvetica_neue_regular"
@@ -101,7 +101,7 @@
                 android:layout_height="wrap_content"/>
         <TextView
                 android:id="@+id/assngcount"
-                android:text="Assng - 0"
+                android:text="Assng"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:layout_width="0dp"

@@ -67,10 +67,49 @@ class AddedCourseListAdapter(private val context: Context, private var dataSourc
         val course = this.getItem(position) as Course
         courseView.codeTextView.setText(course.code)
         courseView.nameTextView.setText(course.name)
-        courseView.doccount.text = "Doc - "+course.documentpostsize.toString()
-        courseView.assngcount.text = "Assng - "+course.assignmentpostsize.toString()
-        courseView.forumcount.text ="Forum - "+ course.forumpostsize.toString()
-        courseView.actcount.text ="Act - "+ course.activitypostsize.toString()
+        if(course.documentpostsize.toString().trim().equals("0"))
+        {
+            courseView.doccount.isEnabled = false
+            courseView.doccount.text = "Doc"
+        }
+        else
+        {
+            courseView.doccount.isEnabled = true
+            courseView.doccount.text = "Doc - "+course.documentpostsize.toString()
+        }
+        if(course.assignmentpostsize.toString().trim().equals("0"))
+        {
+            courseView.assngcount.isEnabled =false;
+            courseView.assngcount.text ="Assng "
+        }
+        else
+        {
+            courseView.assngcount.isEnabled = true;
+            courseView.assngcount.text ="Assng - "+ course.assignmentpostsize.toString()
+        }
+        if(course.forumpostsize.toString().trim().equals("0"))
+        {
+            courseView.forumcount.isEnabled = false
+            courseView.forumcount.text ="Forum"
+        }
+        else
+        {
+            courseView.forumcount.isEnabled = true;
+            courseView.forumcount.text ="Forum - "+ course.forumpostsize.toString()
+        }
+
+
+        if(course.activitypostsize.toString().trim().equals("0"))
+        {
+            courseView.actcount.isEnabled = false
+            courseView.actcount.text ="Act"
+        }
+        else
+        {
+            courseView.actcount.isEnabled = true;
+            courseView.actcount.text ="Act - "+ course.activitypostsize.toString()
+        }
+
 
         return view
     }

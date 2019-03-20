@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.View
 import com.clockworks.incirkle.Interfaces.serialize
-import com.clockworks.incirkle.Models.*
+import com.clockworks.incirkle.Models.Course
+import com.clockworks.incirkle.Models.Organisation
+import com.clockworks.incirkle.Models.User
+import com.clockworks.incirkle.Models.documentReference
+import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_user_profile.*
-import com.clockworks.incirkle.R
 
 class UserProfileActivity : AppActivity()
 {
@@ -23,6 +26,8 @@ class UserProfileActivity : AppActivity()
             AlertDialog.BUTTON_POSITIVE ->
             {
                 // TODO: Change Picture
+
+
             }
             AlertDialog.BUTTON_NEGATIVE ->
             {

@@ -3,27 +3,25 @@ package com.clockworks.incirkle.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
 import com.clockworks.incirkle.Interfaces.serialize
-import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
-import com.clockworks.incirkle.R
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
-import kotlinx.android.synthetic.main.list_item_added_course.*
-import kotlinx.android.synthetic.main.nav_header_home.*
+
+
 
 class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListener
 {
@@ -136,23 +134,31 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         })
     }
 
+    lateinit var textView_user_name : TextView
+    lateinit var textView_user_id : TextView
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(this)
-        setContentView(R.layout.activity_home)
+        setContentView(com.clockworks.incirkle.R.layout.activity_home)
+
         setSupportActionBar(toolbar)
 
         val toggle = ActionBarDrawerToggle(
             this, drawer_layout, toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
+            com.clockworks.incirkle.R.string.navigation_drawer_open,
+            com.clockworks.incirkle.R.string.navigation_drawer_close
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+        val headerView = nav_view.getHeaderView(0)
+        textView_user_name = headerView.findViewById(com.clockworks.incirkle.R.id.textView_user_name) as TextView
+        textView_user_id = headerView.findViewById(com.clockworks.incirkle.R.id.textView_user_id) as TextView
+
+
 
         FirebaseAuth.getInstance().currentUser?.let()
         {
@@ -226,8 +232,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean
     {
-        menuInflater.inflate(R.menu.home, menu)
-        menu.findItem(R.id.home_action_enrol_course).setTitle(if (this.isUserTeacher) R.string.text_enrol_create_course else R.string.title_activity_enrolCourse)
+        menuInflater.inflate(com.clockworks.incirkle.R.menu.home, menu)
+        menu.findItem(com.clockworks.incirkle.R.id.home_action_enrol_course).setTitle(if (this.isUserTeacher) com.clockworks.incirkle.R.string.text_enrol_create_course else com.clockworks.incirkle.R.string.title_activity_enrolCourse)
         return true
     }
 
@@ -235,7 +241,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     {
         when (item.itemId)
         {
-            R.id.home_action_enrol_course ->
+            com.clockworks.incirkle.R.id.home_action_enrol_course ->
             {
                 this.startActivity(Intent(this, SelectOrganisationActivity::class.java))
                 return true
@@ -249,8 +255,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         // Handle navigation view item clicks here.
         when (item.itemId)
         {
-            R.id.nav_account -> this.startActivity(Intent(this, UserProfileActivity::class.java))
-            R.id.nav_logout ->
+            com.clockworks.incirkle.R.id.nav_account -> this.startActivity(Intent(this, UserProfileActivity::class.java))
+            com.clockworks.incirkle.R.id.nav_logout ->
             {
                 FirebaseAuth.getInstance().signOut()
                 this.startActivity(Intent(this, LoginActivity::class.java))
