@@ -52,7 +52,18 @@ class CourseFeedActivity : AppActivity()
                 .addOnSuccessListener()
                 {
                     this.performThrowable { it.serialize(Course::class.java) }?.let()
-                    { container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, user.documentReference() == it.teacher) }
+
+
+                    {
+                        try
+                        {
+                            supportActionBar!!.title = it.code + " : "+it.name
+                        } catch (e: Exception)
+                        {
+
+                        }
+                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, user.documentReference() == it.teacher)
+                    }
                 }
                 .addOnCompleteListener { this.dismissLoadingAlert() }
         }

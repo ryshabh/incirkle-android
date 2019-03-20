@@ -16,6 +16,9 @@
             android:visibility="gone"
             android:onClick="createCourse"/>
 
+
+
+
     <ListView
             android:id="@+id/listView_available_courses"
             android:layout_width="match_parent"

@@ -105,8 +105,8 @@ class CourseForumFragment(): FileUploaderFragment()
 
             val post = this.dataSource[position]
 
-            if (convertView == null)
-            {
+         //   if (convertView == null)
+            //{
                 view = inflater.inflate(R.layout.list_item_post_forum, parent, false)
                 viewModel = ViewModel()
                 viewModel.posterPictureImageView = view.imageView_forumPost_posterPicture
@@ -121,12 +121,12 @@ class CourseForumFragment(): FileUploaderFragment()
                 viewModel.textview_forumPost_count = view.textview_forumPost_count
                 viewModel.button_activityForum_download_attachment = view.button_activityForum_download_attachment
                 view.tag = viewModel
-            }
-            else
+          //  }
+          /*  else
             {
                 view = convertView
                 viewModel = convertView.tag as ViewModel
-            }
+            }*/
 
             post.poster.get().addOnCompleteListener()
             {
@@ -135,7 +135,7 @@ class CourseForumFragment(): FileUploaderFragment()
                 task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
                 ?: task.result?.serialize(User::class.java)?.let()
                 {
-                    viewModel.posterNameTextView.setText(it.fullName())
+                    viewModel.posterNameTextView.setText(it.fullName()+if (it.type == User.Type.TEACHER) "(Intructor) " else "")
                     // TODO: Set Display Picture
                 }
             }
@@ -145,7 +145,11 @@ class CourseForumFragment(): FileUploaderFragment()
             val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
             val timestamp = "$time $date"
             viewModel.timestampTextView.setText(timestamp)
-            viewModel.nameTextView.setText(post.name)
+
+
+            viewModel.nameTextView.setText(post.name )
+
+
             viewModel.descriptionTextView.setText(post.description)
        //     viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
@@ -154,7 +158,29 @@ class CourseForumFragment(): FileUploaderFragment()
             viewModel.deleteButton.setOnClickListener() { this.deleteForumPost(post) }
           //  viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.button_activityForum_download_attachment.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
-            viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+
+            if(post.attachmentPath != null)
+            {
+                viewModel.downloadAttachmentButton.setOnClickListener {
+                    post.attachmentPath?.let {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                        )
+                    }
+                }
+
+              /*  var metadata =
+                    FirebaseStorage.getInstance().getReference("Forum Attachments").child(post.reference.toString())
+                        .metadata;
+
+                metadata.addOnSuccessListener {
+                    viewModel.downloadAttachmentButton.text = it.name
+                    // Metadata now contains the metadata for 'images/forest.jpg'
+                }.addOnFailureListener {
+                    // Uh-oh, an error occurred!
+                    it.printStackTrace()
+                }*/
+            }
             viewModel.button_activityForum_download_attachment.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
 
