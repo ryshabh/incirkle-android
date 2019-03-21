@@ -1,12 +1,11 @@
 package com.clockworks.incirkle.Activities
 
 import android.content.Intent
+import android.os.Bundle
 import android.support.design.widget.TabLayout
-
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.clockworks.incirkle.Fragments.CourseActivitiesFragment
@@ -16,7 +15,6 @@ import com.clockworks.incirkle.Fragments.CourseForumFragment
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.documentReference
-
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
@@ -32,6 +30,7 @@ class CourseFeedActivity : AppActivity()
     }
 
     private lateinit var courseReference: DocumentReference
+
 
     override fun onCreate(savedInstanceState: Bundle?)
     {

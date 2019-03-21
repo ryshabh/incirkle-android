@@ -8,7 +8,12 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.clockworks.incirkle.Adapters.AddedCourseListAdapter
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
@@ -20,6 +25,8 @@ import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
+
+
 
 
 
@@ -136,6 +143,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 
     lateinit var textView_user_name : TextView
     lateinit var textView_user_id : TextView
+    lateinit var profileimageview : ImageView
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -157,7 +165,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         val headerView = nav_view.getHeaderView(0)
         textView_user_name = headerView.findViewById(com.clockworks.incirkle.R.id.textView_user_name) as TextView
         textView_user_id = headerView.findViewById(com.clockworks.incirkle.R.id.textView_user_id) as TextView
-
+        profileimageview = headerView.findViewById(com.clockworks.incirkle.R.id.imageView_diplayPicture) as ImageView
 
 
         FirebaseAuth.getInstance().currentUser?.let()
@@ -182,7 +190,22 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                             textView_user_id.text = user.userID()
                             this.isUserTeacher = user.type == User.Type.TEACHER
                             this.invalidateOptionsMenu()
+                            if (user.profilepic != null)
+                            {
+                                user.profilepic?.let {
 
+                                    var requestOptions = RequestOptions()
+                                    requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(16))
+
+                                    Glide
+                                        .with(this)
+                                        .apply { requestOptions }
+                                        .load(it)
+
+                                        .into(profileimageview);
+
+                                }
+                            }
                             if (user.courses.isEmpty())
                             {
                                 this.startActivity(Intent(this, SelectOrganisationActivity::class.java))

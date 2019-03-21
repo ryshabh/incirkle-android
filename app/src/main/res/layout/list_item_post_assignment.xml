@@ -150,6 +150,19 @@
             android:fontFamily="@font/helvetica_neue_regular"
             android:textSize="12sp"
             android:textColor="#39393a"/>
+
+    <TextView
+            android:id="@+id/button_assignmentPost_submissioncount"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text=""
+            android:layout_margin="2dp"
+            android:layout_gravity="start"
+            android:visibility="visible"
+            android:gravity="start"
+            android:fontFamily="@font/helvetica_neue_regular"
+            android:textSize="12sp"
+            android:textColor="#39393a"/>
     <ImageView
             android:id="@+id/button_assignmentPost_download_images"
             android:layout_height="150dp"

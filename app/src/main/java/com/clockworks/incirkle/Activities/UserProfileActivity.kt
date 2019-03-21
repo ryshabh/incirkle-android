@@ -3,8 +3,10 @@ package com.clockworks.incirkle.Activities
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.view.View
+import com.bumptech.glide.Glide
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.Organisation
@@ -12,7 +14,11 @@ import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_user_profile.*
+
+
+
 
 class UserProfileActivity : AppActivity()
 {
@@ -28,10 +34,30 @@ class UserProfileActivity : AppActivity()
                 // TODO: Change Picture
 
 
+                    this.selectFile {
+
+                          /*  this.selectedFileUri?.getName(this)
+                                ?: getString(com.clockworks.incirkle.R.string.text_select_attachment)
+*/
+                        if(this.selectedFileUri!=null)
+                        {
+                            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedFileUri)
+                            displayPictureImageButton.setImageBitmap(bitmap)
+                            updateAttachmentPath(
+                                user.reference!!,
+                                FirebaseStorage.getInstance().getReference("UserProfiles").child(user.reference!!.id),
+                                "profilepic"
+                            )
+                        }
+                    }
+
+
             }
             AlertDialog.BUTTON_NEGATIVE ->
             {
                 // TODO: Delete Picture
+
+
             }
             AlertDialog.BUTTON_NEUTRAL -> dialog.dismiss()
         }
@@ -65,7 +91,10 @@ class UserProfileActivity : AppActivity()
                         )
                         newUser.phoneNumber = firebaseUser.phoneNumber
                         newUser.reference = FirebaseAuth.getInstance().currentUser?.documentReference()
+
                         this.update(newUser)
+
+
 
                         this.showLoadingAlert()
                         Organisation.reference.get()
@@ -124,6 +153,19 @@ class UserProfileActivity : AppActivity()
         editText_last_name.setText(user.lastName)
         gender.check(if (user.gender == User.Gender.MALE) radioButton_male.id else radioButton_female.id)
         type.check(if (user.type == User.Type.TEACHER) radioButton_teacher.id else radioButton_student.id)
+
+        if (user.profilepic != null)
+        {
+            user.profilepic?.let {
+
+
+                Glide
+                    .with(this)
+                    .load(it)
+                    .into(displayPictureImageButton);
+
+            }
+        }
     }
 
     fun changeDisplayPicture(v: View)

@@ -5,7 +5,6 @@ import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
-import kotlin.collections.ArrayList
 
 class User(): FirebaseDocument
 {
@@ -41,6 +40,7 @@ class User(): FirebaseDocument
     lateinit var gender: Gender
     var emailAddress: String? = null
     var phoneNumber: String? = null
+    var profilepic: String? = null
     lateinit var type: Type
     var courses = ArrayList<DocumentReference>()
 
