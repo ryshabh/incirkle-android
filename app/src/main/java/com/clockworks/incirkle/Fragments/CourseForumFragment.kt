@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Activities.CommentsActivity
@@ -43,7 +44,9 @@ class CourseForumFragment(): FileUploaderFragment()
     }
     private var root: View? = null
 
+
     lateinit var dialog: AlertDialog
+    lateinit var adapter : ForumPostAdapter
     class ForumPostAdapter(private val context: Context, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<ForumPost>): BaseAdapter()
     {
         private class ViewModel
@@ -131,6 +134,11 @@ class CourseForumFragment(): FileUploaderFragment()
                 viewModel = convertView.tag as ViewModel
             }*/
 
+            var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                    Glide.with(context)
+                    .load(post.imagepath)
+                        .apply(request)
+                    .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
             {
                 task ->
@@ -295,11 +303,24 @@ class CourseForumFragment(): FileUploaderFragment()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
 
+        FirebaseAuth.getInstance().currentUser?.let()
+        {
 
+            FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
+                var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                Glide.with(context)
+                    .load(it.toString())
+                    .apply(request)
+                    .into(imageview_profileimage);
+            }.addOnFailureListener {
+                it.printStackTrace()
+            };
+        }
         card_view_createforum.setOnClickListener {
             var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_forum,null)
 
-            view.button_forum_selectAttachment.setOnClickListener { this.selectFile { view.button_forum_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
+            view.button_forum_selectAttachment.setOnClickListener {
+                this.selectFile { view.button_forum_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
             val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
 
             view.button_post_forum.setOnClickListener()
@@ -350,13 +371,35 @@ class CourseForumFragment(): FileUploaderFragment()
 
         val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
 
+
         forumPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
         {
             result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
-            { root!!.listView_courseFeed_forum.adapter = ForumPostAdapter(context!!, isAdmin, arguments?.getString(
-                IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
+            {
+
+                for (item in it)
+                {
+
+                    try
+                    {
+                        FirebaseStorage.getInstance().getReference("UserProfiles").child(item.poster.path.replace("Users/","")).downloadUrl.addOnSuccessListener {
+                            item.imagepath = it.toString();
+                            adapter.notifyDataSetChanged()
+                        }.addOnFailureListener {
+                            it.printStackTrace()
+                        };
+                    } catch (e: Exception)
+                    {
+                        e.printStackTrace()
+                    }
+                }
+
+                adapter = ForumPostAdapter(context!!, isAdmin, arguments?.getString(
+                    IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it)
+                root!!.listView_courseFeed_forum.adapter = adapter
+            }
         }
     }
 

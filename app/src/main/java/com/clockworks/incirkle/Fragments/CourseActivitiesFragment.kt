@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
@@ -40,6 +41,7 @@ class CourseActivitiesFragment(): FileUploaderFragment()
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
     lateinit var dialog: AlertDialog
+    lateinit var adapter :  ActivityPostAdapter
 
     class ActivityPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ActivityPost>): BaseAdapter()
     {
@@ -118,7 +120,11 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
-
+            var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+            Glide.with(context)
+                .load(post.imagepath)
+                .apply(request)
+                .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
             {
                 task ->
@@ -237,6 +243,20 @@ class CourseActivitiesFragment(): FileUploaderFragment()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
         //layout_post_activity_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+
+        FirebaseAuth.getInstance().currentUser?.let()
+        {
+
+            FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
+                var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                Glide.with(context)
+                    .load(it.toString())
+                    .apply(request)
+                    .into(imageview_profileimage);
+            }.addOnFailureListener {
+                it.printStackTrace()
+            };
+        }
         card_view_createactivities.visibility = if(isAdmin) View.VISIBLE else View.GONE
 
         card_view_createactivities.setOnClickListener {
@@ -293,7 +313,27 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
             ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
-            { listView_courseFeed_activities.adapter = ActivityPostAdapter(context!!, isAdmin, it) }
+            {
+                for (item in it)
+                {
+
+                    try
+                    {
+                        FirebaseStorage.getInstance().getReference("UserProfiles").child(item.poster.path.replace("Users/","")).downloadUrl.addOnSuccessListener {
+                            item.imagepath = it.toString();
+                            adapter.notifyDataSetChanged()
+
+                        }.addOnFailureListener {
+                            it.printStackTrace()
+                        };
+                    } catch (e: Exception)
+                    {
+                        e.printStackTrace()
+                    }
+                }
+                adapter =  ActivityPostAdapter(context!!, isAdmin, it)
+                listView_courseFeed_activities.adapter = adapter
+            }
         }
     }
 

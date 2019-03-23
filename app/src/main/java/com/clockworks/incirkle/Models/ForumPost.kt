@@ -4,7 +4,6 @@ import com.clockworks.incirkle.Interfaces.FirebaseDocument
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import java.util.*
-import kotlin.collections.ArrayList
 
 class ForumPost(): FirebaseDocument
 {
@@ -15,6 +14,8 @@ class ForumPost(): FirebaseDocument
     var attachmentPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
+    var imagepath : String = ""
+
 
     constructor(name: String, description: String, poster: DocumentReference) : this()
     {

@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Interfaces.serialize
@@ -29,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_course_assignments.*
+
 import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
 import kotlinx.android.synthetic.main.popup_add_assigment.view.*
 import java.util.*
@@ -44,6 +46,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
     private val calendar = Calendar.getInstance()
 
     lateinit var dialog: AlertDialog
+    lateinit var adapter: AssignmentPostAdapter
     class AssignmentPostAdapter(private val context: Context, val uploaderFragment: FileUploaderFragment, private val isAdmin: Boolean, private var teacherPath: String, private var dataSource: List<AssignmentPost>): BaseAdapter()
     {
         private class ViewModel
@@ -51,7 +54,6 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var posterPictureImageView: ImageView
             lateinit var posterNameTextView: TextView
             lateinit var timestampTextView: TextView
-            lateinit var deleteButton: ImageButton
             lateinit var nameTextView: TextView
             lateinit var detailsTextView: TextView
             lateinit var dueDateTextView: TextView
@@ -63,8 +65,8 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var linearLayout_view_solution: LinearLayout
             lateinit var viewSolutionButton: Button
             lateinit var submitSolutionButton: Button
-            lateinit var viewSubmissionButton: Button
-            lateinit var resubmitSolutionButton: Button
+            lateinit var viewSubmissionButton: TextView
+
             lateinit var popupicon : ImageView
         }
 
@@ -119,7 +121,6 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.posterPictureImageView = view.imageView_assignmentPost_posterPicture
                 viewModel.posterNameTextView = view.textView_assignmentPost_posterName
                 viewModel.timestampTextView = view.textView_assignmentPost_timestamp
-                viewModel.deleteButton = view.button_assignmentPost_delete
                 viewModel.nameTextView= view.textView_assignmentPost_name
                 viewModel.detailsTextView = view.textView_assignmentPost_details
                 viewModel.dueDateTextView = view.textView_assignmentPost_dueDate
@@ -131,7 +132,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.linearLayout_view_solution = view.linearLayout_view_solution
                 viewModel.viewSolutionButton= view.button_assignmentPost_view_solution
                 viewModel.submitSolutionButton= view.button_assignmentPost_submit_solution
-                viewModel.viewSubmissionButton = view.button_assignmentPost_view_submitted_solution
+                viewModel.viewSubmissionButton = view.lastsubmission
                 viewModel.resubmitSolutionButton = view.button_assignmentPost_resubmit_solution
                 viewModel.popupicon = view.popupicon
                 view.tag = viewModel
@@ -141,7 +142,11 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
-
+            var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+            Glide.with(context)
+                .load(post.imagepath)
+                .apply(request)
+                .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
             {
                 task ->
@@ -167,7 +172,6 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             viewModel.detailsTextView.text = post.details
             viewModel.dueDateTextView.text = dueDate
          //   viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
-            viewModel.deleteButton.setOnClickListener { this.deleteAssignmentPost(post) }
 
 
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
@@ -363,6 +367,20 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
     {
         val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
     //    layout_post_assignment_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+
+        FirebaseAuth.getInstance().currentUser?.let()
+        {
+
+            FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
+                var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                Glide.with(context)
+                    .load(it.toString())
+                    .apply(request)
+                    .into(imageview_profileimage);
+            }.addOnFailureListener {
+                it.printStackTrace()
+            };
+        }
       card_view_createforum_assignment.visibility = if(isAdmin) View.VISIBLE else View.GONE
         card_view_createforum_assignment.setOnClickListener {
             var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_assigment,null)
@@ -441,8 +459,12 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                         result, e ->
                     e?.let { (this.activity as AppActivity).showError(it) }
                         ?: result?.map { it.serialize(AssignmentPost::class.java) }?.let()
-                        { listView_courseFeed_assignments.adapter = AssignmentPostAdapter(context!!, this, isAdmin, arguments?.getString(
-                            IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
+
+                        {
+                            adapter =  AssignmentPostAdapter(context!!, this, isAdmin, arguments?.getString(
+                                IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it)
+                            listView_courseFeed_assignments.adapter =adapter
+                        }
                 }
 
                 dialog.dismiss()
@@ -529,12 +551,34 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             }
         }
         assignmentPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
-        {
-            result, e ->
+        { result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
-            ?: result?.map { it.serialize(AssignmentPost::class.java) }?.let()
-            { listView_courseFeed_assignments.adapter = AssignmentPostAdapter(context!!, this, isAdmin, arguments?.getString(
-                IDENTIFIER_COURSE_TEACHER_PATH) ?: "", it) }
+                ?: result?.map { it.serialize(AssignmentPost::class.java) }?.let()
+                {
+                    for (item in it)
+                    {
+
+                        try
+                        {
+                            FirebaseStorage.getInstance().getReference("UserProfiles")
+                                .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
+                                item.imagepath = it.toString();
+                                adapter.notifyDataSetChanged()
+                            }.addOnFailureListener {
+                                it.printStackTrace()
+                            };
+                        } catch (e: Exception)
+                        {
+                            e.printStackTrace()
+                        }
+                    }
+                    adapter = AssignmentPostAdapter(
+                        context!!, this, isAdmin, arguments?.getString(
+                            IDENTIFIER_COURSE_TEACHER_PATH
+                        ) ?: "", it)
+                    listView_courseFeed_assignments.adapter = adapter
+                }
+
         }
     }
 

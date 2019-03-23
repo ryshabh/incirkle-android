@@ -18,7 +18,7 @@ class AssignmentPost(): FirebaseDocument
     var solutionPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
-
+    var imagepath : String = ""
     constructor(name: String, details: String, dueDate: Date, poster: DocumentReference) : this()
     {
         this.name = name

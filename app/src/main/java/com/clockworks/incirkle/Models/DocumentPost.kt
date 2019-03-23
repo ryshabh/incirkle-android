@@ -14,7 +14,7 @@ class DocumentPost(): FirebaseDocument
     var attachmentPath: String? = null
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
-
+    var imagepath : String = ""
     constructor(name: String, details: String, poster: DocumentReference) : this()
     {
         this.name = name

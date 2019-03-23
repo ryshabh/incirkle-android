@@ -177,6 +177,7 @@ class UserProfileActivity : AppActivity()
             .setNeutralButton("Cancel", this.displayPictureAlertClickListener)
             .create()
             .show()
+
     }
 
     fun updateProfile(v: View)
