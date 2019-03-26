@@ -3,9 +3,11 @@ package com.clockworks.incirkle.Fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -18,6 +20,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
+import com.clockworks.incirkle.Activities.CourseFeedActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ActivityPost
 import com.clockworks.incirkle.Models.User
@@ -33,17 +36,22 @@ import kotlinx.android.synthetic.main.popup_add_activity.*
 import kotlinx.android.synthetic.main.popup_add_activity.view.*
 
 
-class CourseActivitiesFragment(): FileUploaderFragment()
+class CourseActivitiesFragment() : FileUploaderFragment()
 {
     companion object
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
         const val IDENTIFIER_IS_ADMIN = "Is Admin"
     }
-    lateinit var dialog: AlertDialog
-    lateinit var adapter :  ActivityPostAdapter
 
-    class ActivityPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<ActivityPost>): BaseAdapter()
+    lateinit var dialog: AlertDialog
+    lateinit var adapter: ActivityPostAdapter
+
+    class ActivityPostAdapter(
+        private val context: Context,
+        private val isAdmin: Boolean,
+        private var dataSource: List<ActivityPost>
+    ) : BaseAdapter()
     {
         private class ViewModel
         {
@@ -54,10 +62,11 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             lateinit var descriptionTextView: TextView
             lateinit var downloadAttachmentButton: TextView
             lateinit var downloadAttachmentImage: ImageView
-            lateinit var popupicon : ImageView
+            lateinit var popupicon: ImageView
         }
 
-        private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        private val inflater: LayoutInflater =
+            context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         private fun deleteActivityPost(post: ActivityPost)
         {
@@ -65,16 +74,20 @@ class CourseActivitiesFragment(): FileUploaderFragment()
             builder.setTitle("Delete Activity Post")
             builder.setMessage("Are you sure you wish to delete this post?")
             builder.setPositiveButton("Delete",
-            {
-                _, _ ->
-                post.reference?.delete()
-                    ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                    ?.addOnSuccessListener()
-                    {
-                        FirebaseStorage.getInstance().getReference("Activity Attachments").child(post.reference!!.id).delete()
-                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                    }
-            })
+                { _, _ ->
+                    post.reference?.delete()
+                        ?.addOnFailureListener {
+                            Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                        }
+                        ?.addOnSuccessListener()
+                        {
+                            FirebaseStorage.getInstance().getReference("Activity Attachments")
+                                .child(post.reference!!.id).delete()
+                                .addOnFailureListener {
+                                    Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                                }
+                        }
+                })
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
         }
@@ -120,39 +133,47 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
-            var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+            var request: RequestOptions =
+                RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
             Glide.with(context)
                 .load(post.imagepath)
                 .apply(request)
                 .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
-            {
-                task ->
+            { task ->
 
                 task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                ?: task.result?.serialize(User::class.java)?.let()
-                {
-                    viewModel.posterNameTextView.setText(it.fullName())
-                    // TODO: Set Display Picture
-                }
+                    ?: task.result?.serialize(User::class.java)?.let()
+                    {
+                        viewModel.posterNameTextView.setText(it.fullName())
+                        // TODO: Set Display Picture
+                    }
             }
 
-            val date = android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
-            val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
+            val date =
+                android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
+            val time =
+                android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
             val timestamp = "$time $date"
             viewModel.timestampTextView.setText(timestamp)
             viewModel.descriptionTextView.setText(post.description)
-          //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
+            //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteActivityPost(post) }
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
 
-            viewModel.downloadAttachmentButton.setOnClickListener { post.attachmentPath?.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
+            viewModel.downloadAttachmentButton.setOnClickListener {
+                post.attachmentPath?.let {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    )
+                }
+            }
 
 
 
-            if(post.attachmentPath != null)
+            if (post.attachmentPath != null)
             {
                 post.attachmentPath?.let {
 
@@ -205,14 +226,22 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                     builder.setTitle("Delete Activity Post")
                     builder.setMessage("Are you sure you wish to delete this post?")
                     builder.setPositiveButton("Delete",
-                        {
-                                _, _ ->
+                        { _, _ ->
                             post.reference?.delete()
-                                ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                ?.addOnFailureListener {
+                                    Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                                }
                                 ?.addOnSuccessListener()
                                 {
-                                    FirebaseStorage.getInstance().getReference("Activity Attachments").child(post.reference!!.id).delete()
-                                        .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                    FirebaseStorage.getInstance().getReference("Activity Attachments")
+                                        .child(post.reference!!.id).delete()
+                                        .addOnFailureListener {
+                                            Toast.makeText(
+                                                context,
+                                                it.localizedMessage,
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                 }
                         })
                     builder.setNegativeButton("Cancel", null)
@@ -248,7 +277,8 @@ class CourseActivitiesFragment(): FileUploaderFragment()
         {
 
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
-                var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                var request: RequestOptions =
+                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
                 Glide.with(context)
                     .load(it.toString())
                     .apply(request)
@@ -257,14 +287,21 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 it.printStackTrace()
             };
         }
-        card_view_createactivities.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        card_view_createactivities.visibility = if (isAdmin) View.VISIBLE else View.GONE
 
         card_view_createactivities.setOnClickListener {
 
-           var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity,null)
+            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity, null)
 
-           view.button_activity_selectAttachment.setOnClickListener { this.selectFile { button_activity_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(
-               com.clockworks.incirkle.R.string.text_select_attachment) } }
+            view.button_activity_selectAttachment.setOnClickListener {
+
+                (activity as CourseFeedActivity).selectFile {
+                    button_activity_selectAttachment.text =
+                        getFileName((activity as CourseFeedActivity).selectedFileUri) ?: getString(
+                    com.clockworks.incirkle.R.string.text_select_attachment)
+//                        )
+                }
+            }
             view.button_post_activity.setOnClickListener()
             {
                 view.editText_post_activity_description.error = null
@@ -277,19 +314,25 @@ class CourseActivitiesFragment(): FileUploaderFragment()
                 }
                 else
                 {
-                    val activityPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Activity Posts")
+                    val activityPostsReference =
+                        FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                            .collection("Activity Posts")
 
                     FirebaseAuth.getInstance().currentUser?.let()
                     {
                         val appActivity = this.activity as AppActivity
                         appActivity.showLoadingAlert()
                         activityPostsReference.add(ActivityPost(description, it.documentReference()))
-                            .addOnFailureListener { appActivity.showError (it) }
+                            .addOnFailureListener { appActivity.showError(it) }
                             .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                             .addOnSuccessListener()
                             {
                                 view.editText_post_activity_description.setText("")
-                                this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id), "attachmentPath")
+                                (activity as CourseFeedActivity).updateAttachmentPath(
+                                    it,
+                                    FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id),
+                                    "attachmentPath"
+                                )
                             }
                     }
                 }
@@ -306,35 +349,67 @@ class CourseActivitiesFragment(): FileUploaderFragment()
 
         }
 
-        val activityPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Activity Posts")
+        val activityPostsReference =
+            FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                .collection("Activity Posts")
 
         activityPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
-        {
-            result, e ->
+        { result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
-            ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
-            {
-                for (item in it)
+                ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
                 {
-
-                    try
+                    for (item in it)
                     {
-                        FirebaseStorage.getInstance().getReference("UserProfiles").child(item.poster.path.replace("Users/","")).downloadUrl.addOnSuccessListener {
-                            item.imagepath = it.toString();
-                            adapter.notifyDataSetChanged()
 
-                        }.addOnFailureListener {
-                            it.printStackTrace()
-                        };
-                    } catch (e: Exception)
-                    {
-                        e.printStackTrace()
+                        try
+                        {
+                            FirebaseStorage.getInstance().getReference("UserProfiles")
+                                .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
+                                item.imagepath = it.toString();
+                                adapter.notifyDataSetChanged()
+
+                            }.addOnFailureListener {
+                                it.printStackTrace()
+                            };
+                        } catch (e: Exception)
+                        {
+                            e.printStackTrace()
+                        }
                     }
+                    adapter = ActivityPostAdapter(context!!, isAdmin, it)
+                    listView_courseFeed_activities.adapter = adapter
                 }
-                adapter =  ActivityPostAdapter(context!!, isAdmin, it)
-                listView_courseFeed_activities.adapter = adapter
+        }
+    }
+
+
+    private fun getFileName(uri: Uri?): String?
+    {
+        var result: String? = null;
+        if (uri?.getScheme().equals("content"))
+        {
+            var cursor: Cursor = activity!!.getContentResolver().query(uri, null, null, null, null);
+            try
+            {
+                if (cursor != null && cursor.moveToFirst())
+                {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally
+            {
+                cursor.close();
             }
         }
+        if (result == null)
+        {
+            result = uri?.getPath();
+            var cut: Int = result!!.lastIndexOf('/');
+            if (cut != -1)
+            {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
 

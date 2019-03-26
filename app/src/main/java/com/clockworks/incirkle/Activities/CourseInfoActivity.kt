@@ -173,16 +173,19 @@ class CourseInfoActivity : AppActivity()
                             this.performThrowable { it.serialize(User::class.java) }?.let()
                             {
                                 if (this.courseID != null)
-                                    it.courses.add(courseReference)
+                                    if(!it.courses.contains(courseReference)){
+                                        it.courses.add(courseReference)
+                                    }
 
                                 this.showLoadingAlert()
                                 it.reference!!.set(it)
                                     .addOnFailureListener(::showError)
-                                    .addOnSuccessListener { this.updateAllUsers(courseReference) }
+                                    .addOnSuccessListener {  }
                                     .addOnCompleteListener()
                                     {
-                                        this.dismissLoadingAlert()
-                                        this.goHome()
+                                        this.updateAllUsers(courseReference)
+//                                        this.dismissLoadingAlert()
+//                                        this.goHome()
                                     }
                             }
                         }

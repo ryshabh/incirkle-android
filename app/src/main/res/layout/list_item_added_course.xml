@@ -60,8 +60,10 @@
                 android:gravity="start|center_vertical"/>
 
         <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:id="@+id/ivRemoveCourse"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:padding="5dp"
                 android:src="@drawable/ic_menu"
                 android:layout_gravity="center"/>
 

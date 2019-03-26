@@ -7,15 +7,16 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.storage.StorageReference
 import dmax.dialog.SpotsDialog
 
-abstract class AppActivity: AppCompatActivity()
+abstract class AppActivity : AppCompatActivity()
 {
-    fun Uri.getName(context: Context): String
+     fun Uri.getName(context: Context): String
     {
         var result: String? = null
         if (this.getScheme().equals("content"))
@@ -25,8 +26,7 @@ abstract class AppActivity: AppCompatActivity()
             {
                 if (cursor != null && cursor.moveToFirst())
                     result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-            }
-            finally
+            } finally
             {
                 cursor!!.close()
             }
@@ -49,14 +49,13 @@ abstract class AppActivity: AppCompatActivity()
         return this.findViewById<View>(android.R.id.content)
     }
 
-    fun <T>performThrowable(block: () -> T): T?
+    fun <T> performThrowable(block: () -> T): T?
     {
         var result: T? = null
         try
         {
             result = block()
-        }
-        catch (e: Exception)
+        } catch (e: Exception)
         {
             this.showError(e)
         }
@@ -66,7 +65,7 @@ abstract class AppActivity: AppCompatActivity()
     fun showError(exception: Exception)
     {
         exception.printStackTrace()
-      //  Snackbar.make(this.rootView(), exception.localizedMessage, Snackbar.LENGTH_INDEFINITE)
+        //  Snackbar.make(this.rootView(), exception.localizedMessage, Snackbar.LENGTH_INDEFINITE)
         //    .setAction("Dismiss") { }.show()
     }
 
@@ -109,14 +108,10 @@ abstract class AppActivity: AppCompatActivity()
     }
 
 
-
-
-
-
     private val PICK_FILE_REQUEST = 1
 
     var selectedFileUri: Uri? = null
-    var changedUrl:String? = null
+    var changedUrl: String? = null
         private set
     private var didSelectFile: () -> Unit = { }
 
@@ -125,12 +120,18 @@ abstract class AppActivity: AppCompatActivity()
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         intent.type = "*/*"
-        performThrowable { startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), PICK_FILE_REQUEST) }
+        performThrowable {
+            startActivityForResult(
+                Intent.createChooser(intent, "Select a File to Upload"),
+                PICK_FILE_REQUEST
+            )
+        }
         this.didSelectFile = onSelection
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
+        Log.d("AppActivity", " " + requestCode + " " + resultCode + " " + data);
         if (requestCode == PICK_FILE_REQUEST && resultCode == Activity.RESULT_OK)
         {
             this.selectedFileUri = data?.dataString?.let { Uri.parse(it) }
@@ -138,7 +139,12 @@ abstract class AppActivity: AppCompatActivity()
         }
     }
 
-    fun updateAttachmentPath(documentReference: DocumentReference, fileReference: StorageReference, fieldPath: String, onSuccess: () -> Unit = { })
+    fun updateAttachmentPath(
+        documentReference: DocumentReference,
+        fileReference: StorageReference,
+        fieldPath: String,
+        onSuccess: () -> Unit = { }
+    )
     {
 
         this.selectedFileUri?.let()
@@ -181,8 +187,7 @@ abstract class AppActivity: AppCompatActivity()
                                     .addOnCompleteListener { dismissLoadingAlert() }
                             }
                     }
-            }
-            catch (e: java.lang.Exception)
+            } catch (e: java.lang.Exception)
             {
                 dismissLoadingAlert()
                 showError(e)

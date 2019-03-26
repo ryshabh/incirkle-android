@@ -22,6 +22,9 @@ import android.support.annotation.NonNull
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import android.util.Log
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 
 
 class UserProfileActivity : AppActivity()
@@ -72,10 +75,10 @@ class UserProfileActivity : AppActivity()
                     Log.d(TAG, "onSuccess: deleted file")
                     this.user.profilepic = null
                     displayPictureImageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_user))
-                    this.user.reference?.update("profilepic",null)
-                    ?.addOnFailureListener(::showError)
-                    ?.addOnSuccessListener(){}
-                    ?.addOnCompleteListener { this.dismissLoadingAlert() }
+                    this.user.reference?.update("profilepic", null)
+                        ?.addOnFailureListener(::showError)
+                        ?.addOnSuccessListener() {}
+                        ?.addOnCompleteListener { this.dismissLoadingAlert() }
                 }).addOnFailureListener(OnFailureListener {
                     // Uh-oh, an error occurred!
                     this.dismissLoadingAlert()
@@ -177,21 +180,27 @@ class UserProfileActivity : AppActivity()
         gender.check(if (user.gender == User.Gender.MALE) radioButton_male.id else radioButton_female.id)
         type.check(if (user.type == User.Type.TEACHER) radioButton_teacher.id else radioButton_student.id)
 
+        var requestOptions = RequestOptions()
+        requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(16))
         if (user.profilepic != null)
         {
             user.profilepic?.let {
 
-
                 Glide
                     .with(this)
                     .load(it)
+                    .apply(requestOptions)
                     .into(displayPictureImageButton);
 
             }
         }
         else
         {
-            displayPictureImageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_user))
+            Glide
+                .with(this)
+                .load(ContextCompat.getDrawable(this, R.drawable.ic_user))
+                .apply(requestOptions)
+                .into(displayPictureImageButton);
         }
     }
 

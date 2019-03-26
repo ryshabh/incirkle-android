@@ -6,6 +6,7 @@ import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.clockworks.incirkle.Fragments.CourseActivitiesFragment
@@ -14,6 +15,7 @@ import com.clockworks.incirkle.Fragments.CourseDocumentsFragment
 import com.clockworks.incirkle.Fragments.CourseForumFragment
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
+import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
@@ -27,16 +29,20 @@ class CourseFeedActivity : AppActivity()
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
         const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
+        const val IDENTIFIER_IS_USER_TEACHER = "IS_USER_TEACHER"
     }
 
     private lateinit var courseReference: DocumentReference
 
+    private var isUserTeacher=false
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_course_feed)
         setSupportActionBar(toolbar)
+
+        isUserTeacher = intent.getBooleanExtra(IDENTIFIER_IS_USER_TEACHER,false);
 
         container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs_courseFeed))
         tabs_courseFeed.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
@@ -57,11 +63,11 @@ class CourseFeedActivity : AppActivity()
                         try
                         {
                             supportActionBar!!.title = it.code + " : "+it.name
-                        } catch (e: Exception)
-                        {
-
-                        }
-                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, user.documentReference() == it.teacher)
+                        } catch (e: Exception){}
+//                        user.documentReference() == it.teacher
+                        Log.d("User Phone no",""+user.phoneNumber);
+                        var isTeacherORTeachingAssistantOfThisCourse =  isUserTeacher || it.teachingAssistants.contains(user.phoneNumber)
+                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, isTeacherORTeachingAssistantOfThisCourse)
                     }
                 }
                 .addOnCompleteListener { this.dismissLoadingAlert() }

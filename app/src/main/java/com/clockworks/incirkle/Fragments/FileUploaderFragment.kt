@@ -11,6 +11,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.storage.StorageReference
 import java.lang.Exception
 import android.provider.OpenableColumns
+import android.util.Log
 
 
 fun Uri.getName(context: Context): String
@@ -23,8 +24,7 @@ fun Uri.getName(context: Context): String
         {
             if (cursor != null && cursor.moveToFirst())
                 result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-        }
-        finally
+        } finally
         {
             cursor!!.close()
         }
@@ -39,7 +39,7 @@ fun Uri.getName(context: Context): String
     return result
 }
 
-abstract class FileUploaderFragment: Fragment()
+abstract class FileUploaderFragment : Fragment()
 {
     private val PICK_FILE_REQUEST = 1
 
@@ -52,12 +52,20 @@ abstract class FileUploaderFragment: Fragment()
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.flags = FLAG_GRANT_READ_URI_PERMISSION
         intent.type = "*/*"
-        (this.activity as? AppActivity)?.performThrowable { startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), PICK_FILE_REQUEST) }
+        (this.activity as? AppActivity)?.performThrowable {
+            startActivityForResult(
+                Intent.createChooser(
+                    intent,
+                    "Select a File to Upload"
+                ), PICK_FILE_REQUEST
+            )
+        }
         this.didSelectFile = onSelection
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
+        Log.d("FileUploader", " " + requestCode + " " + resultCode + " " + data);
         if (requestCode == PICK_FILE_REQUEST && resultCode == Activity.RESULT_OK)
         {
             this.selectedFileUri = data?.dataString?.let { Uri.parse(it) }
@@ -65,7 +73,12 @@ abstract class FileUploaderFragment: Fragment()
         }
     }
 
-    fun updateAttachmentPath(documentReference: DocumentReference, fileReference: StorageReference, fieldPath: String, onSuccess: () -> Unit = { })
+    fun updateAttachmentPath(
+        documentReference: DocumentReference,
+        fileReference: StorageReference,
+        fieldPath: String,
+        onSuccess: () -> Unit = { }
+    )
     {
         val appActivity = activity as AppActivity
         this.selectedFileUri?.let()
@@ -107,8 +120,7 @@ abstract class FileUploaderFragment: Fragment()
                                     .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                             }
                     }
-            }
-            catch (e: Exception)
+            } catch (e: Exception)
             {
                 appActivity.dismissLoadingAlert()
                 appActivity.showError(e)

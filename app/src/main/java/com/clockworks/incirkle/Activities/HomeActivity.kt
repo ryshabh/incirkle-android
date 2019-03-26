@@ -3,11 +3,13 @@ package com.clockworks.incirkle.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
@@ -19,15 +21,13 @@ import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
+import com.clockworks.incirkle.R
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
-
-
-
 
 
 class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListener
@@ -37,7 +37,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     private var listenerRegistrations = ArrayList<ListenerRegistration>()
 
     private var userListenerRegistration: ListenerRegistration? = null
-    lateinit var  addedCourseListAdapter : AddedCourseListAdapter
+    lateinit var addedCourseListAdapter: AddedCourseListAdapter
     private fun autofetchCourses(user: User)
     {
         this.courses = ArrayList()
@@ -46,104 +46,96 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         this.listenerRegistrations = ArrayList(user.courses.map()
         {
             it.addSnapshotListener()
-            {
-                result, exception ->
+            { result, exception ->
                 exception?.let { this.showError(it) }
-                ?: result?.let()
-                {
-
-
-                    this.performThrowable { it.serialize(Course::class.java) }?.let()
+                    ?: result?.let()
                     {
-                        course ->
 
+                        this.performThrowable { it.serialize(Course::class.java) }?.let()
+                        { course ->
 
-                        if(!this.courses.any{ tempcourse -> tempcourse.reference == course.reference })
-                        {
-
-
-
-
-                            course.reference!!.collection("Activity Posts").get()
-                                .addOnFailureListener(::showError)
-                                .addOnSuccessListener()
-                                {
-                                   course.activitypostsize =  it.size()
-                                    if(!addedCourseListAdapter.isEmpty)
+                            if (!this.courses.any { tempcourse -> tempcourse.reference == course.reference })
+                            {
+                                course.reference!!.collection("Activity Posts").get()
+                                    .addOnFailureListener(::showError)
+                                    .addOnSuccessListener()
                                     {
-                                        addedCourseListAdapter.notifyDataSetChanged()
+                                        course.activitypostsize = it.size()
+                                        if (!addedCourseListAdapter.isEmpty)
+                                        {
+                                            addedCourseListAdapter.notifyDataSetChanged()
+                                        }
+                                        Log.d("activitypostsize", course.activitypostsize.toString())
                                     }
-                                    Log.d("activitypostsize",course.activitypostsize.toString())
-                                }
-                                .addOnCompleteListener()
-                                {
-                                //    Log.d("completed","completed")
-                                }
-                            course.reference!!.collection("Assignment Posts").get()
-                                .addOnFailureListener(::showError)
-                                .addOnSuccessListener()
-                                {
-                                    course.assignmentpostsize =  it.size()
-                                    if(!addedCourseListAdapter.isEmpty)
+                                    .addOnCompleteListener()
                                     {
-                                        addedCourseListAdapter.notifyDataSetChanged()
+                                        //    Log.d("completed","completed")
                                     }
-                                    Log.d("assignmentpostsize",course.assignmentpostsize.toString())
-                                }
-                                .addOnCompleteListener()
-                                {
-                                 //   Log.d("completed","completed")
-                                }
-                            course.reference!!.collection("Forum Posts").get()
-                                .addOnFailureListener(::showError)
-                                .addOnSuccessListener()
-                                {
-                                    course.forumpostsize =  it.size()
-                                    if(!addedCourseListAdapter.isEmpty)
+                                course.reference!!.collection("Assignment Posts").get()
+                                    .addOnFailureListener(::showError)
+                                    .addOnSuccessListener()
                                     {
-                                        addedCourseListAdapter.notifyDataSetChanged()
+                                        course.assignmentpostsize = it.size()
+                                        if (!addedCourseListAdapter.isEmpty)
+                                        {
+                                            addedCourseListAdapter.notifyDataSetChanged()
+                                        }
+                                        Log.d("assignmentpostsize", course.assignmentpostsize.toString())
                                     }
-                                    Log.d("forumpostsize",course.forumpostsize.toString())
-                                }
-                                .addOnCompleteListener()
-                                {
-                            //        Log.d("completed","completed")
-                                }
-                            course.reference!!.collection("Document Posts").get()
-                                .addOnFailureListener(::showError)
-                                .addOnSuccessListener()
-                                {
-                                    course.documentpostsize =  it.size()
-                                    if(!addedCourseListAdapter.isEmpty)
+                                    .addOnCompleteListener()
                                     {
-                                        addedCourseListAdapter.notifyDataSetChanged()
+                                        //   Log.d("completed","completed")
                                     }
+                                course.reference!!.collection("Forum Posts").get()
+                                    .addOnFailureListener(::showError)
+                                    .addOnSuccessListener()
+                                    {
+                                        course.forumpostsize = it.size()
+                                        if (!addedCourseListAdapter.isEmpty)
+                                        {
+                                            addedCourseListAdapter.notifyDataSetChanged()
+                                        }
+                                        Log.d("forumpostsize", course.forumpostsize.toString())
+                                    }
+                                    .addOnCompleteListener()
+                                    {
+                                        //        Log.d("completed","completed")
+                                    }
+                                course.reference!!.collection("Document Posts").get()
+                                    .addOnFailureListener(::showError)
+                                    .addOnSuccessListener()
+                                    {
+                                        course.documentpostsize = it.size()
+                                        if (!addedCourseListAdapter.isEmpty)
+                                        {
+                                            addedCourseListAdapter.notifyDataSetChanged()
+                                        }
 
-                                    Log.d("documentpostsize",course.documentpostsize.toString())
-                                }
-                                .addOnCompleteListener()
-                                {
-                           //         Log.d("completed","completed")
-                                }
-                            this.courses.add(course)
-                            addedCourseListAdapter  = AddedCourseListAdapter(this, this.courses)
-                            courses_list_view.adapter = addedCourseListAdapter
+                                        Log.d("documentpostsize", course.documentpostsize.toString())
+                                    }
+                                    .addOnCompleteListener()
+                                    {
+                                        //         Log.d("completed","completed")
+                                    }
+                                this.courses.add(course)
+                                addedCourseListAdapter = AddedCourseListAdapter(this, this.courses)
+                                courses_list_view.adapter = addedCourseListAdapter
+                            }
+
+                            /* else
+                                 existingCourses.forEach { this.courses[this.courses.indexOf(it)] = course }
+                             courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)*/
                         }
-
-                       /* else
-                            existingCourses.forEach { this.courses[this.courses.indexOf(it)] = course }
-                        courses_list_view.adapter = AddedCourseListAdapter(this, this.courses)*/
                     }
-                }
 
-                Log.d("end","end")
+                Log.d("end", "end")
             }
         })
     }
 
-    lateinit var textView_user_name : TextView
-    lateinit var textView_user_id : TextView
-    lateinit var profileimageview : ImageView
+    lateinit var textView_user_name: TextView
+    lateinit var textView_user_id: TextView
+    lateinit var profileimageview: ImageView
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -153,11 +145,27 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 
         setSupportActionBar(toolbar)
 
-        val toggle = ActionBarDrawerToggle(
+
+        val toggle = object : ActionBarDrawerToggle(
             this, drawer_layout, toolbar,
             com.clockworks.incirkle.R.string.navigation_drawer_open,
             com.clockworks.incirkle.R.string.navigation_drawer_close
         )
+        {
+            override fun onDrawerClosed(view: View)
+            {
+                super.onDrawerClosed(view)
+                //toast("Drawer closed")
+            }
+
+            override fun onDrawerOpened(drawerView: View)
+            {
+                super.onDrawerOpened(drawerView)
+                //toast("Drawer opened")
+
+            }
+        }
+
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -171,8 +179,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         FirebaseAuth.getInstance().currentUser?.let()
         {
             this.userListenerRegistration = it.documentReference().addSnapshotListener()
-            {
-                result, exception ->
+            { result, exception ->
 
                 exception?.let { this.showError(it) }
                 result?.let()
@@ -195,16 +202,26 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                                 user.profilepic?.let {
 
                                     var requestOptions = RequestOptions()
-                                    requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(16))
+                                    requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(5))
 
                                     Glide
                                         .with(this)
-                                        .apply { requestOptions }
                                         .load(it)
-
+                                        .apply(requestOptions)
                                         .into(profileimageview);
 
                                 }
+                            }
+                            else
+                            {
+                                var requestOptions = RequestOptions()
+                                requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(5))
+
+                                Glide
+                                    .with(this)
+                                    .load(ContextCompat.getDrawable(this, R.drawable.ic_user))
+                                    .apply(requestOptions)
+                                    .into(profileimageview);
                             }
                             if (user.courses.isEmpty())
                             {
@@ -214,27 +231,27 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
                             else
                             {
                                 this.autofetchCourses(user)
-                                Log.d("end fetch","end fetch");
+                                Log.d("end fetch", "end fetch");
                             }
                         }
                     }
                 }
             }
         }
-        ?: run()
-        {
-           this.startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-        }
+            ?: run()
+            {
+                this.startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
 
         courses_list_view.setOnItemClickListener()
-        {
-            _, _, position, _ ->
+        { _, _, position, _ ->
 
             val course = this.courses[position]
             val intent = Intent(this, CourseFeedActivity::class.java)
             intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_PATH, course.reference!!.path)
             intent.putExtra(CourseFeedActivity.IDENTIFIER_COURSE_TEACHER_PATH, course.teacher.path)
+            intent.putExtra(CourseFeedActivity.IDENTIFIER_IS_USER_TEACHER, isUserTeacher)
             startActivity(intent)
         }
     }
@@ -256,7 +273,8 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
     override fun onCreateOptionsMenu(menu: Menu): Boolean
     {
         menuInflater.inflate(com.clockworks.incirkle.R.menu.home, menu)
-        menu.findItem(com.clockworks.incirkle.R.id.home_action_enrol_course).setTitle(if (this.isUserTeacher) com.clockworks.incirkle.R.string.text_enrol_create_course else com.clockworks.incirkle.R.string.title_activity_enrolCourse)
+        menu.findItem(com.clockworks.incirkle.R.id.home_action_enrol_course)
+            .setTitle(if (this.isUserTeacher) com.clockworks.incirkle.R.string.text_enrol_create_course else com.clockworks.incirkle.R.string.title_activity_enrolCourse)
         return true
     }
 
@@ -278,7 +296,12 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         // Handle navigation view item clicks here.
         when (item.itemId)
         {
-            com.clockworks.incirkle.R.id.nav_account -> this.startActivity(Intent(this, UserProfileActivity::class.java))
+            com.clockworks.incirkle.R.id.nav_account -> this.startActivity(
+                Intent(
+                    this,
+                    UserProfileActivity::class.java
+                )
+            )
             com.clockworks.incirkle.R.id.nav_logout ->
             {
                 FirebaseAuth.getInstance().signOut()
@@ -290,5 +313,6 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
+
 
 }
