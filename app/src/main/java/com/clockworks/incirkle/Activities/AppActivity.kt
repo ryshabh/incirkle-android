@@ -116,6 +116,7 @@ abstract class AppActivity: AppCompatActivity()
     private val PICK_FILE_REQUEST = 1
 
     var selectedFileUri: Uri? = null
+    var changedUrl:String? = null
         private set
     private var didSelectFile: () -> Unit = { }
 
@@ -174,6 +175,7 @@ abstract class AppActivity: AppCompatActivity()
                             .addOnSuccessListener()
                             {
                                 showLoadingAlert()
+                                changedUrl = it.toString();
                                 documentReference.update(fieldPath, it.toString())
                                     .addOnFailureListener { showError(it) }
                                     .addOnCompleteListener { dismissLoadingAlert() }

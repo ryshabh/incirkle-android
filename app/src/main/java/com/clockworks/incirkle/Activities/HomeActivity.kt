@@ -290,4 +290,5 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
+
 }

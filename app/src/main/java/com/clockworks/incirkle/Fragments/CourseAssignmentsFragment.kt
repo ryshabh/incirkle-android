@@ -66,6 +66,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
             lateinit var viewSolutionButton: Button
             lateinit var submitSolutionButton: Button
             lateinit var viewSubmissionButton: TextView
+            lateinit var resubmitSolutionButton: Button
 
             lateinit var popupicon : ImageView
         }
@@ -132,7 +133,7 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                 viewModel.linearLayout_view_solution = view.linearLayout_view_solution
                 viewModel.viewSolutionButton= view.button_assignmentPost_view_solution
                 viewModel.submitSolutionButton= view.button_assignmentPost_submit_solution
-                viewModel.viewSubmissionButton = view.lastsubmission
+//                viewModel.viewSubmissionButton = view.lastsubmission
                 viewModel.resubmitSolutionButton = view.button_assignmentPost_resubmit_solution
                 viewModel.popupicon = view.popupicon
                 view.tag = viewModel
@@ -341,10 +342,10 @@ class CourseAssignmentsFragment(): FileUploaderFragment()
                         .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
                         .addOnSuccessListener { it.serialize(AssignmentPost.Submission::class.java).let { it.submissionPath.let { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } } }
                 }
-                viewModel.resubmitSolutionButton
-                    .setOnClickListener { uploaderFragment
-                        .selectFile { uploaderFragment
-                            .updateAttachmentPath(submissionReference, submissionStorageReference, "submissionPath") } }
+//                viewModel.resubmitSolutionButton
+//                    .setOnClickListener { uploaderFragment
+//                        .selectFile { uploaderFragment
+//                            .updateAttachmentPath(submissionReference, submissionStorageReference, "submissionPath") } }
             }
 
             return view

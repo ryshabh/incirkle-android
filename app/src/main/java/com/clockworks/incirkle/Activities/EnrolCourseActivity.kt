@@ -14,7 +14,7 @@ class EnrolCourseActivity : AppActivity()
 {
     companion object
     {
-        const val IDENTIFIER_SELECTED_ORGANISATION= "Selected Organisation"
+        const val IDENTIFIER_SELECTED_ORGANISATION = "Selected Organisation"
     }
 
     var availableCourses = ArrayList<Course>()
@@ -42,19 +42,18 @@ class EnrolCourseActivity : AppActivity()
             {
                 val courses = ArrayList<Course>()
                 it.documents.forEach()
-                {
-                    snapshot ->
-
+                { snapshot ->
+                   // remove already enrolled coureses
                     if (user.courses.contains(snapshot.reference))
                         return@forEach
 
                     this.performThrowable { snapshot.serialize(Course::class.java) }?.let()
                     {
-                        if (it.teacher != user.reference)
-                        {
+//                        if (it.teacher != user.reference)
+//                        {
                             it.reference = snapshot.reference
                             courses.add(it)
-                        }
+//                        }
                     }
                 }
 
@@ -64,8 +63,7 @@ class EnrolCourseActivity : AppActivity()
             .addOnCompleteListener { this.dismissLoadingAlert() }
 
         listView_available_courses.setOnItemClickListener()
-        {
-            _, _, position, _ ->
+        { _, _, position, _ ->
             val intent = Intent(this, CourseInfoActivity::class.java)
             intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSES_PATH, this.coursesPath())
             intent.putExtra(CourseInfoActivity.IDENTIFIER_COURSE_ID, this.availableCourses[position].reference!!.id)
@@ -88,7 +86,8 @@ class EnrolCourseActivity : AppActivity()
                 {
                     this.performThrowable { it.serialize(User::class.java) }?.let()
                     {
-                        this.button_create_course.visibility = if (it.type == User.Type.TEACHER) View.VISIBLE else View.GONE
+                        this.button_create_course.visibility =
+                            if (it.type == User.Type.TEACHER) View.VISIBLE else View.GONE
                         this.fetchAvailableCoursesForUser(it)
                     }
                 }

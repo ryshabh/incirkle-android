@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
 import com.bumptech.glide.Glide
@@ -16,16 +17,19 @@ import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_user_profile.*
-
-
+import com.google.firebase.storage.StorageReference
+import android.support.annotation.NonNull
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import android.util.Log
 
 
 class UserProfileActivity : AppActivity()
 {
+    private var TAG = UserProfileActivity::class.java.simpleName
     private lateinit var user: User
     private val displayPictureAlertClickListener = DialogInterface.OnClickListener()
-    {
-        dialog, button ->
+    { dialog, button ->
 
         when (button)
         {
@@ -34,29 +38,49 @@ class UserProfileActivity : AppActivity()
                 // TODO: Change Picture
 
 
-                    this.selectFile {
+                this.selectFile {
 
-                          /*  this.selectedFileUri?.getName(this)
-                                ?: getString(com.clockworks.incirkle.R.string.text_select_attachment)
+                    /*  this.selectedFileUri?.getName(this)
+                          ?: getString(com.clockworks.incirkle.R.string.text_select_attachment)
 */
-                        if(this.selectedFileUri!=null)
-                        {
-                            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedFileUri)
-                            displayPictureImageButton.setImageBitmap(bitmap)
-                            updateAttachmentPath(
-                                user.reference!!,
-                                FirebaseStorage.getInstance().getReference("UserProfiles").child(user.reference!!.id),
-                                "profilepic"
-                            )
-                        }
+                    if (this.selectedFileUri != null)
+                    {
+                        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedFileUri)
+                        displayPictureImageButton.setImageBitmap(bitmap)
+                        updateAttachmentPath(
+                            user.reference!!,
+                            FirebaseStorage.getInstance().getReference("UserProfiles").child(user.reference!!.id),
+                            "profilepic"
+                        )
                     }
+                }
 
 
             }
             AlertDialog.BUTTON_NEGATIVE ->
             {
                 // TODO: Delete Picture
+                if (this.user.profilepic == null || this.user.profilepic.isNullOrEmpty())
+                    return@OnClickListener
 
+                val photoRef = FirebaseStorage.getInstance().getReference("UserProfiles").storage.getReferenceFromUrl(
+                    this.user.profilepic!!
+                )
+                this.showLoadingAlert()
+                photoRef.delete().addOnSuccessListener(OnSuccessListener<Void> {
+                    // File deleted successfully
+                    Log.d(TAG, "onSuccess: deleted file")
+                    this.user.profilepic = null
+                    displayPictureImageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_user))
+                    this.user.reference?.update("profilepic",null)
+                    ?.addOnFailureListener(::showError)
+                    ?.addOnSuccessListener(){}
+                    ?.addOnCompleteListener { this.dismissLoadingAlert() }
+                }).addOnFailureListener(OnFailureListener {
+                    // Uh-oh, an error occurred!
+                    this.dismissLoadingAlert()
+                    Log.d(TAG, "onFailure: did not delete file")
+                })
 
             }
             AlertDialog.BUTTON_NEUTRAL -> dialog.dismiss()
@@ -66,13 +90,14 @@ class UserProfileActivity : AppActivity()
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_user_profile)
+        setContentView(com.clockworks.incirkle.R.layout.activity_user_profile)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
 
         FirebaseAuth.getInstance().currentUser?.let()
-        {
-            firebaseUser ->
+        { firebaseUser ->
             this.showLoadingAlert()
             firebaseUser.documentReference().get()
                 .addOnFailureListener(::showError)
@@ -93,8 +118,6 @@ class UserProfileActivity : AppActivity()
                         newUser.reference = FirebaseAuth.getInstance().currentUser?.documentReference()
 
                         this.update(newUser)
-
-
 
                         this.showLoadingAlert()
                         Organisation.reference.get()
@@ -166,6 +189,10 @@ class UserProfileActivity : AppActivity()
 
             }
         }
+        else
+        {
+            displayPictureImageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_user))
+        }
     }
 
     fun changeDisplayPicture(v: View)
@@ -187,6 +214,10 @@ class UserProfileActivity : AppActivity()
         this.user.gender = this.selectedGender()
         this.user.type = this.selectedType()
 
+        // check image changed
+        if (changedUrl != null)
+            this.user.profilepic = this.changedUrl;
+
         this.showLoadingAlert()
         this.user.reference?.set(this.user)
             ?.addOnFailureListener(::showError)
@@ -199,4 +230,11 @@ class UserProfileActivity : AppActivity()
             }
             ?.addOnCompleteListener { this.dismissLoadingAlert() }
     }
+
+    override fun onSupportNavigateUp(): Boolean
+    {
+        onBackPressed()
+        return true
+    }
+
 }
