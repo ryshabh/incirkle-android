@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_height="wrap_content"
 
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        android:layout_height="wrap_content">
 
-<android.support.v7.widget.CardView
+    <android.support.v7.widget.CardView
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
@@ -17,12 +17,12 @@
             app:cardBackgroundColor="@color/cardview_light_background"
             app:cardCornerRadius="4dp"
             app:cardElevation="2dp"
-            app:contentPadding="4dp" >
+            app:contentPadding="4dp">
 
         <LinearLayout
                 android:layout_width="match_parent"
                 android:orientation="vertical"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content">
 
 
             <LinearLayout
@@ -69,8 +69,9 @@
 
                 <ImageView
                         android:id="@+id/popupicon"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:padding="5dp"
                         android:src="@drawable/ic_menu"
                         android:layout_gravity="end"/>
 
@@ -81,7 +82,7 @@
                         android:layout_margin="5dp"
                         android:layout_gravity="center"
                         android:visibility="gone"
-                        android:src="@android:drawable/ic_menu_delete" />
+                        android:src="@android:drawable/ic_menu_delete"/>
 
             </LinearLayout>
 
@@ -93,8 +94,10 @@
                     android:textStyle="bold"
                     android:textColor="#39393a"
                     android:textSize="16sp"
+                    android:visibility="gone"
                     android:fontFamily="@font/helveticaneue_bold"
-                    android:text="" />
+                    android:text=""/>
+
             <TextView
                     android:id="@+id/textView_activityPost_description"
                     android:layout_width="match_parent"
@@ -103,20 +106,22 @@
                     android:fontFamily="@font/helvetica_neue_regular"
                     android:textSize="12sp"
                     android:textColor="#39393a"
-                    android:text="" />
+                    android:text=""/>
 
-            <LinearLayout android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:orientation="horizontal">
-
-            <TextView
-                    android:id="@+id/button_activityPost_download_attachment"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:visibility="gone"
-                    android:text="@string/text_download_attachment" />
+                    android:orientation="horizontal">
+
+                <TextView
+                        android:id="@+id/button_activityPost_download_attachment"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:visibility="gone"
+                        android:text="@string/text_download_attachment"/>
+
                 <ImageView
                         android:id="@+id/button_activityPost_download_images"
                         android:layout_height="150dp"
@@ -124,15 +129,16 @@
                         android:layout_width="match_parent"
 
                         />
-            <ImageButton
-                    android:id="@+id/button_activityPost_delete"
-                    android:layout_width="25dp"
 
-                    android:layout_height="25dp"
-                    android:layout_margin="5dp"
-                    android:layout_gravity="center"
-                    android:visibility="gone"
-                    android:src="@android:drawable/ic_menu_delete" />
+                <ImageButton
+                        android:id="@+id/button_activityPost_delete"
+                        android:layout_width="25dp"
+
+                        android:layout_height="25dp"
+                        android:layout_margin="5dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:src="@android:drawable/ic_menu_delete"/>
             </LinearLayout>
         </LinearLayout>
     </android.support.v7.widget.CardView>

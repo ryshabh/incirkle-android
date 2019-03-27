@@ -31,17 +31,23 @@ import kotlinx.android.synthetic.main.fragment_course_documents.*
 import kotlinx.android.synthetic.main.list_item_post_document.view.*
 import kotlinx.android.synthetic.main.popup_add_document.view.*
 
-class CourseDocumentsFragment(): FileUploaderFragment()
+class CourseDocumentsFragment() : FileUploaderFragment()
 {
     companion object
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
-        const val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_IS_TEACHER = "Is Teacher"
+        const val IDENTIFIER_IS_TEACHING_ASSISTANT = "Is Teaching Assistant"
     }
 
     lateinit var dialog: AlertDialog
     lateinit var adapter: DocumentPostAdapter
-    class DocumentPostAdapter(private val context: Context, private val isAdmin: Boolean, private var dataSource: List<DocumentPost>): BaseAdapter()
+
+    class DocumentPostAdapter(
+        private val context: Context,
+        private val isAdmin: Boolean,
+        private var dataSource: List<DocumentPost>
+    ) : BaseAdapter()
     {
         private class ViewModel
         {
@@ -56,7 +62,8 @@ class CourseDocumentsFragment(): FileUploaderFragment()
             lateinit var downloadAttachmentImage: ImageView
         }
 
-        private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        private val inflater: LayoutInflater =
+            context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         private fun deleteDocumentPost(post: DocumentPost)
         {
@@ -64,16 +71,20 @@ class CourseDocumentsFragment(): FileUploaderFragment()
             builder.setTitle("Delete Document Post")
             builder.setMessage("Are you sure you wish to delete this post?")
             builder.setPositiveButton("Delete",
-            {
-                _, _ ->
-                post.reference?.delete()
-                    ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                    ?.addOnSuccessListener()
-                    {
-                        FirebaseStorage.getInstance().getReference("Document Attachments").child(post.reference!!.id).delete()
-                            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                    }
-            })
+                { _, _ ->
+                    post.reference?.delete()
+                        ?.addOnFailureListener {
+                            Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                        }
+                        ?.addOnSuccessListener()
+                        {
+                            FirebaseStorage.getInstance().getReference("Document Attachments")
+                                .child(post.reference!!.id).delete()
+                                .addOnFailureListener {
+                                    Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                                }
+                        }
+                })
             builder.setNegativeButton("Cancel", null)
             builder.create().show()
         }
@@ -108,7 +119,7 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                 viewModel.posterNameTextView = view.textView_documentPost_posterName
                 viewModel.timestampTextView = view.textView_documentPost_timestamp
                 viewModel.deleteButton = view.button_documentPost_delete
-                viewModel.nameTextView= view.textView_documentPost_name
+                viewModel.nameTextView = view.textView_documentPost_name
                 viewModel.detailsTextView = view.textView_documentPost_details
                 viewModel.downloadAttachmentButton = view.button_documentPost_download_attachment
                 viewModel.downloadAttachmentImage = view.button_documentPost_download_images
@@ -121,78 +132,87 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
-            var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+            var request: RequestOptions =
+                RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
             Glide.with(context)
                 .load(post.imagepath)
                 .apply(request)
                 .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
-            {
-                task ->
+            { task ->
 
                 task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                ?: task.result?.serialize(User::class.java)?.let()
-                {
-                    viewModel.posterNameTextView.setText(it.fullName())
-                    // TODO: Set Display Picture
-                }
+                    ?: task.result?.serialize(User::class.java)?.let()
+                    {
+                        viewModel.posterNameTextView.setText(it.fullName())
+                        // TODO: Set Display Picture
+                    }
             }
 
-            val date = android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
-            val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
+            val date =
+                android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
+            val time =
+                android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
             val timestamp = "$time $date"
             viewModel.timestampTextView.setText(timestamp)
             viewModel.nameTextView.setText(post.name)
             viewModel.detailsTextView.setText(post.details)
-          //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
+            //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteDocumentPost(post) }
             viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
 
-            viewModel.downloadAttachmentButton.setOnClickListener { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(post.attachmentPath))) }
+            viewModel.downloadAttachmentButton.setOnClickListener {
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(post.attachmentPath)
+                    )
+                )
+            }
 
 
-                if(post.attachmentPath != null)
-                {
-                    post.attachmentPath?.let {
+            if (post.attachmentPath != null)
+            {
+                post.attachmentPath?.let {
 
 
-                        Glide
-                            .with(context)
-                            .load(it)
-                            .listener(object : RequestListener<Drawable>
+                    Glide
+                        .with(context)
+                        .load(it)
+                        .listener(object : RequestListener<Drawable>
+                        {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean
                             {
-                                override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    isFirstResource: Boolean
-                                ): Boolean
-                                {
-                                    viewModel.downloadAttachmentButton.visibility = View.VISIBLE
-                                    viewModel.downloadAttachmentImage.visibility = View.GONE
-                                    return false
+                                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
+                                viewModel.downloadAttachmentImage.visibility = View.GONE
+                                return false
 
-                                }
+                            }
 
-                                override fun onResourceReady(
-                                    resource: Drawable?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    dataSource: DataSource?,
-                                    isFirstResource: Boolean
-                                ): Boolean
-                                {
-                                    viewModel.downloadAttachmentButton.visibility = View.GONE
-                                    viewModel.downloadAttachmentImage.visibility = View.VISIBLE
-                                    return false
-                                }
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean
+                            {
+                                viewModel.downloadAttachmentButton.visibility = View.GONE
+                                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                                return false
+                            }
 
-                            })
-                            .into(viewModel.downloadAttachmentImage);
+                        })
+                        .into(viewModel.downloadAttachmentImage);
 
-                    }
+                }
             }
             viewModel.popupicon.setOnClickListener(View.OnClickListener {
 
@@ -205,14 +225,22 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                     builder.setTitle("Delete Forum Post")
                     builder.setMessage("Are you sure you wish to delete this post?")
                     builder.setPositiveButton("Delete")
-                    {
-                            _, _ ->
+                    { _, _ ->
                         post.reference?.delete()
-                            ?.addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                            ?.addOnFailureListener {
+                                Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                            }
                             ?.addOnSuccessListener()
                             {
-                                FirebaseStorage.getInstance().getReference("Document Attachments").child(post.reference!!.id).delete()
-                                    .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                                FirebaseStorage.getInstance().getReference("Document Attachments")
+                                    .child(post.reference!!.id).delete()
+                                    .addOnFailureListener {
+                                        Toast.makeText(
+                                            context,
+                                            it.localizedMessage,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
                             }
                     }
                     builder.setNegativeButton("Cancel", null)
@@ -240,12 +268,14 @@ class CourseDocumentsFragment(): FileUploaderFragment()
 
     private fun initialize()
     {
-        val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
+        val isTeacher = arguments?.getBoolean(IDENTIFIER_IS_TEACHER) ?: false
+        val isTeachingAssistant = arguments?.getBoolean(IDENTIFIER_IS_TEACHING_ASSISTANT) ?: false
         FirebaseAuth.getInstance().currentUser?.let()
         {
 
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
-                var request : RequestOptions = RequestOptions().error(R.drawable.ic_user).override(100,100).placeholder(R.drawable.ic_user)
+                var request: RequestOptions =
+                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
                 Glide.with(context)
                     .load(it.toString())
                     .apply(request)
@@ -254,13 +284,19 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                 it.printStackTrace()
             };
         }
-      //  layout_post_document_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
-        card_view_createdocument.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        //  layout_post_document_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
+        card_view_createdocument.visibility = if (isTeacher || isTeachingAssistant) View.VISIBLE else View.GONE
         card_view_createdocument.setOnClickListener {
-            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_document,null)
+            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_document, null)
 
-            view.button_document_selectAttachment_add.setOnClickListener { this.selectFile { view.button_document_selectAttachment_add.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
-            val forumPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(CourseForumFragment.IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
+            view.button_document_selectAttachment_add.setOnClickListener {
+                this.selectFile {
+                    view.button_document_selectAttachment_add.text =
+                        this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                }
+            }
+            val forumPostsReference = FirebaseFirestore.getInstance()
+                .document(arguments!!.getString(CourseForumFragment.IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
 
             view.button_document_forum_add.setOnClickListener()
             {
@@ -286,19 +322,25 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                 }
                 else
                 {
-                    val documentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Document Posts")
+                    val documentPostsReference =
+                        FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                            .collection("Document Posts")
 
                     FirebaseAuth.getInstance().currentUser?.let()
                     {
                         val appActivity = this.activity as AppActivity
                         appActivity.showLoadingAlert()
                         documentPostsReference.add(DocumentPost(name, details, it.documentReference()))
-                            .addOnFailureListener { appActivity.showError (it) }
+                            .addOnFailureListener { appActivity.showError(it) }
                             .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                             .addOnSuccessListener()
                             {
                                 this.resetPostLayout()
-                                this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id), "attachmentPath")
+                                this.updateAttachmentPath(
+                                    it,
+                                    FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id),
+                                    "attachmentPath"
+                                )
                             }
                     }
                 }
@@ -314,11 +356,17 @@ class CourseDocumentsFragment(): FileUploaderFragment()
 
             dialog.show()
         }
-        button_document_selectAttachment.setOnClickListener { this.selectFile { button_document_selectAttachment.text = this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment) } }
+        button_document_selectAttachment.setOnClickListener {
+            this.selectFile {
+                button_document_selectAttachment.text =
+                    this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+            }
+        }
 
 
-
-        val documentPostsReference = FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH)).collection("Document Posts")
+        val documentPostsReference =
+            FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                .collection("Document Posts")
         button_post_document.setOnClickListener()
         {
             editText_post_document_name.error = null
@@ -347,43 +395,47 @@ class CourseDocumentsFragment(): FileUploaderFragment()
                     val appActivity = this.activity as AppActivity
                     appActivity.showLoadingAlert()
                     documentPostsReference.add(DocumentPost(name, details, it.documentReference()))
-                        .addOnFailureListener { appActivity.showError (it) }
+                        .addOnFailureListener { appActivity.showError(it) }
                         .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                         .addOnSuccessListener()
                         {
                             this.resetPostLayout()
-                            this.updateAttachmentPath(it, FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id), "attachmentPath")
+                            this.updateAttachmentPath(
+                                it,
+                                FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id),
+                                "attachmentPath"
+                            )
                         }
                 }
             }
         }
         documentPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
-        {
-            result, e ->
+        { result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
-            ?: result?.map { it.serialize(DocumentPost::class.java) }?.let()
-            {
-
-
-                for (item in it)
+                ?: result?.map { it.serialize(DocumentPost::class.java) }?.let()
                 {
 
-                    try
+
+                    for (item in it)
                     {
-                        FirebaseStorage.getInstance().getReference("UserProfiles").child(item.poster.path.replace("Users/","")).downloadUrl.addOnSuccessListener {
-                            item.imagepath = it.toString();
-                            adapter.notifyDataSetChanged()
-                        }.addOnFailureListener {
-                            it.printStackTrace()
-                        };
-                    } catch (e: Exception)
-                    {
-                        e.printStackTrace()
+
+                        try
+                        {
+                            FirebaseStorage.getInstance().getReference("UserProfiles")
+                                .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
+                                item.imagepath = it.toString();
+                                adapter.notifyDataSetChanged()
+                            }.addOnFailureListener {
+                                it.printStackTrace()
+                            };
+                        } catch (e: Exception)
+                        {
+                            e.printStackTrace()
+                        }
                     }
+                    adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, it)
+                    listView_courseFeed_documents.adapter = adapter
                 }
-                adapter = DocumentPostAdapter(context!!, isAdmin, it)
-                listView_courseFeed_documents.adapter =adapter
-            }
         }
     }
 

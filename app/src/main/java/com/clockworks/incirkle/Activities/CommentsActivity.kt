@@ -26,7 +26,8 @@ class CommentsActivity : AppActivity()
     companion object
     {
         const val IDENTIFIER_POST_PATH = "Post Path"
-        const val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_IS_TEACHER = "Is Teacher"
+        const val IDENTIFIER_IS_TEACHING_ASSISTANT = "Is Teaching Assistant"
     }
 
     private lateinit var commentsReference: CollectionReference
@@ -124,14 +125,14 @@ class CommentsActivity : AppActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_comments)
-        val isAdmin = intent.getBooleanExtra(IDENTIFIER_IS_ADMIN, false)
+        val isTeacher = intent.getBooleanExtra(IDENTIFIER_IS_TEACHER, false)
         this.commentsReference = FirebaseFirestore.getInstance().document(intent.getStringExtra(IDENTIFIER_POST_PATH)).collection("Comments")
         this.commentsReference.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener()
         {
             result, e ->
             e?.let { this.showError(it) }
             ?: result?.map { it.serialize(Comment::class.java) }?.let()
-                { listView_comments.adapter = CommentsAdapter(this, isAdmin, it) }
+                { listView_comments.adapter = CommentsAdapter(this, isTeacher, it) }
         }
 
         this.configurePostCommentView()

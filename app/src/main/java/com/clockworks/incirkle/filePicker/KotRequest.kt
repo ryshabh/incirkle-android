@@ -1,23 +1,27 @@
 package com.clockworks.incirkle.filePicker
 
 import android.app.Activity
+import android.support.v4.app.Fragment
 import android.content.Intent
 
 /**
  * Created by AndroidBuffer on 11/1/18.
  */
-public class KotRequest {
+public class KotRequest
+{
 
     /**
      * inner class for building the camera request
      */
-    class Camera(context: Activity) {
+    class Camera(context: Activity)
+    {
 
         var requestCode = 101
         var intent: Intent
         var activity: Activity
 
-        init {
+        init
+        {
             this.activity = context
             intent = Intent(context, KotlinFilePicker::class.java)
             intent.putExtra(KotConstants.EXTRA_FILE_SELECTION, KotConstants.SELECTION_TYPE_CAMERA)
@@ -28,7 +32,8 @@ public class KotRequest {
          * @param requestCode by default it is 101 give a value to change it
          * @param context
          */
-        constructor(context: Activity, requestCode: Int = 101) : this(context) {
+        constructor(context: Activity, requestCode: Int = 101) : this(context)
+        {
             this.activity = context
             this.requestCode = requestCode
         }
@@ -38,7 +43,8 @@ public class KotRequest {
          * @param requestCode for tracking in onActivityResult(...)
          * @return {@link Camera}
          */
-        fun setRequestCode(requestCode: Int): Camera {
+        fun setRequestCode(requestCode: Int): Camera
+        {
             this.requestCode = requestCode
             return this
         }
@@ -46,14 +52,16 @@ public class KotRequest {
         /**
          * returns a intent for camera if initialized using constructor
          */
-        fun getCameraIntent(): Intent {
+        fun getCameraIntent(): Intent
+        {
             return intent
         }
 
         /**
          * starts intent to capture image from camera KotlinFilePicker.class
          */
-        fun pick() {
+        fun pick()
+        {
             activity.startActivityForResult(intent, requestCode)
         }
     }
@@ -61,12 +69,14 @@ public class KotRequest {
     /**
      * inner class for starting recording video
      */
-    class Video(context: Activity) {
+    class Video(context: Activity)
+    {
         private var activity: Activity
         private var requestCode = 102;
         private var intent: Intent
 
-        init {
+        init
+        {
             this.activity = context
             intent = Intent(activity, KotlinFilePicker::class.java)
             intent.putExtra(KotConstants.EXTRA_FILE_SELECTION, KotConstants.SELECTION_TYPE_VIDEO)
@@ -75,7 +85,8 @@ public class KotRequest {
         /**
          * secondary constructor for changing the request code
          */
-        constructor(context: Activity, requestCode: Int) : this(context) {
+        constructor(context: Activity, requestCode: Int) : this(context)
+        {
             this.activity = context
             this.requestCode = requestCode
         }
@@ -83,7 +94,8 @@ public class KotRequest {
         /**
          * set the request code if missed in constructor initialization
          */
-        fun setRequestCode(requestCode: Int): Video {
+        fun setRequestCode(requestCode: Int): Video
+        {
             this.requestCode = requestCode
             return this
         }
@@ -94,7 +106,8 @@ public class KotRequest {
          * setting mime type will override the default one
          * @param mimeType
          */
-        fun setMimeType(mimeType: String): Video {
+        fun setMimeType(mimeType: String): Video
+        {
             intent.putExtra(KotConstants.EXTRA_FILE_MIME_TYPE, mimeType)
             return this
         }
@@ -104,14 +117,16 @@ public class KotRequest {
          * use pick() instead if intent is not required
          * @return Intent
          */
-        fun getVideoIntent(): Intent {
+        fun getVideoIntent(): Intent
+        {
             return intent
         }
 
         /**
          * call this method after initialization in last
          */
-        fun pick() {
+        fun pick()
+        {
             activity.startActivityForResult(intent, requestCode)
         }
     }
@@ -119,12 +134,14 @@ public class KotRequest {
     /**
      * inner class for picking images from gallery
      */
-    class Gallery(context: Activity) {
+    class Gallery(context: Activity)
+    {
         private var activity: Activity
         private var requestCode = 103;
         private var intent: Intent
 
-        init {
+        init
+        {
             this.activity = context
             intent = Intent(activity, KotlinFilePicker::class.java)
             intent.putExtra(KotConstants.EXTRA_FILE_SELECTION, KotConstants.SELECTION_TYPE_GALLERY)
@@ -135,7 +152,8 @@ public class KotRequest {
          * for selection single or multiple
          * @param multipleEnabled
          */
-        private fun putMultiple(multipleEnabled: Boolean) {
+        private fun putMultiple(multipleEnabled: Boolean)
+        {
             intent.putExtra(KotConstants.EXTRA_MULTIPLE_ENABLED, multipleEnabled)
         }
 
@@ -143,7 +161,8 @@ public class KotRequest {
          * secondary constructor for changing the request code
          * @constructor pass activity and request code
          */
-        constructor(context: Activity, requestCode: Int) : this(context) {
+        constructor(context: Activity, requestCode: Int) : this(context)
+        {
             this.activity = context
             this.requestCode = requestCode
         }
@@ -153,7 +172,8 @@ public class KotRequest {
          * @param requestCode
          * @return Gallery
          */
-        fun setRequestCode(requestCode: Int): Gallery {
+        fun setRequestCode(requestCode: Int): Gallery
+        {
             this.requestCode = requestCode
             return this
         }
@@ -163,7 +183,8 @@ public class KotRequest {
          * @param isMultipleEnabled
          * @return Gallery
          */
-        fun isMultiple(isMultipleEnabled: Boolean): Gallery {
+        fun isMultiple(isMultipleEnabled: Boolean): Gallery
+        {
             putMultiple(isMultipleEnabled)
             return this
         }
@@ -174,7 +195,8 @@ public class KotRequest {
          * setting mime type will override the default one
          * @param mimeType
          */
-        fun setMimeType(mimeType: String): Gallery {
+        fun setMimeType(mimeType: String): Gallery
+        {
             intent.putExtra(KotConstants.EXTRA_FILE_MIME_TYPE, mimeType)
             return this
         }
@@ -184,7 +206,8 @@ public class KotRequest {
          * use pick() instead if intent is not required
          * @return @see Intent
          */
-        fun getGalleryIntent(): Intent {
+        fun getGalleryIntent(): Intent
+        {
             return intent
         }
 
@@ -192,19 +215,34 @@ public class KotRequest {
          * By default multiple selection is false @see multipleEnabled()
          * call this method after initialization in last
          */
-        fun pick() {
+        fun pick()
+        {
             activity.startActivityForResult(intent, requestCode)
         }
     }
 
 
-    class File(context: Activity) {
-        private var activity: Activity
+    class File()
+    {
+        private lateinit var activity: Activity
+        private var mFragment: Fragment? = null
         private var requestCode = 104;
-        private var intent: Intent
+        private lateinit var intent: Intent
 
-        init {
+        // use for activity
+        constructor(context: Activity) : this()
+        {
             this.activity = context
+            intent = Intent(activity, KotlinFilePicker::class.java)
+            intent.putExtra(KotConstants.EXTRA_FILE_SELECTION, KotConstants.SELECTION_TYPE_FILE)
+            putMultiple(false)
+        }
+
+        // use for fragment
+        constructor(fragment: Fragment) : this()
+        {
+            this.mFragment = fragment
+            this.activity = fragment.activity!!
             intent = Intent(activity, KotlinFilePicker::class.java)
             intent.putExtra(KotConstants.EXTRA_FILE_SELECTION, KotConstants.SELECTION_TYPE_FILE)
             putMultiple(false)
@@ -214,7 +252,8 @@ public class KotRequest {
          * for selection single or multiple
          * @param multipleEnabled
          */
-        private fun putMultiple(multipleEnabled: Boolean) {
+        private fun putMultiple(multipleEnabled: Boolean)
+        {
             intent.putExtra(KotConstants.EXTRA_MULTIPLE_ENABLED, multipleEnabled)
         }
 
@@ -222,8 +261,16 @@ public class KotRequest {
          * secondary constructor for changing the request code
          * @constructor pass activity and request code
          */
-        constructor(context: Activity, requestCode: Int) : this(context) {
+        constructor(context: Activity, requestCode: Int) : this(context)
+        {
             this.activity = context
+            this.requestCode = requestCode
+        }
+
+        constructor(fragment: Fragment, requestCode: Int) : this(fragment)
+        {
+            this.mFragment = fragment
+            this.activity = fragment.activity!!
             this.requestCode = requestCode
         }
 
@@ -232,7 +279,8 @@ public class KotRequest {
          * @param requestCode
          * @return Gallery
          */
-        fun setRequestCode(requestCode: Int): File {
+        fun setRequestCode(requestCode: Int): File
+        {
             this.requestCode = requestCode
             return this
         }
@@ -242,7 +290,8 @@ public class KotRequest {
          * @param isMultipleEnabled
          * @return Gallery
          */
-        fun isMultiple(isMultipleEnabled: Boolean): File {
+        fun isMultiple(isMultipleEnabled: Boolean): File
+        {
             putMultiple(isMultipleEnabled)
             return this
         }
@@ -253,7 +302,8 @@ public class KotRequest {
          * setting mime type will override the default one
          * @param mimeType
          */
-        fun setMimeType(mimeType: String): File {
+        fun setMimeType(mimeType: String): File
+        {
             intent.putExtra(KotConstants.EXTRA_FILE_MIME_TYPE, mimeType)
             return this
         }
@@ -263,7 +313,8 @@ public class KotRequest {
          * use pick() instead if intent is not required
          * @return @see Intent
          */
-        fun getFileIntent(): Intent {
+        fun getFileIntent(): Intent
+        {
             return intent
         }
 
@@ -271,8 +322,18 @@ public class KotRequest {
          * By default multiple selection is false @see multipleEnabled()
          * call this method after initialization in last
          */
-        fun pick() {
-            activity.startActivityForResult(intent, requestCode)
+        fun pick()
+        {
+            if (mFragment != null)
+            {
+                // called from fragment
+                mFragment!!.startActivityForResult(intent, requestCode)
+            }
+            else
+            {
+                // called from activity
+                activity.startActivityForResult(intent, requestCode)
+            }
         }
     }
 

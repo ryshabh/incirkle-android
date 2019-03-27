@@ -27,5 +27,8 @@ class KotConstants {
         val FILE_TYPE_PDF = "application/pdf"
         val FILE_TYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         val FILE_TYPE_EXCEL = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+        // file request constant
+        const val REQUEST_FILE = 201
     }
 }

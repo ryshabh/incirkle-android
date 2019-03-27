@@ -3,11 +3,10 @@ package com.clockworks.incirkle.Fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -32,24 +31,28 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_course_activities.*
 import kotlinx.android.synthetic.main.list_item_post_activity.view.*
-import kotlinx.android.synthetic.main.popup_add_activity.*
 import kotlinx.android.synthetic.main.popup_add_activity.view.*
 
 
-class CourseActivitiesFragment() : FileUploaderFragment()
+class CourseActivitiesFragment() : Fragment()
 {
     companion object
     {
         const val IDENTIFIER_COURSE_PATH = "Course Path"
-        const val IDENTIFIER_IS_ADMIN = "Is Admin"
+        const val IDENTIFIER_IS_TEACHER = "Is Teacher"
+        const val IDENTIFIER_IS_TEACHING_ASSISTANT = "Is Teaching Assistant"
     }
+
+    private var TAG = CourseActivitiesFragment.javaClass.simpleName
 
     lateinit var dialog: AlertDialog
     lateinit var adapter: ActivityPostAdapter
+    private var activityPostList = ArrayList<ActivityPost>()
 
     class ActivityPostAdapter(
         private val context: Context,
-        private val isAdmin: Boolean,
+        private val isTeacher: Boolean,
+        private val isTeachingAssistant: Boolean,
         private var dataSource: List<ActivityPost>
     ) : BaseAdapter()
     {
@@ -158,7 +161,7 @@ class CourseActivitiesFragment() : FileUploaderFragment()
             viewModel.timestampTextView.setText(timestamp)
             viewModel.descriptionTextView.setText(post.description)
             //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
-            viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
+            viewModel.popupicon.visibility = if (isTeacher || isTeachingAssistant) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteActivityPost(post) }
             viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
@@ -233,6 +236,10 @@ class CourseActivitiesFragment() : FileUploaderFragment()
                                 }
                                 ?.addOnSuccessListener()
                                 {
+                                    if (post.attachmentPath.isNullOrEmpty())
+                                    {
+                                        return@addOnSuccessListener
+                                    }
                                     FirebaseStorage.getInstance().getReference("Activity Attachments")
                                         .child(post.reference!!.id).delete()
                                         .addOnFailureListener {
@@ -270,7 +277,8 @@ class CourseActivitiesFragment() : FileUploaderFragment()
 
     private fun initialize()
     {
-        val isAdmin = arguments?.getBoolean(IDENTIFIER_IS_ADMIN) ?: false
+        val isTeacher = arguments?.getBoolean(IDENTIFIER_IS_TEACHER) ?: false
+        val isTeachingAssistant = arguments?.getBoolean(IDENTIFIER_IS_TEACHING_ASSISTANT) ?: false
         //layout_post_activity_new.visibility = if(isAdmin) View.VISIBLE else View.GONE
 
         FirebaseAuth.getInstance().currentUser?.let()
@@ -279,7 +287,7 @@ class CourseActivitiesFragment() : FileUploaderFragment()
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
                 var request: RequestOptions =
                     RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-                Glide.with(context)
+                Glide.with(this)
                     .load(it.toString())
                     .apply(request)
                     .into(imageview_profileimage);
@@ -287,20 +295,23 @@ class CourseActivitiesFragment() : FileUploaderFragment()
                 it.printStackTrace()
             };
         }
-        card_view_createactivities.visibility = if (isAdmin) View.VISIBLE else View.GONE
+        card_view_createactivities.visibility = if (isTeacher || isTeachingAssistant) View.VISIBLE else View.GONE
 
         card_view_createactivities.setOnClickListener {
 
             var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity, null)
 
-            view.button_activity_selectAttachment.setOnClickListener {
 
-                (activity as CourseFeedActivity).selectFile {
-                    button_activity_selectAttachment.text =
-                        getFileName((activity as CourseFeedActivity).selectedFileUri) ?: getString(
-                    com.clockworks.incirkle.R.string.text_select_attachment)
-//                        )
+            view.button_activity_selectAttachment.setOnClickListener {
+                val appActivity = this.activity as AppActivity
+                appActivity.selectFile {
+                    view.button_activity_selectAttachment.text =
+                        appActivity.selectedFileUri?.getName(context!!) ?: getString(
+                            com.clockworks.incirkle.R.string.text_select_attachment
+                        )
+
                 }
+
             }
             view.button_post_activity.setOnClickListener()
             {
@@ -349,6 +360,10 @@ class CourseActivitiesFragment() : FileUploaderFragment()
 
         }
 
+        // set adapter
+        adapter = ActivityPostAdapter(context!!, isTeacher,isTeachingAssistant, activityPostList)
+        listView_courseFeed_activities.adapter = adapter
+
         val activityPostsReference =
             FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
                 .collection("Activity Posts")
@@ -358,6 +373,7 @@ class CourseActivitiesFragment() : FileUploaderFragment()
             e?.let { (this.activity as AppActivity).showError(it) }
                 ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
                 {
+
                     for (item in it)
                     {
 
@@ -376,41 +392,25 @@ class CourseActivitiesFragment() : FileUploaderFragment()
                             e.printStackTrace()
                         }
                     }
-                    adapter = ActivityPostAdapter(context!!, isAdmin, it)
-                    listView_courseFeed_activities.adapter = adapter
+                    activityPostList.clear()
+                    activityPostList.addAll(it)
+                    adapter.notifyDataSetChanged()
+//                    adapter = ActivityPostAdapter(context!!, isAdmin, it)
+//                    listView_courseFeed_activities.adapter = adapter
                 }
         }
     }
 
 
-    private fun getFileName(uri: Uri?): String?
-    {
-        var result: String? = null;
-        if (uri?.getScheme().equals("content"))
-        {
-            var cursor: Cursor = activity!!.getContentResolver().query(uri, null, null, null, null);
-            try
-            {
-                if (cursor != null && cursor.moveToFirst())
-                {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally
-            {
-                cursor.close();
-            }
-        }
-        if (result == null)
-        {
-            result = uri?.getPath();
-            var cut: Int = result!!.lastIndexOf('/');
-            if (cut != -1)
-            {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
-    }
-
-
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+//    {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        Log.d(TAG, " $requestCode $resultCode $data")
+//        if (KotConstants.REQUEST_FILE == requestCode && resultCode == Activity.RESULT_OK)
+//        {
+//            val result = data?.getParcelableArrayListExtra<KotResult>(KotConstants.EXTRA_FILE_RESULTS)
+//            Log.d(TAG, result!!.get(0).toString());
+//            btnSelectAttachment.text = result.get(0).name
+//        }
+//    }
 }

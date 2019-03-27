@@ -15,8 +15,6 @@ import com.clockworks.incirkle.Fragments.CourseDocumentsFragment
 import com.clockworks.incirkle.Fragments.CourseForumFragment
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
-import com.clockworks.incirkle.Models.User
-import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
@@ -66,8 +64,9 @@ class CourseFeedActivity : AppActivity()
                         } catch (e: Exception){}
 //                        user.documentReference() == it.teacher
                         Log.d("User Phone no",""+user.phoneNumber);
-                        var isTeacherORTeachingAssistantOfThisCourse =  isUserTeacher || it.teachingAssistants.contains(user.phoneNumber)
-                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, isTeacherORTeachingAssistantOfThisCourse)
+                        var isTeacher =  isUserTeacher || it.teachingAssistants.contains(user.phoneNumber)
+                        var isTeachingAssistant = it.teachingAssistants.contains(user.phoneNumber)
+                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, isTeacher, isTeachingAssistant)
                     }
                 }
                 .addOnCompleteListener { this.dismissLoadingAlert() }
@@ -96,7 +95,7 @@ class CourseFeedActivity : AppActivity()
         return super.onOptionsItemSelected(item)
     }
 
-    inner class SectionsPagerAdapter(fm: FragmentManager, val courseReference: DocumentReference, val isAdmin: Boolean) : FragmentPagerAdapter(fm)
+    inner class SectionsPagerAdapter(fm: FragmentManager, val courseReference: DocumentReference, val isTeacher: Boolean, val isTeachingAssistant:Boolean) : FragmentPagerAdapter(fm)
     {
         override fun getItem(position: Int): Fragment
         {
@@ -107,7 +106,8 @@ class CourseFeedActivity : AppActivity()
                     val fragment = CourseActivitiesFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseActivitiesFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
-                    bundle.putBoolean(CourseActivitiesFragment.IDENTIFIER_IS_ADMIN, isAdmin)
+                    bundle.putBoolean(CourseActivitiesFragment.IDENTIFIER_IS_TEACHER, isTeacher)
+                    bundle.putBoolean(CourseActivitiesFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
                     fragment.arguments = bundle
                     return fragment
                 }
@@ -118,7 +118,9 @@ class CourseFeedActivity : AppActivity()
                     bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
                     bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
                         IDENTIFIER_COURSE_TEACHER_PATH))
-                    bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_ADMIN, isAdmin)
+                    bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_TEACHER, isTeacher)
+                    bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
+
                     fragment.arguments = bundle
                     return fragment
                 }
@@ -127,7 +129,8 @@ class CourseFeedActivity : AppActivity()
                     val fragment = CourseDocumentsFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseDocumentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
-                    bundle.putBoolean(CourseDocumentsFragment.IDENTIFIER_IS_ADMIN, isAdmin)
+                    bundle.putBoolean(CourseDocumentsFragment.IDENTIFIER_IS_TEACHER, isTeacher)
+                    bundle.putBoolean(CourseDocumentsFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
                     fragment.arguments = bundle
                     return fragment
                 }
@@ -138,7 +141,8 @@ class CourseFeedActivity : AppActivity()
                     bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
                     bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
                         IDENTIFIER_COURSE_TEACHER_PATH))
-                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_ADMIN, isAdmin)
+                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_TEACHER, isTeacher)
+                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
                     fragment.arguments = bundle
                     return fragment
                 }
