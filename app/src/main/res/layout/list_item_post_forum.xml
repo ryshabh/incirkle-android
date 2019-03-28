@@ -62,7 +62,7 @@
                                 android:fontFamily="@font/helvetica_neue_regular"
                                 android:textSize="13sp"
                                 android:textColor="#39393a"
-                                android:text=""/>
+                                android:text="person name"/>
 
                         <TextView
                                 android:id="@+id/textView_forumPost_instructor"
@@ -128,14 +128,6 @@
                     android:textColor="#39393a"
                     android:text=""/>
 
-            <ImageView
-                    android:id="@+id/button_forumPost_download_images"
-                    android:layout_height="150dp"
-                    android:scaleType="centerCrop"
-                    android:layout_width="match_parent"
-
-                    />
-
             <TextView
                     android:id="@+id/button_activityForum_download_attachment"
                     android:layout_width="wrap_content"
@@ -146,6 +138,16 @@
                     android:layout_margin="5dp"
                     android:visibility="gone"
                     android:text="@string/text_download_attachment"/>
+
+            <ImageView
+                    android:id="@+id/button_forumPost_download_images"
+                    android:layout_height="150dp"
+                    android:scaleType="centerCrop"
+                    android:layout_width="match_parent"
+
+                    />
+
+
 
             <View
                     android:layout_width="match_parent"
@@ -165,12 +167,13 @@
                         android:id="@+id/textview_forumPost_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text=""/>
+                        android:text="0"/>
 
                 <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginLeft="15dp"
                         android:src="@drawable/ic_message_black_24dp"/>
 
 
@@ -178,6 +181,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
+                        android:layout_marginLeft="10dp"
                         android:textSize="11sp"
                         android:textColor="#888888"
                         android:fontFamily="@font/lucidagrande"

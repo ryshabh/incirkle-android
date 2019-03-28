@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -31,7 +32,7 @@ import kotlinx.android.synthetic.main.fragment_course_documents.*
 import kotlinx.android.synthetic.main.list_item_post_document.view.*
 import kotlinx.android.synthetic.main.popup_add_document.view.*
 
-class CourseDocumentsFragment() : FileUploaderFragment()
+class CourseDocumentsFragment() : Fragment()
 {
     companion object
     {
@@ -42,6 +43,7 @@ class CourseDocumentsFragment() : FileUploaderFragment()
 
     lateinit var dialog: AlertDialog
     lateinit var adapter: DocumentPostAdapter
+    private var documentPostList = ArrayList<DocumentPost>()
 
     class DocumentPostAdapter(
         private val context: Context,
@@ -160,10 +162,18 @@ class CourseDocumentsFragment() : FileUploaderFragment()
             //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.popupicon.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteDocumentPost(post) }
-            viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
-            viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
+
 
             viewModel.downloadAttachmentButton.setOnClickListener {
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(post.attachmentPath)
+                    )
+                )
+            }
+
+            viewModel.downloadAttachmentImage.setOnClickListener {
                 context.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
@@ -175,8 +185,9 @@ class CourseDocumentsFragment() : FileUploaderFragment()
 
             if (post.attachmentPath != null)
             {
+                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
                 post.attachmentPath?.let {
-
 
                     Glide
                         .with(context)
@@ -213,6 +224,9 @@ class CourseDocumentsFragment() : FileUploaderFragment()
                         .into(viewModel.downloadAttachmentImage);
 
                 }
+            }else{
+                    viewModel.downloadAttachmentImage.visibility = View.GONE
+                    viewModel.downloadAttachmentButton.visibility = View.GONE
             }
             viewModel.popupicon.setOnClickListener(View.OnClickListener {
 
@@ -290,19 +304,20 @@ class CourseDocumentsFragment() : FileUploaderFragment()
             var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_document, null)
 
             view.button_document_selectAttachment_add.setOnClickListener {
-                this.selectFile {
+                val appActivity = this.activity as AppActivity
+                appActivity.selectFile {
+                    view.button_document_selectAttachment_add.error = null
                     view.button_document_selectAttachment_add.text =
-                        this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                        appActivity.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
                 }
             }
-            val forumPostsReference = FirebaseFirestore.getInstance()
-                .document(arguments!!.getString(CourseForumFragment.IDENTIFIER_COURSE_PATH)).collection("Forum Posts")
 
             view.button_document_forum_add.setOnClickListener()
             {
 
                 view.editText_post_document_name_add.error = null
                 view.editText_post_document_description_add.error = null
+                view.button_document_selectAttachment_add.error = null
 
                 val name = view.editText_post_document_name_add.text.toString().trim()
                 val details = view.editText_post_document_description_add.text.toString().trim()
@@ -316,9 +331,10 @@ class CourseDocumentsFragment() : FileUploaderFragment()
                     view.editText_post_document_description_add.error = "Document description cannot be empty"
                     return@setOnClickListener
                 }
-                else if (this.selectedFileUri == null)
+                else if ((this.activity as AppActivity).selectedFileUri == null)
                 {
                     view.button_document_selectAttachment_add.error = "Attachment is missing"
+                    return@setOnClickListener
                 }
                 else
                 {
@@ -336,7 +352,7 @@ class CourseDocumentsFragment() : FileUploaderFragment()
                             .addOnSuccessListener()
                             {
                                 this.resetPostLayout()
-                                this.updateAttachmentPath(
+                                (this.activity as AppActivity).updateAttachmentPath(
                                     it,
                                     FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id),
                                     "attachmentPath"
@@ -357,58 +373,65 @@ class CourseDocumentsFragment() : FileUploaderFragment()
             dialog.show()
         }
         button_document_selectAttachment.setOnClickListener {
-            this.selectFile {
+            (this.activity as AppActivity).selectFile {
                 button_document_selectAttachment.text =
-                    this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                    (this.activity as AppActivity).selectedFileUri?.getName(context!!)
+                        ?: getString(R.string.text_select_attachment)
             }
         }
 
+
+        /*
+            button_post_document.setOnClickListener()
+            {
+                editText_post_document_name.error = null
+                editText_post_document_details.error = null
+
+                val name = editText_post_document_name.text.toString().trim()
+                val details = editText_post_document_details.text.toString().trim()
+                if (name.isBlank())
+                {
+                    editText_post_document_name.error = "Document name cannot be empty"
+                    return@setOnClickListener
+                }
+                else if (details.isBlank())
+                {
+                    editText_post_document_details.error = "Document description cannot be empty"
+                    return@setOnClickListener
+                }
+                else if ((this.activity as AppActivity).selectedFileUri == null)
+                {
+                    button_document_selectAttachment.error = "Attachment is missing"
+                }
+                else
+                {
+                    FirebaseAuth.getInstance().currentUser?.let()
+                    {
+                        val appActivity = this.activity as AppActivity
+                        appActivity.showLoadingAlert()
+                        documentPostsReference.add(DocumentPost(name, details, it.documentReference()))
+                            .addOnFailureListener { appActivity.showError(it) }
+                            .addOnCompleteListener { appActivity.dismissLoadingAlert() }
+                            .addOnSuccessListener()
+                            {
+                                this.resetPostLayout()
+                                (this.activity as AppActivity).updateAttachmentPath(
+                                    it,
+                                    FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id),
+                                    "attachmentPath"
+                                )
+                            }
+                    }
+                }
+            }*/
+
+        // set adapter
+        adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, documentPostList)
+        listView_courseFeed_documents.adapter = adapter
 
         val documentPostsReference =
             FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
                 .collection("Document Posts")
-        button_post_document.setOnClickListener()
-        {
-            editText_post_document_name.error = null
-            editText_post_document_details.error = null
-
-            val name = editText_post_document_name.text.toString().trim()
-            val details = editText_post_document_details.text.toString().trim()
-            if (name.isBlank())
-            {
-                editText_post_document_name.error = "Document name cannot be empty"
-                return@setOnClickListener
-            }
-            else if (details.isBlank())
-            {
-                editText_post_document_details.error = "Document description cannot be empty"
-                return@setOnClickListener
-            }
-            else if (this.selectedFileUri == null)
-            {
-                button_document_selectAttachment.error = "Attachment is missing"
-            }
-            else
-            {
-                FirebaseAuth.getInstance().currentUser?.let()
-                {
-                    val appActivity = this.activity as AppActivity
-                    appActivity.showLoadingAlert()
-                    documentPostsReference.add(DocumentPost(name, details, it.documentReference()))
-                        .addOnFailureListener { appActivity.showError(it) }
-                        .addOnCompleteListener { appActivity.dismissLoadingAlert() }
-                        .addOnSuccessListener()
-                        {
-                            this.resetPostLayout()
-                            this.updateAttachmentPath(
-                                it,
-                                FirebaseStorage.getInstance().getReference("Document Attachments").child(it.id),
-                                "attachmentPath"
-                            )
-                        }
-                }
-            }
-        }
         documentPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
         { result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
@@ -433,8 +456,11 @@ class CourseDocumentsFragment() : FileUploaderFragment()
                             e.printStackTrace()
                         }
                     }
-                    adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, it)
-                    listView_courseFeed_documents.adapter = adapter
+                    documentPostList.clear()
+                    documentPostList.addAll(it)
+                    adapter.notifyDataSetChanged()
+//                    adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, it)
+//                    listView_courseFeed_documents.adapter = adapter
                 }
         }
     }

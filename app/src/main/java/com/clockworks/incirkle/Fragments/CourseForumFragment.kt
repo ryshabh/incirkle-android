@@ -50,6 +50,10 @@ class CourseForumFragment() : Fragment()
     private var formList = ArrayList<ForumPost>()
 
 
+    //    private lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
+    private lateinit var bottomSheetLayout: LinearLayout
+    private lateinit var listView_comments: ListView
+
     lateinit var dialog: AlertDialog
     lateinit var adapter: ForumPostAdapter
 
@@ -191,13 +195,11 @@ class CourseForumFragment() : Fragment()
 
 
             viewModel.deleteButton.setOnClickListener() { this.deleteForumPost(post) }
-            //  viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
-            viewModel.button_activityForum_download_attachment.visibility =
-                if (post.attachmentPath != null) View.VISIBLE else View.GONE
-            viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
 
             if (post.attachmentPath != null)
             {
+                viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
+                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
                 post.attachmentPath?.let {
 
 
@@ -242,8 +244,14 @@ class CourseForumFragment() : Fragment()
                             Intent(Intent.ACTION_VIEW, Uri.parse(it))
                         )
                     }
+                }
 
-
+                viewModel.downloadAttachmentImage.setOnClickListener {
+                    post.attachmentPath?.let {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                        )
+                    }
                 }
 
                 /*  var metadata =
@@ -257,6 +265,11 @@ class CourseForumFragment() : Fragment()
                       // Uh-oh, an error occurred!
                       it.printStackTrace()
                   }*/
+            }
+            else
+            {
+                viewModel.button_activityForum_download_attachment.visibility = View.GONE
+                viewModel.downloadAttachmentImage.visibility = View.GONE
             }
             viewModel.button_activityForum_download_attachment.setOnClickListener {
                 post.attachmentPath?.let {
@@ -315,11 +328,27 @@ class CourseForumFragment() : Fragment()
             view.setOnClickListener()
             {
                 val intent = Intent(context, CommentsActivity::class.java)
-//                intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHER, isTeacher)
-//                intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
-//                intent.putExtra(CommentsActivity.IDENTIFIER_POST_PATH, post.reference!!.path)
-//                context.startActivity(intent)
-                courseForumFragment.showBottomSheetDialog(isTeacher, isTeachingAssistant, post.reference!!.path)
+                intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHER, isTeacher)
+                intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
+                intent.putExtra(CommentsActivity.IDENTIFIER_POST_PATH, post.reference!!.path)
+                courseForumFragment.activity?.startActivity(intent)
+                courseForumFragment.activity?.overridePendingTransition(R.anim.slide_in_up, R.anim.stay);
+//                courseForumFragment.showBottomSheetDialog(isTeacher, isTeachingAssistant, post.reference!!.path)
+                /*courseForumFragment.bottomSheetLayout.visibility = View.VISIBLE
+
+                // get data from firebase
+                var commentsReference =
+                    FirebaseFirestore.getInstance().document(post.reference!!.path)
+                        .collection("Comments")
+                commentsReference.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener()
+                { result, e ->
+                    e?.let { (courseForumFragment.activity as AppActivity).showError(it) }
+                        ?: result?.map { it.serialize(Comment::class.java) }?.let()
+                        {
+                            courseForumFragment.listView_comments.adapter =
+                                CommentsAdapter(courseForumFragment, isTeacher!!, isTeachingAssistant!!, it)
+                        }
+                }*/
 
             }
 
@@ -330,6 +359,47 @@ class CourseForumFragment() : Fragment()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
         root = inflater.inflate(R.layout.fragment_course_forum, container, false)
+        bottomSheetLayout = root!!.findViewById(R.id.card_bottom_sheet)
+        listView_comments = root!!.findViewById(R.id.listView_comments);
+
+//        sheetBehavior = BottomSheetBehavior.from<LinearLayout>(bottomSheetLayout)
+//
+//        /**
+//         * bottom sheet state change listener
+//         * we are changing button text when sheet changed state
+//         * */
+//        sheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback()
+//        {
+//            override fun onStateChanged(bottomSheet: View, newState: Int)
+//            {
+//                when (newState)
+//                {
+//                    BottomSheetBehavior.STATE_HIDDEN ->
+//                    {
+//                    }
+//                    BottomSheetBehavior.STATE_EXPANDED ->
+//                    {
+//                        Log.d("CourseForum", "state expanded called")
+//                    }
+//                    BottomSheetBehavior.STATE_COLLAPSED ->
+//                    {
+//                        Log.d("CourseForum", "state close called")
+//                    }
+//                    BottomSheetBehavior.STATE_DRAGGING ->
+//                    {
+//                    }
+//                    BottomSheetBehavior.STATE_SETTLING ->
+//                    {
+//                    }
+//                }
+//            }
+//
+//            override fun onSlide(bottomSheet: View, slideOffset: Float)
+//            {
+//
+//            }
+//        })
+
         return root
     }
 
@@ -437,7 +507,6 @@ class CourseForumFragment() : Fragment()
             e?.let { (this.activity as AppActivity).showError(it) }
                 ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
                 {
-
                     for (item in it)
                     {
 
@@ -446,6 +515,7 @@ class CourseForumFragment() : Fragment()
                             FirebaseStorage.getInstance().getReference("UserProfiles")
                                 .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
                                 item.imagepath = it.toString();
+
                                 adapter.notifyDataSetChanged()
                             }.addOnFailureListener {
                                 it.printStackTrace()
@@ -474,6 +544,111 @@ class CourseForumFragment() : Fragment()
         commentsBottomSheetFragment.arguments = bundle
         commentsBottomSheetFragment.show(activity?.supportFragmentManager, commentsBottomSheetFragment.tag)
     }
+
+
+    /*  class CommentsAdapter(
+          private val cBSFragment: CourseForumFragment,
+          private val isTeacher: Boolean,
+          private val isTeachingAssistant: Boolean,
+          private var dataSource: List<Comment>
+      ) : BaseAdapter()
+      {
+          private class ViewModel
+          {
+              lateinit var posterPictureImageView: ImageView
+              lateinit var posterNameTextView: TextView
+              lateinit var timestampTextView: TextView
+              lateinit var deleteButton: ImageButton
+              lateinit var contentTextView: TextView
+          }
+
+          private val inflater: LayoutInflater =
+              cBSFragment.activity?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+          private fun deleteComment(comment: Comment)
+          {
+              val builder = AlertDialog.Builder(cBSFragment.activity)
+              builder.setTitle("Delete Comment")
+              builder.setMessage("Are you sure you wish to delete this comment?")
+              builder.setPositiveButton("Delete")
+              { _, _ ->
+                  comment.reference?.delete()
+                      ?.addOnFailureListener {
+                          Toast.makeText(
+                              cBSFragment.activity,
+                              it.localizedMessage,
+                              Toast.LENGTH_LONG
+                          ).show()
+                      }
+              }
+              builder.setNegativeButton("Cancel", null)
+              builder.create().show()
+          }
+
+          override fun getCount(): Int
+          {
+              return this.dataSource.size
+          }
+
+          override fun getItem(p0: Int): Any
+          {
+              return this.dataSource[p0]
+          }
+
+          override fun getItemId(p0: Int): Long
+          {
+              return p0.toLong()
+          }
+
+          override fun getView(position: Int, convertView: View?, parent: ViewGroup): View
+          {
+              val view: View
+              val viewModel: ViewModel
+
+              if (convertView == null)
+              {
+                  view = inflater.inflate(R.layout.list_item_comment, parent, false)
+                  viewModel = ViewModel()
+                  viewModel.posterPictureImageView = view.imageView_comment_posterPicture
+                  viewModel.posterNameTextView = view.textView_comment_posterName
+                  viewModel.timestampTextView = view.textView_comment_timestamp
+                  viewModel.deleteButton = view.button_comment_delete
+                  viewModel.contentTextView = view.textView_comment_content
+                  view.tag = viewModel
+              }
+              else
+              {
+                  view = convertView
+                  viewModel = convertView.tag as ViewModel
+              }
+
+              val comment = this.dataSource[position]
+              comment.poster.get().addOnCompleteListener()
+              { task ->
+                  task.exception?.let {
+                      Toast.makeText(cBSFragment.activity, it.localizedMessage, Toast.LENGTH_LONG).show()
+                  }
+                      ?: task.result?.serialize(User::class.java)?.let()
+                      {
+                          viewModel.posterNameTextView.setText(it.fullName())
+                          // TODO: Set Display Picture
+                      }
+              }
+
+              val date = android.text.format.DateFormat.getDateFormat(cBSFragment.activity)
+                  .format(comment.timestamp.toDate())
+              val time = android.text.format.DateFormat.getTimeFormat(cBSFragment.activity)
+                  .format(comment.timestamp.toDate())
+              val timestamp = "$time $date"
+              viewModel.timestampTextView.setText(timestamp)
+              viewModel.contentTextView.setText(comment.content)
+              val isCommentAdmin = FirebaseAuth.getInstance().currentUser?.documentReference() == comment.reference
+              viewModel.deleteButton.visibility = if (isTeacher || isCommentAdmin) View.VISIBLE else View.GONE
+              viewModel.deleteButton.setOnClickListener() { this.deleteComment(comment) }
+
+              return view
+          }
+      }*/
 
 
 }

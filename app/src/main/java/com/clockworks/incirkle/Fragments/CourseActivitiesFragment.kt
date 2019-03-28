@@ -163,10 +163,16 @@ class CourseActivitiesFragment() : Fragment()
             //  viewModel.deleteButton.visibility = if (isAdmin) View.VISIBLE else View.GONE
             viewModel.popupicon.visibility = if (isTeacher || isTeachingAssistant) View.VISIBLE else View.GONE
             viewModel.deleteButton.setOnClickListener() { this.deleteActivityPost(post) }
-            viewModel.downloadAttachmentButton.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
-            viewModel.downloadAttachmentImage.visibility = if (post.attachmentPath != null) View.VISIBLE else View.GONE
 
             viewModel.downloadAttachmentButton.setOnClickListener {
+                post.attachmentPath?.let {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    )
+                }
+            }
+
+            viewModel.downloadAttachmentImage.setOnClickListener {
                 post.attachmentPath?.let {
                     context.startActivity(
                         Intent(Intent.ACTION_VIEW, Uri.parse(it))
@@ -178,9 +184,9 @@ class CourseActivitiesFragment() : Fragment()
 
             if (post.attachmentPath != null)
             {
+                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
                 post.attachmentPath?.let {
-
-
                     Glide
                         .with(context)
                         .load(it)
@@ -216,6 +222,9 @@ class CourseActivitiesFragment() : Fragment()
                         .into(viewModel.downloadAttachmentImage);
 
                 }
+            }else{
+                viewModel.downloadAttachmentImage.visibility = View.GONE
+                viewModel.downloadAttachmentButton.visibility = View.GONE
             }
 
             viewModel.popupicon.setOnClickListener(View.OnClickListener {
@@ -361,7 +370,7 @@ class CourseActivitiesFragment() : Fragment()
         }
 
         // set adapter
-        adapter = ActivityPostAdapter(context!!, isTeacher,isTeachingAssistant, activityPostList)
+        adapter = ActivityPostAdapter(context!!, isTeacher, isTeachingAssistant, activityPostList)
         listView_courseFeed_activities.adapter = adapter
 
         val activityPostsReference =

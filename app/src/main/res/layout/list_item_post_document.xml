@@ -68,9 +68,9 @@
 
         <ImageView
                 android:id="@+id/popupicon2"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_margin="5dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:padding="5dp"
                 android:layout_gravity="end|center"
                 android:src="@drawable/ic_menu"/>
 
@@ -78,7 +78,7 @@
                 android:id="@+id/button_documentPost_delete"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
-                android:layout_margin="5dp"
+                android:padding="5dp"
                 android:layout_gravity="center"
                 android:visibility="gone"
                 android:src="@android:drawable/ic_menu_delete" />
@@ -110,6 +110,7 @@
             android:id="@+id/button_documentPost_download_attachment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_margin="5dp"
             android:fontFamily="@font/helvetica_neue_regular"
             android:textSize="12sp"
@@ -118,6 +119,7 @@
 
 
     <ImageView
+            android:visibility="gone"
             android:id="@+id/button_documentPost_download_images"
             android:layout_height="150dp"
             android:scaleType="centerCrop"

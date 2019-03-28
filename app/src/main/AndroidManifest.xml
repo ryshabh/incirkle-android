@@ -18,7 +18,8 @@
             android:theme="@style/AppTheme">
         <activity android:name=".Activities.EvaluationCenterActivity">
         </activity>
-        <activity android:name=".Activities.CommentsActivity">
+        <activity android:name=".Activities.CommentsActivity"
+                  android:theme="@style/AppTheme.Translucent">
         </activity>
         <activity
                 android:name=".Activities.CourseFeedActivity"
@@ -66,6 +67,9 @@
                 android:name=".filePicker.KotlinFilePicker"
                 android:screenOrientation="portrait" >
         </activity>
+
+
+
         <activity
                 android:name=".Activities.HomeActivity"
                 android:label="@string/app_name"

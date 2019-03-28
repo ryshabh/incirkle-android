@@ -30,6 +30,7 @@
                     android:id="@+id/textView_comment_posterName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/md_black"
                     android:layout_gravity="center_vertical"
                     android:text="@string/text_poster_name"
                     android:textSize="18sp"/>
@@ -37,6 +38,7 @@
             <TextView
                     android:id="@+id/textView_comment_timestamp"
                     android:layout_width="match_parent"
+                    android:textColor="@color/md_black"
                     android:layout_height="wrap_content"
                     android:text="@string/text_timestamp"/>
 
@@ -47,6 +49,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_margin="5dp"
+                android:background="@android:color/transparent"
                 android:layout_gravity="center"
                 android:visibility="gone"
                 android:src="@android:drawable/ic_menu_delete" />
@@ -58,6 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
+            android:textColor="@color/md_black"
             android:text="@string/text_content" />
 
 </LinearLayout>
