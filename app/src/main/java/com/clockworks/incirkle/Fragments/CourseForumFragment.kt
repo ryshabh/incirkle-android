@@ -51,7 +51,7 @@ class CourseForumFragment() : Fragment()
 
 
     //    private lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
-    private lateinit var bottomSheetLayout: LinearLayout
+//    private lateinit var bottomSheetLayout: LinearLayout
     private lateinit var listView_comments: ListView
 
     lateinit var dialog: AlertDialog
@@ -153,13 +153,18 @@ class CourseForumFragment() : Fragment()
                   view = convertView
                   viewModel = convertView.tag as ViewModel
               }*/
-
-            var request: RequestOptions =
-                RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-            Glide.with(context)
-                .load(post.imagepath)
-                .apply(request)
-                .into(viewModel.posterPictureImageView);
+            try
+            {
+                var request: RequestOptions =
+                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
+                Glide.with(context)
+                    .load(post.imagepath)
+                    .apply(request)
+                    .into(viewModel.posterPictureImageView)
+            } catch (e: Exception)
+            {
+                e.printStackTrace()
+            }
             post.poster.get().addOnCompleteListener()
             { task ->
 
@@ -202,41 +207,45 @@ class CourseForumFragment() : Fragment()
                 viewModel.downloadAttachmentImage.visibility = View.VISIBLE
                 post.attachmentPath?.let {
 
-
-                    Glide
-                        .with(context)
-                        .load(it)
-                        .listener(object : RequestListener<Drawable>
-                        {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                            ): Boolean
+                    try
+                    {
+                        Glide
+                            .with(context)
+                            .load(it)
+                            .listener(object : RequestListener<Drawable>
                             {
-                                viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
-                                viewModel.downloadAttachmentImage.visibility = View.GONE
-                                return false
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
+                                    viewModel.downloadAttachmentImage.visibility = View.GONE
+                                    return false
 
-                            }
+                                }
 
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean
-                            {
-                                viewModel.button_activityForum_download_attachment.visibility = View.GONE
-                                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
-                                return false
-                            }
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    viewModel.button_activityForum_download_attachment.visibility = View.GONE
+                                    viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                                    return false
+                                }
 
-                        })
-                        .into(viewModel.downloadAttachmentImage);
-
+                            })
+                            .into(viewModel.downloadAttachmentImage);
+                    } catch (e: Exception)
+                    {
+                        e.printStackTrace()
+                    }
                 }
                 viewModel.downloadAttachmentButton.setOnClickListener {
                     post.attachmentPath?.let {
@@ -359,7 +368,7 @@ class CourseForumFragment() : Fragment()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
         root = inflater.inflate(R.layout.fragment_course_forum, container, false)
-        bottomSheetLayout = root!!.findViewById(R.id.card_bottom_sheet)
+//        bottomSheetLayout = root!!.findViewById(R.id.card_bottom_sheet)
         listView_comments = root!!.findViewById(R.id.listView_comments);
 
 //        sheetBehavior = BottomSheetBehavior.from<LinearLayout>(bottomSheetLayout)
@@ -418,12 +427,18 @@ class CourseForumFragment() : Fragment()
         {
 
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
-                var request: RequestOptions =
-                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-                Glide.with(context)
-                    .load(it.toString())
-                    .apply(request)
-                    .into(imageview_profileimage);
+                try
+                {
+                    var request: RequestOptions =
+                        RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
+                    Glide.with(context)
+                        .load(it.toString())
+                        .apply(request)
+                        .into(imageview_profileimage);
+                } catch (e: Exception)
+                {
+                    e.printStackTrace()
+                }
             }.addOnFailureListener {
                 it.printStackTrace()
             };

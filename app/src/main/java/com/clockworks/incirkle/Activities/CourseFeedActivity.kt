@@ -151,7 +151,7 @@ class CourseFeedActivity : AppActivity()
 
         override fun getCount(): Int
         {
-            return 4
+            return 3   // todo change 4 to add assisgnment part
         }
     }
 }

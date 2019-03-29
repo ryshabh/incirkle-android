@@ -12,6 +12,7 @@ class Comment(): FirebaseDocument
     lateinit var content: String
     lateinit var poster: DocumentReference
     lateinit var timestamp: Timestamp
+    var attachmentPath: String? = null
 
     constructor(content: String, poster: DocumentReference) : this()
     {
@@ -19,4 +20,6 @@ class Comment(): FirebaseDocument
         this.poster = poster
         this.timestamp = Timestamp(Date())
     }
+
+
 }

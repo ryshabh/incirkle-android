@@ -6,25 +6,23 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.View
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.Models.Organisation
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_user_profile.*
-import com.google.firebase.storage.StorageReference
-import android.support.annotation.NonNull
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import android.util.Log
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 
 
 class UserProfileActivity : AppActivity()
@@ -40,24 +38,28 @@ class UserProfileActivity : AppActivity()
             {
                 // TODO: Change Picture
 
+                try
+                {
+                    this.selectFile {
 
-                this.selectFile {
-
-                    /*  this.selectedFileUri?.getName(this)
-                          ?: getString(com.clockworks.incirkle.R.string.text_select_attachment)
-*/
-                    if (this.selectedFileUri != null)
-                    {
-                        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedFileUri)
-                        displayPictureImageButton.setImageBitmap(bitmap)
-                        updateAttachmentPath(
-                            user.reference!!,
-                            FirebaseStorage.getInstance().getReference("UserProfiles").child(user.reference!!.id),
-                            "profilepic"
-                        )
+                        /*  this.selectedFileUri?.getName(this)
+                                          ?: getString(com.clockworks.incirkle.R.string.text_select_attachment)
+                */
+                        if (this.selectedFileUri != null)
+                        {
+                            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, selectedFileUri)
+                            displayPictureImageButton.setImageBitmap(bitmap)
+                            updateAttachmentPath(
+                                user.reference!!,
+                                FirebaseStorage.getInstance().getReference("UserProfiles").child(user.reference!!.id),
+                                "profilepic"
+                            )
+                        }
                     }
+                } catch (e: Exception)
+                {
+                    e.printStackTrace()
                 }
-
 
             }
             AlertDialog.BUTTON_NEGATIVE ->
@@ -174,33 +176,38 @@ class UserProfileActivity : AppActivity()
 
     fun update(user: User)
     {
-        this.user = user
-        editText_first_name.setText(user.firstName)
-        editText_last_name.setText(user.lastName)
-        gender.check(if (user.gender == User.Gender.MALE) radioButton_male.id else radioButton_female.id)
-        type.check(if (user.type == User.Type.TEACHER) radioButton_teacher.id else radioButton_student.id)
-
-        var requestOptions = RequestOptions()
-        requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(16))
-        if (user.profilepic != null)
+        try
         {
-            user.profilepic?.let {
+            this.user = user
+            editText_first_name.setText(user.firstName)
+            editText_last_name.setText(user.lastName)
+            gender.check(if (user.gender == User.Gender.MALE) radioButton_male.id else radioButton_female.id)
+            type.check(if (user.type == User.Type.TEACHER) radioButton_teacher.id else radioButton_student.id)
 
+            var requestOptions = RequestOptions()
+            requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(16))
+            if (user.profilepic != null)
+            {
+                user.profilepic?.let {
+
+                    Glide
+                        .with(this)
+                        .load(it)
+                        .apply(requestOptions)
+                        .into(displayPictureImageButton);
+
+                }
+            }
+            else
+            {
                 Glide
                     .with(this)
-                    .load(it)
+                    .load(ContextCompat.getDrawable(this, R.drawable.ic_user))
                     .apply(requestOptions)
                     .into(displayPictureImageButton);
-
             }
-        }
-        else
-        {
-            Glide
-                .with(this)
-                .load(ContextCompat.getDrawable(this, R.drawable.ic_user))
-                .apply(requestOptions)
-                .into(displayPictureImageButton);
+        }catch (e:Exception){
+            e.printStackTrace()
         }
     }
 

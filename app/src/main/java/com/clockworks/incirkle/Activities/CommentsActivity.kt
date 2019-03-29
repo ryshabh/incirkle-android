@@ -2,20 +2,28 @@ package com.clockworks.incirkle.Activities
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.AttrRes
 import android.support.design.widget.BottomSheetBehavior
 import android.support.v4.content.ContextCompat
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Comment
 import com.clockworks.incirkle.Models.User
@@ -25,8 +33,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_comments.*
 import kotlinx.android.synthetic.main.list_item_comment.view.*
+import kotlinx.android.synthetic.main.popup_add_activity.view.*
 
 
 class CommentsActivity : AppActivity()
@@ -42,6 +52,8 @@ class CommentsActivity : AppActivity()
     private var commentList = ArrayList<Comment>()
     private lateinit var commentsAdapter: CommentsAdapter
 
+    private var dialog: AlertDialog? = null
+
     class CommentsAdapter(
         private val context: Context,
         private val isTeacher: Boolean,
@@ -55,6 +67,8 @@ class CommentsActivity : AppActivity()
             lateinit var timestampTextView: TextView
             lateinit var deleteButton: ImageButton
             lateinit var contentTextView: TextView
+            lateinit var tv_attachment: TextView
+            lateinit var iv_images: ImageView
         }
 
         private val inflater: LayoutInflater =
@@ -103,6 +117,8 @@ class CommentsActivity : AppActivity()
                 viewModel.timestampTextView = view.textView_comment_timestamp
                 viewModel.deleteButton = view.button_comment_delete
                 viewModel.contentTextView = view.textView_comment_content
+                viewModel.tv_attachment = view.tv_attachment
+                viewModel.iv_images = view.iv_images
                 view.tag = viewModel
             }
             else
@@ -110,36 +126,125 @@ class CommentsActivity : AppActivity()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
+            try
+            {
+                val comment = this.dataSource[position]
 
-            val comment = this.dataSource[position]
-            comment.poster.get().addOnCompleteListener()
-            { task ->
-                task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                    ?: task.result?.serialize(User::class.java)?.let()
-                    {
-                        viewModel.posterNameTextView.setText(it.fullName())
-                        // TODO: Set Display Picture
-                        var request: RequestOptions =
-                            RequestOptions().error(R.drawable.ic_user).override(100, 100)
-                                .placeholder(R.drawable.ic_user)
-                        Glide.with(context.applicationContext)
-                            .load(it.profilepic)
-                            .apply(request)
-                            .into(viewModel.posterPictureImageView)
-                        // comment user is loggged user then show delete button
-                       val isCommentAdmin = it.phoneNumber == FirebaseAuth.getInstance().currentUser?.phoneNumber
-                        viewModel.deleteButton.visibility = if (isTeacher || isCommentAdmin) View.VISIBLE else View.GONE
+                comment.poster.get().addOnCompleteListener()
+                { task ->
+                    task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                        ?: task.result?.serialize(User::class.java)?.let()
+                        {
+                            try
+                            {
+                                viewModel.posterNameTextView.setText(it.fullName())
+                                // TODO: Set Display Picture
+                                var request: RequestOptions =
+                                    RequestOptions().error(R.drawable.ic_user).override(100, 100)
+                                        .placeholder(R.drawable.ic_user)
+                                Glide.with(context.applicationContext)
+                                    .load(it.profilepic)
+                                    .apply(request)
+                                    .into(viewModel.posterPictureImageView)
+                                // comment user is loggged user then show delete button
+                                val isCommentAdmin =
+                                    it.phoneNumber == FirebaseAuth.getInstance().currentUser?.phoneNumber
+                                viewModel.deleteButton.visibility =
+                                    if (isTeacher || isCommentAdmin) View.VISIBLE else View.GONE
+                            } catch (e: Exception)
+                            {
+                                e.printStackTrace()
+                            }
+                        }
+                }
+
+                val date = android.text.format.DateFormat.getDateFormat(context.applicationContext)
+                    .format(comment.timestamp.toDate())
+                val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext)
+                    .format(comment.timestamp.toDate())
+                val timestamp = "$time $date"
+                viewModel.timestampTextView.setText(timestamp)
+                viewModel.contentTextView.setText(comment.content)
+                viewModel.deleteButton.setOnClickListener() { this.deleteComment(comment) }
+
+                viewModel.tv_attachment.setOnClickListener {
+                    comment.attachmentPath?.let {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                        )
                     }
-            }
+                }
 
-            val date = android.text.format.DateFormat.getDateFormat(context.applicationContext)
-                .format(comment.timestamp.toDate())
-            val time = android.text.format.DateFormat.getTimeFormat(context.applicationContext)
-                .format(comment.timestamp.toDate())
-            val timestamp = "$time $date"
-            viewModel.timestampTextView.setText(timestamp)
-            viewModel.contentTextView.setText(comment.content)
-            viewModel.deleteButton.setOnClickListener() { this.deleteComment(comment) }
+                viewModel.iv_images.setOnClickListener {
+                    comment.attachmentPath?.let {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                        )
+                    }
+                }
+
+                if (comment.attachmentPath != null)
+                {
+                    viewModel.iv_images.visibility = View.VISIBLE
+                    viewModel.tv_attachment.visibility = View.VISIBLE
+                    comment.attachmentPath?.let {
+                        Glide
+                            .with(context)
+                            .load(it)
+                            .listener(object : RequestListener<Drawable>
+                            {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    try
+                                    {
+                                        viewModel.tv_attachment.visibility = View.VISIBLE
+                                        viewModel.iv_images.visibility = View.GONE
+                                    } catch (e: Exception)
+                                    {
+                                        e.printStackTrace()
+                                    }
+                                    return false
+
+                                }
+
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    try
+                                    {
+                                        viewModel.tv_attachment.visibility = View.GONE
+                                        viewModel.iv_images.visibility = View.VISIBLE
+                                    } catch (e: Exception)
+                                    {
+                                        e.printStackTrace()
+                                    }
+                                    return false
+                                }
+
+                            })
+                            .into(viewModel.iv_images);
+
+                    }
+                }
+                else
+                {
+                    viewModel.iv_images.visibility = View.GONE
+                    viewModel.tv_attachment.visibility = View.GONE
+                }
+            } catch (e: Exception)
+            {
+                e.printStackTrace()
+            }
 
             return view
         }
@@ -161,13 +266,53 @@ class CommentsActivity : AppActivity()
             e?.let { this.showError(it) }
                 ?: result?.map { it.serialize(Comment::class.java) }?.let()
                 {
+                    Log.d("CommentsActivityData", it.size.toString());
                     commentList.clear()
                     commentList.addAll(it)
                     commentsAdapter.notifyDataSetChanged()
-                    listView_comments.smoothScrollToPosition(commentList.size-1)
+                    listView_comments.smoothScrollToPosition(commentList.size - 1)
                 }
         }
 
+//        listView_comments.setOnTouchListener(object : View.OnTouchListener
+//        {
+//            override fun onTouch(v: View?, event: MotionEvent?): Boolean
+//            {
+//                var action = event?.getAction();
+//                when (action)
+//                {
+//                    MotionEvent.ACTION_DOWN -> v?.getParent()?.requestDisallowInterceptTouchEvent(true);
+//                    MotionEvent.ACTION_UP -> v?.getParent()?.requestDisallowInterceptTouchEvent(false);
+//                }
+//
+//                // Handle ListView touch events.
+//                v?.onTouchEvent(event);
+//                return true;
+//            }
+//        })
+
+
+//        listView.setOnTouchListener(new ListView.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                int action = event.getAction();
+//                switch (action) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        // Disallow NestedScrollView to intercept touch events.
+//                        v.getParent().requestDisallowInterceptTouchEvent(true);
+//                        break;
+//
+//                    case MotionEvent.ACTION_UP:
+//                        // Allow NestedScrollView to intercept touch events.
+//                        v.getParent().requestDisallowInterceptTouchEvent(false);
+//                        break;
+//                }
+//
+//                // Handle ListView touch events.
+//                v.onTouchEvent(event);
+//                return true;
+//            }
+//        });
 
 
         btnPost.setOnClickListener()
@@ -195,27 +340,42 @@ class CommentsActivity : AppActivity()
             }
         }
 
+        ib_attachment.setOnClickListener {
+            selectFile {
+                val fileName = selectedFileUri?.getName(this)
+                // open dialog
+                showAttachmentDialog(fileName)
+            }
+
+        }
+
+
         touch_outside.setOnClickListener() {
             finish()
         }
-        BottomSheetBehavior.from(card_bottom_sheet)
-            .setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback()
+
+        val behavior = BottomSheetBehavior.from(card_bottom_sheet)
+        behavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback()
+        {
+            override fun onSlide(bottomSheet: View, slideOffset: Float)
             {
-                override fun onSlide(bottomSheet: View, slideOffset: Float)
-                {
+                behavior.peekHeight = 500
+                Log.d("CommentsActivity", "onSlide");
+            }
 
-                }
-
-                override fun onStateChanged(bottomSheet: View, newState: Int)
+            override fun onStateChanged(bottomSheet: View, newState: Int)
+            {
+                Log.d("CommentsActivity", newState.toString());
+                when (newState)
                 {
-                    when (newState)
-                    {
-                        BottomSheetBehavior.STATE_HIDDEN -> finish()
-                        BottomSheetBehavior.STATE_EXPANDED -> setStatusBarDim(false)
-                        else -> setStatusBarDim(true)
-                    }
+                    BottomSheetBehavior.STATE_HIDDEN -> finish()
+                    BottomSheetBehavior.STATE_EXPANDED -> setStatusBarDim(false)
+                    else -> setStatusBarDim(true)
                 }
-            });
+            }
+        });
+
+        behavior.peekHeight = 50000
 
 //        this.configurePostCommentView()
     }
@@ -288,5 +448,67 @@ class CommentsActivity : AppActivity()
         val resId = a.getResourceId(0, 0)
         a.recycle()
         return resId
+    }
+
+    fun showAttachmentDialog(fileName: String?)
+    {
+
+        var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity, null)
+        view.tvHeader.text = "Add Attachment"
+        view.button_activity_selectAttachment.text = fileName
+
+        if (dialog == null)
+        {
+            dialog = AlertDialog.Builder(this)
+                .setView(view)
+                .create()
+            dialog?.show()
+        }
+
+        view.button_activity_selectAttachment.setOnClickListener {
+
+            selectFile {
+                view.button_activity_selectAttachment.text =
+                    selectedFileUri?.getName(this) ?: getString(
+                        com.clockworks.incirkle.R.string.text_select_attachment
+                    )
+
+            }
+
+        }
+        view.button_post_activity.setOnClickListener()
+        {
+            dialog?.dismiss()
+            view.editText_post_activity_description.error = null
+
+            val description = view.editText_post_activity_description.text.toString().trim()
+            if (description.isBlank())
+            {
+                view.editText_post_activity_description.error = " description cannot be empty"
+                return@setOnClickListener
+            }
+            else
+            {
+                FirebaseAuth.getInstance().currentUser?.let()
+                {
+                    this.showLoadingAlert()
+                    commentsReference.add(Comment(description, it.documentReference()))
+                        .addOnFailureListener { this.showError(it) }
+                        .addOnCompleteListener { this.dismissLoadingAlert() }
+                        .addOnSuccessListener()
+                        {
+                            view.editText_post_activity_description.setText("")
+                            this.updateAttachmentPath(
+                                it,
+                                FirebaseStorage.getInstance().getReference("Comments Attachments").child(it.id),
+                                "attachmentPath"
+                            )
+                            dialog = null;
+                        }
+                }
+            }
+
+        }
+
     }
 }

@@ -136,12 +136,17 @@ class CourseActivitiesFragment() : Fragment()
                 view = convertView
                 viewModel = convertView.tag as ViewModel
             }
-            var request: RequestOptions =
-                RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-            Glide.with(context)
-                .load(post.imagepath)
-                .apply(request)
-                .into(viewModel.posterPictureImageView);
+            try
+            {
+                var request: RequestOptions =
+                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
+                Glide.with(context)
+                    .load(post.imagepath)
+                    .apply(request)
+                    .into(viewModel.posterPictureImageView);
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
             post.poster.get().addOnCompleteListener()
             { task ->
 
@@ -187,42 +192,50 @@ class CourseActivitiesFragment() : Fragment()
                 viewModel.downloadAttachmentImage.visibility = View.VISIBLE
                 viewModel.downloadAttachmentButton.visibility = View.VISIBLE
                 post.attachmentPath?.let {
-                    Glide
-                        .with(context)
-                        .load(it)
-                        .listener(object : RequestListener<Drawable>
-                        {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                            ): Boolean
+
+                    try
+                    {
+                        Glide
+                            .with(context)
+                            .load(it)
+                            .listener(object : RequestListener<Drawable>
                             {
-                                viewModel.downloadAttachmentButton.visibility = View.VISIBLE
-                                viewModel.downloadAttachmentImage.visibility = View.GONE
-                                return false
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    viewModel.downloadAttachmentButton.visibility = View.VISIBLE
+                                    viewModel.downloadAttachmentImage.visibility = View.GONE
+                                    return false
 
-                            }
+                                }
 
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean
-                            {
-                                viewModel.downloadAttachmentButton.visibility = View.GONE
-                                viewModel.downloadAttachmentImage.visibility = View.VISIBLE
-                                return false
-                            }
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean
+                                {
+                                    viewModel.downloadAttachmentButton.visibility = View.GONE
+                                    viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                                    return false
+                                }
 
-                        })
-                        .into(viewModel.downloadAttachmentImage);
+                            })
+                            .into(viewModel.downloadAttachmentImage);
 
+                    }catch (e:Exception){
+                        e.printStackTrace()
+                    }
                 }
-            }else{
+            }
+            else
+            {
                 viewModel.downloadAttachmentImage.visibility = View.GONE
                 viewModel.downloadAttachmentButton.visibility = View.GONE
             }
@@ -294,12 +307,18 @@ class CourseActivitiesFragment() : Fragment()
         {
 
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
-                var request: RequestOptions =
-                    RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-                Glide.with(this)
-                    .load(it.toString())
-                    .apply(request)
-                    .into(imageview_profileimage);
+                try
+                {
+                    var request: RequestOptions =
+                        RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
+                    Glide.with(this)
+                        .load(it.toString())
+                        .apply(request)
+                        .into(imageview_profileimage)
+                } catch (e: Exception)
+                {
+                    e.printStackTrace()
+                }
             }.addOnFailureListener {
                 it.printStackTrace()
             };

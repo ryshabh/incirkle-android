@@ -64,4 +64,25 @@
             android:textColor="@color/md_black"
             android:text="@string/text_content" />
 
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/tv_attachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:visibility="gone"
+                android:text="@string/text_download_attachment"/>
+
+        <ImageView
+                android:id="@+id/iv_images"
+                android:layout_height="150dp"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+                />
+    </LinearLayout>
+
 </LinearLayout>
