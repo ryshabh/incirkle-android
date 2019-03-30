@@ -144,7 +144,8 @@ class CourseActivitiesFragment() : Fragment()
                     .load(post.imagepath)
                     .apply(request)
                     .into(viewModel.posterPictureImageView);
-            }catch (e:Exception){
+            } catch (e: Exception)
+            {
                 e.printStackTrace()
             }
             post.poster.get().addOnCompleteListener()
@@ -229,7 +230,8 @@ class CourseActivitiesFragment() : Fragment()
                             })
                             .into(viewModel.downloadAttachmentImage);
 
-                    }catch (e:Exception){
+                    } catch (e: Exception)
+                    {
                         e.printStackTrace()
                     }
                 }
@@ -337,7 +339,6 @@ class CourseActivitiesFragment() : Fragment()
                         appActivity.selectedFileUri?.getName(context!!) ?: getString(
                             com.clockworks.incirkle.R.string.text_select_attachment
                         )
-
                 }
 
             }
@@ -392,40 +393,48 @@ class CourseActivitiesFragment() : Fragment()
         adapter = ActivityPostAdapter(context!!, isTeacher, isTeachingAssistant, activityPostList)
         listView_courseFeed_activities.adapter = adapter
 
-        val activityPostsReference =
-            FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
-                .collection("Activity Posts")
+        try
+        {
 
-        activityPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
-        { result, e ->
-            e?.let { (this.activity as AppActivity).showError(it) }
-                ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
-                {
-
-                    for (item in it)
+            val activityPostsReference =
+                FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                    .collection("Activity Posts")
+            activityPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
+            { result, e ->
+                e?.let { (this.activity as AppActivity).showError(it) }
+                    ?: result?.map { it.serialize(ActivityPost::class.java) }?.let()
                     {
-
                         try
                         {
-                            FirebaseStorage.getInstance().getReference("UserProfiles")
-                                .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
-                                item.imagepath = it.toString();
-                                adapter.notifyDataSetChanged()
+                            for (item in it)
+                            {
 
-                            }.addOnFailureListener {
-                                it.printStackTrace()
-                            };
+
+                                FirebaseStorage.getInstance().getReference("UserProfiles")
+                                    .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
+                                    item.imagepath = it.toString();
+                                    adapter.notifyDataSetChanged()
+
+                                }.addOnFailureListener {
+                                    it.printStackTrace()
+                                };
+
+                            }
+                            activityPostList.clear()
+                            activityPostList.addAll(it)
+                            adapter.notifyDataSetChanged()
+//                    adapter = ActivityPostAdapter(context!!, isAdmin, it)
+//                    listView_courseFeed_activities.adapter = adapter
                         } catch (e: Exception)
                         {
                             e.printStackTrace()
                         }
                     }
-                    activityPostList.clear()
-                    activityPostList.addAll(it)
-                    adapter.notifyDataSetChanged()
-//                    adapter = ActivityPostAdapter(context!!, isAdmin, it)
-//                    listView_courseFeed_activities.adapter = adapter
-                }
+            }
+
+        } catch (e: Exception)
+        {
+            e.printStackTrace()
         }
     }
 

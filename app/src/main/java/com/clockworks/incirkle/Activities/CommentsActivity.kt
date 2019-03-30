@@ -1,5 +1,6 @@
 package com.clockworks.incirkle.Activities
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -51,6 +52,8 @@ class CommentsActivity : AppActivity()
     private lateinit var commentsReference: CollectionReference
     private var commentList = ArrayList<Comment>()
     private lateinit var commentsAdapter: CommentsAdapter
+
+    private lateinit var postPath: String
 
     private var dialog: AlertDialog? = null
 
@@ -259,8 +262,11 @@ class CommentsActivity : AppActivity()
 
         commentsAdapter = CommentsAdapter(this, isTeacher, commentList)
         listView_comments.adapter = commentsAdapter
+
+        postPath = intent.getStringExtra(IDENTIFIER_POST_PATH)
+
         this.commentsReference =
-            FirebaseFirestore.getInstance().document(intent.getStringExtra(IDENTIFIER_POST_PATH)).collection("Comments")
+            FirebaseFirestore.getInstance().document(postPath).collection("Comments")
         this.commentsReference.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener()
         { result, e ->
             e?.let { this.showError(it) }
@@ -341,10 +347,17 @@ class CommentsActivity : AppActivity()
         }
 
         ib_attachment.setOnClickListener {
+
             selectFile {
                 val fileName = selectedFileUri?.getName(this)
-                // open dialog
-                showAttachmentDialog(fileName)
+                if (fileName!=null)
+                {
+                    val intent = Intent(this, CommentWithAttachment::class.java)
+                    intent.putExtra("fileName", fileName)
+                    intent.putExtra("fileUri", selectedFileUri)
+                    intent.putExtra(IDENTIFIER_POST_PATH, postPath)
+                    startActivityForResult(intent, 510)
+                }
             }
 
         }
@@ -452,18 +465,19 @@ class CommentsActivity : AppActivity()
 
     fun showAttachmentDialog(fileName: String?)
     {
-
         var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_activity, null)
         view.tvHeader.text = "Add Attachment"
         view.button_activity_selectAttachment.text = fileName
+        view.editText_post_activity_description.error = null
 
         if (dialog == null)
         {
             dialog = AlertDialog.Builder(this)
                 .setView(view)
+                .setCancelable(false)
                 .create()
-            dialog?.show()
         }
+        dialog?.show()
 
         view.button_activity_selectAttachment.setOnClickListener {
 
@@ -476,9 +490,13 @@ class CommentsActivity : AppActivity()
             }
 
         }
+
+        view.ib_cross.setOnClickListener({
+            dialog?.cancel()
+
+        })
         view.button_post_activity.setOnClickListener()
         {
-            dialog?.dismiss()
             view.editText_post_activity_description.error = null
 
             val description = view.editText_post_activity_description.text.toString().trim()
@@ -489,6 +507,7 @@ class CommentsActivity : AppActivity()
             }
             else
             {
+                dialog?.cancel()
                 FirebaseAuth.getInstance().currentUser?.let()
                 {
                     this.showLoadingAlert()
@@ -497,18 +516,50 @@ class CommentsActivity : AppActivity()
                         .addOnCompleteListener { this.dismissLoadingAlert() }
                         .addOnSuccessListener()
                         {
+                            dialog?.cancel()
                             view.editText_post_activity_description.setText("")
                             this.updateAttachmentPath(
                                 it,
                                 FirebaseStorage.getInstance().getReference("Comments Attachments").child(it.id),
                                 "attachmentPath"
                             )
-                            dialog = null;
                         }
                 }
             }
 
         }
 
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+    {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 510 && resultCode == Activity.RESULT_OK && data != null)
+        {
+            // add data in list
+            val des = data.getStringExtra("description")
+            postCommentWithAttachment(des)
+        }
+
+    }
+
+    private fun postCommentWithAttachment(description: String)
+    {
+        FirebaseAuth.getInstance().currentUser?.let()
+        {
+            this.showLoadingAlert()
+            commentsReference.add(Comment(description, it.documentReference()))
+                .addOnFailureListener { this.showError(it) }
+                .addOnCompleteListener { this.dismissLoadingAlert() }
+                .addOnSuccessListener()
+                {
+                    this.updateAttachmentPath(
+                        it,
+                        FirebaseStorage.getInstance().getReference("Comments Attachments").child(it.id),
+                        "attachmentPath"
+                    )
+                }
+        }
     }
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="Add attachment"
+                android:background="?attr/colorPrimary"/>
+    </android.support.design.widget.AppBarLayout>
+
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_below="@+id/appbar"
+            android:layout_above="@+id/bottomView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <ImageView
+                android:id="@+id/iv_image_attachment"
+                android:scaleType="center"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <TextView
+                android:id="@+id/tv_attachment_name"
+                android:drawablePadding="5dp"
+                android:drawableLeft="@drawable/ic_attachment"
+                android:drawableStart="@drawable/ic_attachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <Button
+            android:id="@+id/btnChange"
+            android:visibility="gone"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/bottomView"
+            android:textColor="@color/md_white"
+            android:backgroundTint="@color/colorPrimary"
+            android:layout_margin="20dp"
+            android:layout_gravity="right"
+            android:text="Change"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+    <LinearLayout
+            android:id="@+id/bottomView"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+
+        <EditText
+                android:id="@+id/etComment"
+                android:textColor="@color/md_black"
+                android:background="@drawable/comments_bg"
+                android:layout_width="0dp"
+                android:layout_weight="1.0"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/btnPost"
+                android:textColor="@color/md_white"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Post"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

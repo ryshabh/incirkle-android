@@ -148,11 +148,9 @@ abstract class AppActivity : AppCompatActivity()
     fun updateAttachmentPath(
         documentReference: DocumentReference,
         fileReference: StorageReference,
-        fieldPath: String,
-        onSuccess: () -> Unit = { }
+        fieldPath: String
     )
     {
-
         this.selectedFileUri?.let()
         {
             this.selectedFileUri = null
@@ -190,14 +188,17 @@ abstract class AppActivity : AppCompatActivity()
                                 changedUrl = it.toString();
                                 documentReference.update(fieldPath, it.toString())
                                     .addOnFailureListener { showError(it) }
-                                    .addOnCompleteListener { dismissLoadingAlert() }
+                                    .addOnCompleteListener {
+                                        dismissLoadingAlert() }
                             }
                     }
-            } catch (e: java.lang.Exception)
+            } catch (e: Exception)
             {
+                e.printStackTrace()
                 dismissLoadingAlert()
                 showError(e)
             }
         }
     }
+
 }
