@@ -37,7 +37,7 @@
 
         <android.support.design.widget.TabLayout
                 android:id="@+id/tabs_courseFeed"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:tabIndicatorColor="@android:color/darker_gray"
                 app:tabTextColor="@android:color/black"
@@ -48,7 +48,7 @@
                 app:tabPadding="0dp"
                 app:tabGravity="fill"
                 android:layout_gravity="center_horizontal"
-                app:tabMode="fixed">
+                app:tabMode="scrollable">
 
             <android.support.design.widget.TabItem
                     android:id="@+id/tab_activities"
@@ -70,6 +70,13 @@
                     android:layout_height="wrap_content"
                     android:inputType="textCapSentences"
                     android:text="@string/tab_documents"/>
+
+            <android.support.design.widget.TabItem
+                    android:id="@+id/tab_assignments"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:text="@string/tab_assignments"/>
 
 
 

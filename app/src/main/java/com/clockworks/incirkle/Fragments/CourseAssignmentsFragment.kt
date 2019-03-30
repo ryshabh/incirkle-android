@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -35,7 +36,7 @@ import kotlinx.android.synthetic.main.list_item_post_assignment.view.*
 import kotlinx.android.synthetic.main.popup_add_assigment.view.*
 import java.util.*
 
-class CourseAssignmentsFragment() : FileUploaderFragment()
+class CourseAssignmentsFragment() : Fragment()
 {
     companion object
     {
@@ -51,8 +52,8 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
     lateinit var adapter: AssignmentPostAdapter
 
     class AssignmentPostAdapter(
-        private val context: Context,
-        val uploaderFragment: FileUploaderFragment,
+        private val mContext: Context,
+        val courseAssignmentsFragment: CourseAssignmentsFragment,
         private val isAdmin: Boolean,
         private var teacherPath: String,
         private var dataSource: List<AssignmentPost>
@@ -81,25 +82,25 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
         }
 
         private val inflater: LayoutInflater =
-            context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         private fun deleteAssignmentPost(post: AssignmentPost)
         {
-            val builder = AlertDialog.Builder(this.context)
+            val builder = AlertDialog.Builder(mContext)
             builder.setTitle("Delete Assignment Post")
             builder.setMessage("Are you sure you wish to delete this post?")
             builder.setPositiveButton("Delete",
                 { _, _ ->
                     post.reference?.delete()
                         ?.addOnFailureListener {
-                            Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                            Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show()
                         }
                         ?.addOnSuccessListener()
                         {
                             FirebaseStorage.getInstance().getReference("Assignment Attachments")
                                 .child(post.reference!!.id).delete()
                                 .addOnFailureListener {
-                                    Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show()
                                 }
                         }
                 })
@@ -159,14 +160,14 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             }
             var request: RequestOptions =
                 RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-            Glide.with(context)
+            Glide.with(mContext)
                 .load(post.imagepath)
                 .apply(request)
                 .into(viewModel.posterPictureImageView);
             post.poster.get().addOnCompleteListener()
             { task ->
 
-                task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                task.exception?.let { Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show() }
                     ?: task.result?.serialize(User::class.java)?.let()
                     {
                         viewModel.posterNameTextView.setText(it.fullName())
@@ -175,15 +176,15 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             }
 
             val dueDateDate =
-                android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.dueDate.toDate())
+                android.text.format.DateFormat.getDateFormat(mContext).format(post.dueDate.toDate())
             val dueDateTime =
-                android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.dueDate.toDate())
+                android.text.format.DateFormat.getTimeFormat(mContext).format(post.dueDate.toDate())
             val dueDate = "$dueDateTime, $dueDateDate"
 
             val timestampDate =
-                android.text.format.DateFormat.getDateFormat(context.applicationContext).format(post.timestamp.toDate())
+                android.text.format.DateFormat.getDateFormat(mContext).format(post.timestamp.toDate())
             val timestampTime =
-                android.text.format.DateFormat.getTimeFormat(context.applicationContext).format(post.timestamp.toDate())
+                android.text.format.DateFormat.getTimeFormat(mContext).format(post.timestamp.toDate())
             val timestamp = "$timestampTime, $timestampDate"
 
             viewModel.timestampTextView.text = timestamp
@@ -198,7 +199,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                 if (post.attachmentPath != null) View.VISIBLE else View.GONE
             viewModel.downloadAttachmentButton.setOnClickListener {
                 post.attachmentPath?.let {
-                    context.startActivity(
+                    mContext.startActivity(
                         Intent(Intent.ACTION_VIEW, Uri.parse(it))
                     )
                 }
@@ -208,7 +209,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             viewModel.linearLayout_view_solution.visibility = if (post.solutionPath != null) View.VISIBLE else View.GONE
             viewModel.viewSolutionButton.setOnClickListener {
                 post.solutionPath?.let {
-                    context.startActivity(
+                    mContext.startActivity(
                         Intent(
                             Intent.ACTION_VIEW,
                             Uri.parse(it)
@@ -218,7 +219,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             }
             viewModel.linearLayout_view_solution.setOnClickListener {
                 post.solutionPath?.let {
-                    context.startActivity(
+                    mContext.startActivity(
                         Intent(Intent.ACTION_VIEW, Uri.parse(it))
                     )
                 }
@@ -235,19 +236,19 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
 
             viewModel.popupicon.setOnClickListener(View.OnClickListener {
 
-                val popup = PopupMenu(context, it)
+                val popup = PopupMenu(mContext, it)
                 val inflater = popup.menuInflater
                 inflater.inflate(R.menu.actions, popup.menu)
                 popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
 
-                    val builder = AlertDialog.Builder(this.context)
+                    val builder = AlertDialog.Builder(mContext)
                     builder.setTitle("Delete Activity Post")
                     builder.setMessage("Are you sure you wish to delete this post?")
                     builder.setPositiveButton("Delete",
                         { _, _ ->
                             post.reference?.delete()
                                 ?.addOnFailureListener {
-                                    Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show()
                                 }
                                 ?.addOnSuccessListener()
                                 {
@@ -255,7 +256,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                                         .child(post.reference!!.id).delete()
                                         .addOnFailureListener {
                                             Toast.makeText(
-                                                context,
+                                                mContext,
                                                 it.localizedMessage,
                                                 Toast.LENGTH_LONG
                                             ).show()
@@ -291,7 +292,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
 
 
                     Glide
-                        .with(context)
+                        .with(mContext)
                         .load(it)
                         .listener(object : RequestListener<Drawable>
                         {
@@ -326,23 +327,24 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
 
                 }
             }
-            viewModel.linearLayout_submit_solution.setOnClickListener()
-            {
-                uploaderFragment.selectFile()
-                {
-                    uploaderFragment.updateAttachmentPath(
-                        post.reference!!,
-                        postAssignmentsStorage.child("Solution"),
-                        "solutionPath"
-                    )
-                    {
-
-                        viewModel.linearLayout_submit_solution.visibility = View.GONE
-                        //  viewModel.viewSolutionButton.visibility = View.VISIBLE
-                        viewModel.linearLayout_view_solution.visibility = View.VISIBLE
-                    }
-                }
-            }
+            // todo uncomment
+//            viewModel.linearLayout_submit_solution.setOnClickListener()
+//            {
+//                (mContext as AppActivity).selectFile()
+//                {
+//                    updateAttachmentPath(
+//                        post.reference!!,
+//                        postAssignmentsStorage.child("Solution"),
+//                        "solutionPath"
+//                    )
+//                    {
+//
+//                        viewModel.linearLayout_submit_solution.visibility = View.GONE
+//                        //  viewModel.viewSolutionButton.visibility = View.VISIBLE
+//                        viewModel.linearLayout_view_solution.visibility = View.VISIBLE
+//                    }
+//                }
+//            }
 
             FirebaseAuth.getInstance().currentUser?.documentReference()?.let()
             {
@@ -354,7 +356,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                     if (isTeacher && post.solutionPath == null) View.VISIBLE else View.GONE
 
                 submissionReference.get()
-                    .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
+                    .addOnFailureListener { Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show() }
                     .addOnSuccessListener()
                     {
                         val isSubmitted = it.exists()
@@ -377,45 +379,46 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                     {
                         //    Log.d("completed","completed")
                     }
-                viewModel.submitSolutionButton.setOnClickListener()
-                {
-                    uploaderFragment.selectFile()
-                    {
-                        submissionReference.set(AssignmentPost.Submission())
-                            .addOnFailureListener {
-                                Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
-                            }
-                            .addOnSuccessListener()
-                            {
-                                uploaderFragment.updateAttachmentPath(
-                                    submissionReference,
-                                    submissionStorageReference,
-                                    "submissionPath"
-                                )
-                                {
-                                    viewModel.submitSolutionButton.visibility = View.GONE
-                                    view.linearLayout_submitted_solution.visibility = View.VISIBLE
-                                }
-                            }
-                    }
-                }
-                viewModel.viewSubmissionButton.setOnClickListener()
-                {
-                    submissionReference.get()
-                        .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
-                        .addOnSuccessListener {
-                            it.serialize(AssignmentPost.Submission::class.java).let {
-                                it.submissionPath.let {
-                                    context.startActivity(
-                                        Intent(
-                                            Intent.ACTION_VIEW,
-                                            Uri.parse(it)
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                }
+                // todo uncomment
+//                viewModel.submitSolutionButton.setOnClickListener()
+//                {
+//                    (mContext as AppActivity).selectFile()
+//                    {
+//                        submissionReference.set(AssignmentPost.Submission())
+//                            .addOnFailureListener {
+//                                Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show()
+//                            }
+//                            .addOnSuccessListener()
+//                            {
+//                                uploaderFragment.updateAttachmentPath(
+//                                    submissionReference,
+//                                    submissionStorageReference,
+//                                    "submissionPath"
+//                                )
+//                                {
+//                                    viewModel.submitSolutionButton.visibility = View.GONE
+//                                    view.linearLayout_submitted_solution.visibility = View.VISIBLE
+//                                }
+//                            }
+//                    }
+//                }
+//                viewModel.viewSubmissionButton.setOnClickListener()
+//                {
+//                    submissionReference.get()
+//                        .addOnFailureListener { Toast.makeText(mContext, it.localizedMessage, Toast.LENGTH_LONG).show() }
+//                        .addOnSuccessListener {
+//                            it.serialize(AssignmentPost.Submission::class.java).let {
+//                                it.submissionPath.let {
+//                                    mContext.startActivity(
+//                                        Intent(
+//                                            Intent.ACTION_VIEW,
+//                                            Uri.parse(it)
+//                                        )
+//                                    )
+//                                }
+//                            }
+//                        }
+//                }
 //                viewModel.resubmitSolutionButton
 //                    .setOnClickListener { uploaderFragment
 //                        .selectFile { uploaderFragment
@@ -450,7 +453,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             FirebaseStorage.getInstance().getReference("UserProfiles").child(it.uid).downloadUrl.addOnSuccessListener {
                 var request: RequestOptions =
                     RequestOptions().error(R.drawable.ic_user).override(100, 100).placeholder(R.drawable.ic_user)
-                Glide.with(context)
+                Glide.with(activity)
                     .load(it.toString())
                     .apply(request)
                     .into(imageview_profileimage);
@@ -460,11 +463,11 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
         }
         card_view_createforum_assignment.visibility = if (isTeacher || isTeachingAssistant) View.VISIBLE else View.GONE
         card_view_createforum_assignment.setOnClickListener {
-            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_assigment, null)
+            var view = activity!!.layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_assigment, null)
 
 
             view.button_post_assignment_dueDate.text =
-                android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
+                android.text.format.DateFormat.getDateFormat(activity).format(this.calendar.time)
             view.button_post_assignment_dueDate.setOnClickListener()
             {
                 val listener = DatePickerDialog.OnDateSetListener()
@@ -473,15 +476,15 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                     this.calendar.set(Calendar.MONTH, month)
                     this.calendar.set(Calendar.DAY_OF_MONTH, day)
                     view.button_post_assignment_dueDate.text =
-                        android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
+                        android.text.format.DateFormat.getDateFormat(activity).format(this.calendar.time)
                 }
                 val year = this.calendar.get(Calendar.YEAR)
                 val month = this.calendar.get(Calendar.MONTH)
                 val day = this.calendar.get(Calendar.DAY_OF_MONTH)
-                DatePickerDialog(context, listener, year, month, day).show()
+                DatePickerDialog(activity, listener, year, month, day).show()
             }
             view.button_post_assignment_dueTime.text =
-                android.text.format.DateFormat.getTimeFormat(this.context).format(this.calendar.time)
+                android.text.format.DateFormat.getTimeFormat(activity).format(this.calendar.time)
             view.button_post_assignment_dueTime.setOnClickListener()
             {
                 val listener = TimePickerDialog.OnTimeSetListener()
@@ -489,16 +492,16 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                     this.calendar.set(Calendar.HOUR_OF_DAY, hour)
                     this.calendar.set(Calendar.MINUTE, minute)
                     view.button_post_assignment_dueTime.text =
-                        android.text.format.DateFormat.getTimeFormat(this.context).format(this.calendar.time)
+                        android.text.format.DateFormat.getTimeFormat(activity).format(this.calendar.time)
                 }
                 val hour = this.calendar.get(Calendar.HOUR_OF_DAY)
                 val minute = this.calendar.get(Calendar.MINUTE)
-                TimePickerDialog(context, listener, hour, minute, false).show()
+                TimePickerDialog(activity, listener, hour, minute, false).show()
             }
             view.button_assignment_selectAttachment.setOnClickListener {
-                this.selectFile {
+                (activity as AppActivity).selectFile {
                     view.button_assignment_selectAttachment.text =
-                        this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                        (activity as AppActivity).selectedFileUri?.getName(activity!!) ?: getString(R.string.text_select_attachment)
                 }
             }
 
@@ -542,8 +545,8 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                             .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                             .addOnSuccessListener()
                             {
-                                this.resetPostLayout()
-                                this.updateAttachmentPath(
+                                resetPostLayout()
+                                (activity as AppActivity).updateAttachmentPath(
                                     it,
                                     FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id),
                                     "attachmentPath"
@@ -580,7 +583,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
             dialog.show()
         }
         this.button_post_assignment_dueDate.text =
-            android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
+            android.text.format.DateFormat.getDateFormat(activity).format(this.calendar.time)
         button_post_assignment_dueDate.setOnClickListener()
         {
             val listener = DatePickerDialog.OnDateSetListener()
@@ -589,16 +592,16 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                 this.calendar.set(Calendar.MONTH, month)
                 this.calendar.set(Calendar.DAY_OF_MONTH, day)
                 this.button_post_assignment_dueDate.text =
-                    android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
+                    android.text.format.DateFormat.getDateFormat(activity).format(this.calendar.time)
             }
             val year = this.calendar.get(Calendar.YEAR)
             val month = this.calendar.get(Calendar.MONTH)
             val day = this.calendar.get(Calendar.DAY_OF_MONTH)
-            DatePickerDialog(context, listener, year, month, day).show()
+            DatePickerDialog(activity, listener, year, month, day).show()
         }
 
         button_post_assignment_dueTime.text =
-            android.text.format.DateFormat.getTimeFormat(this.context).format(this.calendar.time)
+            android.text.format.DateFormat.getTimeFormat(activity).format(this.calendar.time)
         button_post_assignment_dueTime.setOnClickListener()
         {
             val listener = TimePickerDialog.OnTimeSetListener()
@@ -606,17 +609,17 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                 this.calendar.set(Calendar.HOUR_OF_DAY, hour)
                 this.calendar.set(Calendar.MINUTE, minute)
                 button_post_assignment_dueTime.text =
-                    android.text.format.DateFormat.getTimeFormat(this.context).format(this.calendar.time)
+                    android.text.format.DateFormat.getTimeFormat(activity).format(this.calendar.time)
             }
             val hour = this.calendar.get(Calendar.HOUR_OF_DAY)
             val minute = this.calendar.get(Calendar.MINUTE)
-            TimePickerDialog(context, listener, hour, minute, false).show()
+            TimePickerDialog(activity, listener, hour, minute, false).show()
         }
 
         button_assignment_selectAttachment.setOnClickListener {
-            this.selectFile {
+            (activity as AppActivity).selectFile {
                 button_assignment_selectAttachment.text =
-                    this.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                    (activity as AppActivity).selectedFileUri?.getName(activity!!) ?: getString(R.string.text_select_attachment)
             }
         }
 
@@ -660,7 +663,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                         .addOnSuccessListener()
                         {
                             this.resetPostLayout()
-                            this.updateAttachmentPath(
+                            (activity as AppActivity).updateAttachmentPath(
                                 it,
                                 FirebaseStorage.getInstance().getReference("Activity Attachments").child(it.id),
                                 "attachmentPath"
@@ -692,7 +695,7 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
                         }
                     }
                     adapter = AssignmentPostAdapter(
-                        context!!, this, isTeacher || isTeachingAssistant, arguments?.getString(
+                        activity!!, this, isTeacher || isTeachingAssistant, arguments?.getString(
                             IDENTIFIER_COURSE_TEACHER_PATH
                         ) ?: "", it
                     )
@@ -707,8 +710,8 @@ class CourseAssignmentsFragment() : FileUploaderFragment()
         editText_post_assignment_name.setText("")
         editText_post_assignment_details.setText("")
         this.button_post_assignment_dueDate.text =
-            android.text.format.DateFormat.getDateFormat(this.context).format(this.calendar.time)
+            android.text.format.DateFormat.getDateFormat(activity).format(this.calendar.time)
         button_post_assignment_dueTime.text =
-            android.text.format.DateFormat.getTimeFormat(this.context).format(this.calendar.time)
+            android.text.format.DateFormat.getTimeFormat(activity).format(this.calendar.time)
     }
 }

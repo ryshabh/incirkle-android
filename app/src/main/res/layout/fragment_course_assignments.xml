@@ -115,6 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
+                    android:layout_marginLeft="15dp"
                     android:textColor="@color/material_grey500"
                     android:text="Create an Assignment"
                     android:layout_gravity="center"
@@ -122,9 +123,6 @@
 
         </LinearLayout>
     </android.support.v7.widget.CardView>
-
-
-
 
     <ListView
             android:id="@+id/listView_courseFeed_assignments"

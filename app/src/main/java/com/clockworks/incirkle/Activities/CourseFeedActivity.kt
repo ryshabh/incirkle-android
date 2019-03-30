@@ -9,10 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import com.clockworks.incirkle.Fragments.CourseActivitiesFragment
-import com.clockworks.incirkle.Fragments.CourseAssignmentsFragment
-import com.clockworks.incirkle.Fragments.CourseDocumentsFragment
-import com.clockworks.incirkle.Fragments.CourseForumFragment
+import com.clockworks.incirkle.Fragments.*
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.Course
 import com.clockworks.incirkle.R
@@ -136,7 +133,7 @@ class CourseFeedActivity : AppActivity()
                 }
                 else ->
                 {
-                    val fragment = CourseAssignmentsFragment()
+                    val fragment = AssignmentFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
                     bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
@@ -151,7 +148,7 @@ class CourseFeedActivity : AppActivity()
 
         override fun getCount(): Int
         {
-            return 3   // todo change 4 to add assisgnment part
+            return 4
         }
     }
 }
