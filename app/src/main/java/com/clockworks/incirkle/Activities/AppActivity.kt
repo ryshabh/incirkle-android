@@ -136,8 +136,8 @@ abstract class AppActivity : AppCompatActivity()
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
-//        Log.d("AppActivity", " " + requestCode + " " + resultCode + " " + data);
-//        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("AppActivity", " " + requestCode + " " + resultCode + " " + data);
+        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_FILE_REQUEST && resultCode == Activity.RESULT_OK)
         {
             this.selectedFileUri = data?.dataString?.let { Uri.parse(it) }

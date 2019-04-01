@@ -7,7 +7,6 @@
               android:orientation="vertical">
 
     <android.support.v7.widget.CardView
-
             android:id="@+id/cvCreateAssignment"
             android:layout_margin="10dp"
             android:layout_height="wrap_content"
