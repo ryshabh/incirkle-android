@@ -9,13 +9,16 @@ import com.google.firebase.firestore.IgnoreExtraProperties
  */
 @IgnoreExtraProperties
 data class AssignmentModel(
+    var documentId: String? = null,
+    var courseDocumentId: String? = null,
     var name: String? = null,
     var detail: String? = null,
     var dueDate: Timestamp? = null,
     var assignmentAttachmentUrl: String? = null,
     var assignmentAttachmentFileType: String? = null,
     var attachmentCreator: DocumentReference? = null,
-    var timestamp: Timestamp = Timestamp.now()
+    var timestamp: Timestamp = Timestamp.now(),
+    var user: User? = null
 )
 {
 

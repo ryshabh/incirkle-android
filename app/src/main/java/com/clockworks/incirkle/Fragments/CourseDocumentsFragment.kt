@@ -448,39 +448,55 @@ class CourseDocumentsFragment() : Fragment()
         adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, documentPostList)
         listView_courseFeed_documents.adapter = adapter
 
-        val documentPostsReference =
-            FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
-                .collection("Document Posts")
-        documentPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
-        { result, e ->
-            e?.let { (this.activity as AppActivity).showError(it) }
-                ?: result?.map { it.serialize(DocumentPost::class.java) }?.let()
-                {
-
-
-                    for (item in it)
+        try
+        {
+            val documentPostsReference =
+                FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                    .collection("Document Posts")
+            documentPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
+            { result, e ->
+                e?.let {
+                    try
                     {
-
-                        try
-                        {
-                            FirebaseStorage.getInstance().getReference("UserProfiles")
-                                .child(item.poster.path.replace("Users/", "")).downloadUrl.addOnSuccessListener {
-                                item.imagepath = it.toString();
-                                adapter.notifyDataSetChanged()
-                            }.addOnFailureListener {
-                                it.printStackTrace()
-                            };
-                        } catch (e: Exception)
-                        {
-                            e.printStackTrace()
-                        }
+                        (this.activity as AppActivity).showError(it)
+                    } catch (e: Exception)
+                    {
+                        e.printStackTrace()
                     }
-                    documentPostList.clear()
-                    documentPostList.addAll(it)
-                    adapter.notifyDataSetChanged()
+
+                }
+                    ?: result?.map {
+                        it.serialize(DocumentPost::class.java)
+                    }?.let()
+                    {
+                        for (item in it)
+                        {
+                            try
+                            {
+                                FirebaseStorage.getInstance().getReference("UserProfiles")
+                                    .child(item.poster.path.replace("Users/", ""))
+                                    .downloadUrl.addOnSuccessListener {
+                                    item.imagepath = it.toString();
+                                    adapter.notifyDataSetChanged()
+                                }.addOnFailureListener {
+                                    it.printStackTrace()
+                                };
+                            } catch (e: Exception)
+                            {
+                                e.printStackTrace()
+                            }
+                        }
+                        documentPostList.clear()
+                        documentPostList.addAll(it)
+                        adapter.notifyDataSetChanged()
 //                    adapter = DocumentPostAdapter(context!!, isTeacher || isTeachingAssistant, it)
 //                    listView_courseFeed_documents.adapter = adapter
-                }
+
+                    }
+            }
+        } catch (e: Exception)
+        {
+            e.printStackTrace()
         }
     }
 

@@ -44,6 +44,7 @@ class CourseAssignmentsFragment() : Fragment()
         const val IDENTIFIER_IS_TEACHER = "Is Teacher"
         const val IDENTIFIER_IS_TEACHING_ASSISTANT = "Is Teaching Assistant"
         const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
+
     }
 
     private val calendar = Calendar.getInstance()

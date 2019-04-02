@@ -18,6 +18,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_course_feed.*
 
+
 class CourseFeedActivity : AppActivity()
 {
     companion object
@@ -29,7 +30,7 @@ class CourseFeedActivity : AppActivity()
 
     private lateinit var courseReference: DocumentReference
 
-    private var isUserTeacher=false
+    private var isUserTeacher = false
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -37,15 +38,16 @@ class CourseFeedActivity : AppActivity()
         setContentView(R.layout.activity_course_feed)
         setSupportActionBar(toolbar)
 
-        isUserTeacher = intent.getBooleanExtra(IDENTIFIER_IS_USER_TEACHER,false);
+        isUserTeacher = intent.getBooleanExtra(IDENTIFIER_IS_USER_TEACHER, false);
 
         container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs_courseFeed))
         tabs_courseFeed.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
+
+
         this.courseReference = FirebaseFirestore.getInstance().document(intent.getStringExtra(IDENTIFIER_COURSE_PATH))
         FirebaseAuth.getInstance().currentUser?.let()
-        {
-            user ->
+        { user ->
             this.showLoadingAlert()
             this.courseReference.get()
                 .addOnFailureListener(::showError)
@@ -57,13 +59,24 @@ class CourseFeedActivity : AppActivity()
                     {
                         try
                         {
-                            supportActionBar!!.title = it.code + " : "+it.name
-                        } catch (e: Exception){}
+                            supportActionBar!!.title = it.code + " : " + it.name
+                        } catch (e: Exception)
+                        {
+                        }
 //                        user.documentReference() == it.teacher
-                        Log.d("User Phone no",""+user.phoneNumber);
-                        var isTeacher =  isUserTeacher || it.teachingAssistants.contains(user.phoneNumber)
+                        Log.d("User Phone no", "" + user.phoneNumber);
+                        var isTeacher = isUserTeacher || it.teachingAssistants.contains(user.phoneNumber)
                         var isTeachingAssistant = it.teachingAssistants.contains(user.phoneNumber)
-                        container.adapter = SectionsPagerAdapter(supportFragmentManager, this.courseReference, isTeacher, isTeachingAssistant)
+                        var sectionPagerAdapter = SectionsPagerAdapter(
+                            supportFragmentManager,
+                            this.courseReference,
+                            isTeacher,
+                            isTeachingAssistant
+                        )
+                        container.adapter = sectionPagerAdapter
+                        val limit = if (sectionPagerAdapter.getCount() > 1) sectionPagerAdapter.getCount() - 1 else 1
+                        container.offscreenPageLimit = limit
+
                     }
                 }
                 .addOnCompleteListener { this.dismissLoadingAlert() }
@@ -92,7 +105,12 @@ class CourseFeedActivity : AppActivity()
         return super.onOptionsItemSelected(item)
     }
 
-    inner class SectionsPagerAdapter(fm: FragmentManager, val courseReference: DocumentReference, val isTeacher: Boolean, val isTeachingAssistant:Boolean) : FragmentPagerAdapter(fm)
+    inner class SectionsPagerAdapter(
+        fm: FragmentManager,
+        val courseReference: DocumentReference,
+        val isTeacher: Boolean,
+        val isTeachingAssistant: Boolean
+    ) : FragmentPagerAdapter(fm)
     {
         override fun getItem(position: Int): Fragment
         {
@@ -113,8 +131,11 @@ class CourseFeedActivity : AppActivity()
                     val fragment = CourseForumFragment()
                     val bundle = Bundle()
                     bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
-                    bundle.putString(CourseForumFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
-                        IDENTIFIER_COURSE_TEACHER_PATH))
+                    bundle.putString(
+                        CourseForumFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
+                            IDENTIFIER_COURSE_TEACHER_PATH
+                        )
+                    )
                     bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_TEACHER, isTeacher)
                     bundle.putBoolean(CourseForumFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
 
@@ -135,11 +156,15 @@ class CourseFeedActivity : AppActivity()
                 {
                     val fragment = AssignmentFragment()
                     val bundle = Bundle()
-                    bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
-                    bundle.putString(CourseAssignmentsFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
-                        IDENTIFIER_COURSE_TEACHER_PATH))
-                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_TEACHER, isTeacher)
-                    bundle.putBoolean(CourseAssignmentsFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
+                    bundle.putString(AssignmentFragment.IDENTIFIER_COURSE_DOCUMENT_ID, courseReference.id)
+                    bundle.putString(AssignmentFragment.IDENTIFIER_COURSE_PATH, courseReference.path)
+                    bundle.putString(
+                        AssignmentFragment.IDENTIFIER_COURSE_TEACHER_PATH, intent.getStringExtra(
+                            IDENTIFIER_COURSE_TEACHER_PATH
+                        )
+                    )
+                    bundle.putBoolean(AssignmentFragment.IDENTIFIER_IS_TEACHER, isTeacher)
+                    bundle.putBoolean(AssignmentFragment.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
                     fragment.arguments = bundle
                     return fragment
                 }
