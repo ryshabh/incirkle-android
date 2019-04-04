@@ -38,24 +38,16 @@ class CommentWithAttachment : AppActivity()
 
         tv_attachment_name.text = fileName
 
-//        btnChange.setOnClickListener(){
-//            selectFile {
-//                tv_attachment_name.text =
-//                    selectedFileUri?.getName(this) ?: getString(
-//                        com.clockworks.incirkle.R.string.text_select_attachment
-//                    )
-//
-//            }
-//        }
 
 
         btnPost.setOnClickListener() {
 
-            val description = etComment.text.toString().trim()
+            var description = etComment.text.toString().trim()
             if (description.isBlank())
             {
-                etComment.error = " description cannot be empty"
-                return@setOnClickListener
+//                etComment.error = " description cannot be empty"
+//                return@setOnClickListener
+                description = "";
             }
             val intent = Intent()
             intent.putExtra("description",description)
@@ -65,38 +57,6 @@ class CommentWithAttachment : AppActivity()
 
 
     }
-
-    /*private fun postCommentWithAttachment(description: String)
-    {
-        FirebaseAuth.getInstance().currentUser?.let()
-        {
-            this.showLoadingAlert()
-            commentsReference.add(Comment(description, it.documentReference()))
-                .addOnFailureListener { this.showError(it) }
-                .addOnCompleteListener { this.dismissLoadingAlert() }
-                .addOnSuccessListener()
-                {
-                    this.updateAttachmentPath(
-                        it,
-                        FirebaseStorage.getInstance().getReference("Comments Attachments").child(it.id),
-                        "attachmentPath",object :WorkComplete{
-                            override fun onWorkComple()
-                            {
-                                donnne()
-                            }
-
-                        }
-                    )
-
-                }
-        }
-    }
-
-    fun donnne(){
-        val intent = Intent()
-        setResult(Activity.RESULT_OK, intent)
-        finish()
-    }*/
 
     override fun onSupportNavigateUp(): Boolean
     {

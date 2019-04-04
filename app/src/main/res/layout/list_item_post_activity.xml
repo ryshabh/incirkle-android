@@ -51,9 +51,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
-                            android:text=""
+                            android:text="@string/text_poster_name"
                             android:fontFamily="@font/helvetica_neue_regular"
-                            android:textSize="13sp"
                             android:textColor="#39393a"/>
 
                     <TextView
@@ -61,9 +60,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/helvetica_neue_regular"
-                            android:textSize="8sp"
+                            android:textSize="12sp"
                             android:textColor="#888888"
-                            android:text=""/>
+                            android:text="@string/text_timestamp"/>
 
                 </LinearLayout>
 
@@ -104,7 +103,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:fontFamily="@font/helvetica_neue_regular"
-                    android:textSize="12sp"
                     android:textColor="#39393a"
                     android:text=""/>
 
@@ -118,8 +116,15 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ic_attachment"
+                        android:textColor="@color/colorPrimary"
+                        android:layout_gravity="start"
+                        android:visibility="visible"
+                        android:drawablePadding="5dp"
+                        android:gravity="start|center"
                         android:layout_margin="5dp"
-                        android:visibility="gone"
+                        android:fontFamily="@font/helvetica_neue_regular"
+                        android:textSize="12sp"
                         android:text="@string/text_download_attachment"/>
 
                 <ImageView

@@ -52,7 +52,6 @@
                             android:layout_gravity="center_vertical"
                             android:text="@string/text_poster_name"
                             android:fontFamily="@font/helvetica_neue_regular"
-                            android:textSize="13sp"
                             android:textColor="#39393a"/>
 
                     <TextView
@@ -60,7 +59,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/helvetica_neue_regular"
-                            android:textSize="8sp"
+                            android:textSize="12sp"
                             android:textColor="#888888"
                             android:text="@string/text_timestamp"/>
 
@@ -85,49 +84,26 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                    android:orientation="horizontal"
-                    android:weightSum="1"
+            <TextView
+                    android:id="@+id/textView_assignmentPost_dueDate"
+                    android:text="@string/text_dueDate"
+                    android:layout_margin="5dp"
+                    android:fontFamily="@font/helvetica_neue_regular"
+                    android:textSize="12sp"
+                    android:textColor="#888888"
+                    android:layout_gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent"/>
 
-                <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="0.6">
-
-                    <TextView
-                            android:id="@+id/textView_assignmentPost_name"
-                            android:text="@string/text_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="5dp"
-                            android:textColor="#39393a"
-                            android:textSize="16sp"
-                            android:fontFamily="@font/helveticaneue_bold"/>
-
-
-                </LinearLayout>
-
-                <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_weight="0.4"
-                        android:layout_height="match_parent">
-
-                    <TextView
-                            android:id="@+id/textView_assignmentPost_dueDate"
-                            android:text="@string/text_dueDate"
-                            android:layout_weight="0.8"
-                            android:fontFamily="@font/helvetica_neue_regular"
-                            android:textSize="11sp"
-                            android:textColor="#888888"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"/>
-                </LinearLayout>
-            </LinearLayout>
+            <TextView
+                    android:id="@+id/textView_assignmentPost_name"
+                    android:text="@string/text_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:textColor="#39393a"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/helveticaneue_bold"/>
 
             <TextView
                     android:id="@+id/textView_assignmentPost_details"
@@ -136,7 +112,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:fontFamily="@font/helvetica_neue_regular"
-                    android:textSize="12sp"
                     android:textColor="#39393a"/>
 
 
@@ -144,13 +119,17 @@
                     android:id="@+id/button_assignmentPost_download_attachment"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="Attachment"
+                    android:text="@string/text_download_attachment"
+                    android:drawableLeft="@drawable/ic_attachment"
+                    android:drawableStart="@drawable/ic_attachment"
+                    android:textColor="@color/colorPrimary"
                     android:layout_gravity="start"
                     android:visibility="visible"
-                    android:gravity="start"
+                    android:drawablePadding="5dp"
+                    android:gravity="start|center"
+                    android:layout_margin="5dp"
                     android:fontFamily="@font/helvetica_neue_regular"
-                    android:textSize="12sp"
-                    android:textColor="#39393a"/>
+                    android:textSize="12sp"/>
 
 
             <ImageView
@@ -168,7 +147,6 @@
 
 
             <LinearLayout
-                    android:visibility="gone"
                     android:id="@+id/llStudent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -197,9 +175,9 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:gravity="end|right"
-                        android:fontFamily="@font/helvetica_neue_regular"
+                        android:fontFamily="@font/helveticaneue_bold"
                         android:textSize="12sp"
-                        android:textColor="#888888"
+                        android:textColor="@color/colorPrimary"
                         />
 
 
@@ -209,6 +187,7 @@
                     android:id="@+id/llTeacher"
                     android:paddingLeft="5dp"
                     android:paddingRight="5dp"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"

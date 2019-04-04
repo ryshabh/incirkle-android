@@ -10,7 +10,6 @@ import com.clockworks.incirkle.R
 import com.clockworks.incirkle.utils.AppConstantsValue
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.activity_submission.*
 
 class SubmissionActivity : AppActivity()
@@ -21,7 +20,7 @@ class SubmissionActivity : AppActivity()
 
     private val TAG = SubmissionActivity::class.java.simpleName
 
-    private lateinit var assignmentId:String
+    private lateinit var assignmentId: String
 
     companion object
     {
@@ -32,6 +31,13 @@ class SubmissionActivity : AppActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submission)
+        toolbar.setTitle(getString(R.string.assignment_submisstion_list))
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
+
         assignmentId = intent.getStringExtra(ASSIGNMENT_ID)
 
         rvSubmission.layoutManager = LinearLayoutManager(this)
@@ -45,34 +51,35 @@ class SubmissionActivity : AppActivity()
         solutionList.clear()
         solutionAdapter.notifyDataSetChanged()
         this.showLoadingAlert()
-        listenerRegistration = AppConstantsValue.solutionCollectionRef.whereEqualTo("assignmentDocumentId",assignmentId)
-            .addSnapshotListener { querySnapshot, fFE ->
-                this.dismissLoadingAlert()
-                if (fFE != null)
-                {
-                    Log.w(TAG, "onEvent:error", fFE)
-                    return@addSnapshotListener
-                }
-
-                if (querySnapshot == null)
-                {
-                    return@addSnapshotListener
-                }
-
-                // Dispatch the event
-                Log.d(TAG, "onEvent:numChanges:" + querySnapshot.documentChanges.size)
-
-                for (change in querySnapshot.documentChanges)
-                {
-                    when (change.type)
+        listenerRegistration =
+            AppConstantsValue.solutionCollectionRef.whereEqualTo("assignmentDocumentId", assignmentId)
+                .addSnapshotListener { querySnapshot, fFE ->
+                    this.dismissLoadingAlert()
+                    if (fFE != null)
                     {
-                        DocumentChange.Type.ADDED -> onDocumentAdded(change)
-                        DocumentChange.Type.MODIFIED -> onDocumentModified(change)
-                        DocumentChange.Type.REMOVED -> onDocumentRemoved(change)
+                        Log.w(TAG, "onEvent:error", fFE)
+                        return@addSnapshotListener
                     }
-                }
 
-            }
+                    if (querySnapshot == null)
+                    {
+                        return@addSnapshotListener
+                    }
+
+                    // Dispatch the event
+                    Log.d(TAG, "onEvent:numChanges:" + querySnapshot.documentChanges.size)
+
+                    for (change in querySnapshot.documentChanges)
+                    {
+                        when (change.type)
+                        {
+                            DocumentChange.Type.ADDED -> onDocumentAdded(change)
+                            DocumentChange.Type.MODIFIED -> onDocumentModified(change)
+                            DocumentChange.Type.REMOVED -> onDocumentRemoved(change)
+                        }
+                    }
+
+                }
     }
 
     private fun onDocumentAdded(change: DocumentChange)
@@ -88,7 +95,8 @@ class SubmissionActivity : AppActivity()
                     solutionModel.user = document.toObject(User::class.java)
                     solutionList.add(change.newIndex, solutionModel)
                     solutionAdapter.notifyItemInserted(change.newIndex)
-                }catch (e:Exception){
+                } catch (e: Exception)
+                {
                     e.printStackTrace()
                 }
             }
@@ -127,5 +135,11 @@ class SubmissionActivity : AppActivity()
     {
         super.onStop()
         listenerRegistration.remove()
+    }
+
+    override fun onSupportNavigateUp(): Boolean
+    {
+        onBackPressed()
+        return true
     }
 }

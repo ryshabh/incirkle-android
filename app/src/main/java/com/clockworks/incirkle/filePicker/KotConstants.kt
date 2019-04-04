@@ -31,5 +31,6 @@ class KotConstants {
         // file request constant
         const val REQUEST_FILE = 201
         const val REQUEST_FILE_FOR_SOLUTION = 202
+        const val REQUEST_FILE_FOR_COMMENT = 203
     }
 }

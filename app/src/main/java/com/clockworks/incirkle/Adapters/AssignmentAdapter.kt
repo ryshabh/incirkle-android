@@ -2,6 +2,7 @@ package com.clockworks.incirkle.Adapters
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Paint
 import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -18,7 +19,6 @@ import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.clockworks.incirkle.utils.AppConstantsValue
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.item_post_assignment.view.*
 
@@ -89,36 +89,50 @@ class AssignmentAdapter(
             val timestamp = "$timestampTime, $timestampDate"
 
             itemView.textView_assignmentPost_timestamp.text = timestamp
-            itemView.textView_assignmentPost_dueDate.text = dueDate
+            itemView.textView_assignmentPost_dueDate.text = "Due: $dueDate"
 
-            val fileTypeCondition: Boolean = assignmentModel.assignmentAttachmentFileType?.startsWith(
-                "image",
-                true
-            )!! || (assignmentModel.assignmentAttachmentFileType?.startsWith("video", true)!!)
-            if (fileTypeCondition)
+            if (assignmentModel.assignmentAttachmentDetail != null)
             {
-                itemView.button_assignmentPost_download_images.visibility = View.VISIBLE
-                itemView.button_assignmentPost_download_attachment.visibility = View.GONE
 
-                Glide
-                    .with(itemView.context)
-                    .load(assignmentModel.assignmentAttachmentUrl)
-                    .into(itemView.button_assignmentPost_download_images);
+                val fileTypeCondition: Boolean = assignmentModel.assignmentAttachmentDetail?.type?.startsWith(
+                    "image",
+                    true
+                )!! || (assignmentModel.assignmentAttachmentDetail?.type?.startsWith("video", true)!!)
+                if (fileTypeCondition)
+                {
+                    itemView.button_assignmentPost_download_images.visibility = View.VISIBLE
+                    itemView.button_assignmentPost_download_attachment.visibility = View.GONE
+
+                    Glide
+                        .with(itemView.context)
+                        .load(assignmentModel.assignmentAttachmentUrl)
+                        .into(itemView.button_assignmentPost_download_images);
+
+                }
+                else
+                {
+                    itemView.button_assignmentPost_download_images.visibility = View.GONE
+                    itemView.button_assignmentPost_download_attachment.visibility = View.VISIBLE
+                    itemView.button_assignmentPost_download_attachment.text =
+                        assignmentModel.assignmentAttachmentDetail?.name
+                    itemView.button_assignmentPost_download_attachment.paintFlags =
+                        itemView.button_assignmentPost_download_attachment.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                }
 
             }
             else
             {
                 itemView.button_assignmentPost_download_images.visibility = View.GONE
-                itemView.button_assignmentPost_download_attachment.visibility = View.VISIBLE
+                itemView.button_assignmentPost_download_attachment.visibility = View.GONE
             }
 
-            itemView.button_assignmentPost_download_images.setOnClickListener{
+            itemView.button_assignmentPost_download_images.setOnClickListener {
                 itemView.context.startActivity(
                     Intent(Intent.ACTION_VIEW, Uri.parse(assignmentModel.assignmentAttachmentUrl))
                 )
             }
 
-            itemView.button_assignmentPost_download_images.setOnClickListener{
+            itemView.button_assignmentPost_download_attachment.setOnClickListener {
                 itemView.context.startActivity(
                     Intent(Intent.ACTION_VIEW, Uri.parse(assignmentModel.assignmentAttachmentUrl))
                 )
@@ -138,7 +152,7 @@ class AssignmentAdapter(
                         builder.setPositiveButton(
                             "Delete"
                         ) { _, _ ->
-                            mAssignmentFragment.deleteItem(assignmentModel.documentId!!)
+                            mAssignmentFragment.deleteItem(assignmentModel)
                         }
                         builder.setNegativeButton("Cancel", null)
                         builder.create().show()
@@ -165,8 +179,10 @@ class AssignmentAdapter(
                 itemView.llStudent.visibility = View.VISIBLE
                 itemView.popupicon.visibility = View.GONE
                 AppConstantsValue.solutionCollectionRef
-                    .whereEqualTo("assignmentDocumentId", assignmentModel.documentId).whereEqualTo("studentSubmitter",
-                        FirebaseAuth.getInstance().currentUser!!.documentReference()).limit(1).get().addOnCompleteListener {
+                    .whereEqualTo("assignmentDocumentId", assignmentModel.documentId).whereEqualTo(
+                        "studentSubmitter",
+                        FirebaseAuth.getInstance().currentUser!!.documentReference()
+                    ).orderBy("timestamp", Query.Direction.DESCENDING).limit(1).get().addOnCompleteListener {
                         if (it.isSuccessful && !it.result?.isEmpty!!)
                         {
                             val solutionModel = it.result?.toObjects(SolutionModel::class.java)
@@ -179,27 +195,53 @@ class AssignmentAdapter(
                                     .format(solutionModel?.get(0)?.timestamp?.toDate())
                             val timestamp = "Last submitted: $timestampTime, $timestampDate"
                             itemView.tvLastSubmittedTime.visibility = View.VISIBLE
+                            assignmentModel.lastSumbittedTime = timestampTime
+                            assignmentModel.lastSubmittedUrl = solutionModel?.get(0)?.solutionAttachmentUrl
                             itemView.tvLastSubmittedTime.text = timestamp
+                            itemView.tvLastSubmittedTime.paintFlags =
+                                itemView.tvLastSubmittedTime.paintFlags or Paint.UNDERLINE_TEXT_FLAG
                         }
                         else
                         {
                             itemView.tvLastSubmittedTime.text = itemView.context.getString(R.string.not_submitted_yet)
+
                         }
                     }
+            }
+            if(assignmentModel.lastSumbittedTime!=null){
+                itemView.tvLastSubmittedTime.text = assignmentModel.lastSumbittedTime
+                itemView.tvLastSubmittedTime.paintFlags =
+                    itemView.tvLastSubmittedTime.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            }else{
+                itemView.tvLastSubmittedTime.paintFlags = 0
+                itemView.tvLastSubmittedTime.text = itemView.context.getString(R.string.not_submitted_yet)
+            }
+
+
+
+
+            itemView.tvLastSubmittedTime.setOnClickListener {
+                if (assignmentModel.lastSubmittedUrl!=null)
+                {
+                    itemView.context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(assignmentModel.lastSubmittedUrl))
+                    )
+
+                }
             }
 
 
             itemView.tvSubmit.setOnClickListener {
                 if (assignmentModel.documentId != null)
                 {
-                    mAssignmentFragment.openFileLocation(assignmentModel.documentId!!)
+                    mAssignmentFragment.openFileLocation(adapterPosition,assignmentModel)
                 }
             }
 
             itemView.tvViewSubmission.setOnClickListener {
                 // open assisgnment solution list activity
-                var intent = Intent(itemView.context,SubmissionActivity::class.java)
-                intent.putExtra(SubmissionActivity.ASSIGNMENT_ID,assignmentModel.documentId)
+                var intent = Intent(itemView.context, SubmissionActivity::class.java)
+                intent.putExtra(SubmissionActivity.ASSIGNMENT_ID, assignmentModel.documentId)
                 itemView.context.startActivity(intent)
             }
         }

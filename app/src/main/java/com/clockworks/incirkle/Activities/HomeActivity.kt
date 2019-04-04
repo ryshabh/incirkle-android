@@ -142,7 +142,7 @@ class HomeActivity : AppActivity(), NavigationView.OnNavigationItemSelectedListe
 
         FirebaseApp.initializeApp(this)
         setContentView(com.clockworks.incirkle.R.layout.activity_home)
-
+        toolbar.setTitle(getString(R.string.course_list))
         setSupportActionBar(toolbar)
 
 

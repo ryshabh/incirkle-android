@@ -51,7 +51,6 @@
                     android:layout_gravity="center_vertical"
                     android:text="@string/text_poster_name"
                     android:fontFamily="@font/helvetica_neue_regular"
-                    android:textSize="13sp"
                     android:textColor="#39393a"
                     />
 
@@ -61,7 +60,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/text_timestamp"
                     android:fontFamily="@font/helvetica_neue_regular"
-                    android:textSize="8sp"
+                    android:textSize="12sp"
                     android:textColor="#888888"/>
 
         </LinearLayout>
@@ -102,7 +101,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:fontFamily="@font/helvetica_neue_regular"
-            android:textSize="12sp"
             android:textColor="#39393a"
             android:text="@string/text_description" />
 
@@ -111,11 +109,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:text="@string/text_download_attachment"
+            android:drawableLeft="@drawable/ic_attachment"
+            android:drawableStart="@drawable/ic_attachment"
+            android:textColor="@color/colorPrimary"
+            android:layout_gravity="start"
+            android:drawablePadding="5dp"
+            android:gravity="start|center"
             android:layout_margin="5dp"
             android:fontFamily="@font/helvetica_neue_regular"
-            android:textSize="12sp"
-            android:textColor="#39393a"
-            android:text="@string/text_attachment" />
+            android:textSize="12sp" />
 
 
     <ImageView

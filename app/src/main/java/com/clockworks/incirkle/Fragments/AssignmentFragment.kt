@@ -31,12 +31,15 @@ import com.clockworks.incirkle.utils.AppConstantsValue
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_assignment.view.*
 import kotlinx.android.synthetic.main.popup_add_assigment.view.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class AssignmentFragment : Fragment()
@@ -53,8 +56,9 @@ class AssignmentFragment : Fragment()
     private val calendar = Calendar.getInstance()
     private var attachmentResult: KotResult? = null
 
-    private lateinit var courseDocumentId:String
+    private lateinit var courseDocumentId: String
     private var currentAssignmentDocumentId: String? = null
+    private var selectedPos: Int = -1
 
     private lateinit var popupViewLayout: View
     private lateinit var dialog: Dialog
@@ -66,7 +70,7 @@ class AssignmentFragment : Fragment()
 
     private lateinit var listenerRegistration: ListenerRegistration
 
-    private var isSubmitAttachment:Boolean = false
+    private var isSubmitAttachment: Boolean = false
 
     companion object
     {
@@ -74,7 +78,7 @@ class AssignmentFragment : Fragment()
         const val IDENTIFIER_IS_TEACHER = "Is Teacher"
         const val IDENTIFIER_IS_TEACHING_ASSISTANT = "Is Teaching Assistant"
         const val IDENTIFIER_COURSE_TEACHER_PATH = "Course Teacher Path"
-        const val IDENTIFIER_COURSE_DOCUMENT_ID= "Course Document Id"
+        const val IDENTIFIER_COURSE_DOCUMENT_ID = "Course Document Id"
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -201,44 +205,49 @@ class AssignmentFragment : Fragment()
                 dialog.dismiss()
 
                 appActivity.showLoadingAlert()
-                AppConstantsValue.storageRef.putFile(attachmentResult!!.uri).addOnCompleteListener(OnCompleteListener {
-                    if (it.isSuccessful)
-                    {
-                        AppConstantsValue.storageRef.downloadUrl.addOnSuccessListener {
+                val fileNameInFirebase = System.currentTimeMillis().toString()
+                attachmentResult?.nameInFirebase = fileNameInFirebase
+                AppConstantsValue.assignmentStorageRef.child(fileNameInFirebase).putFile(attachmentResult?.uri!!)
+                    .addOnCompleteListener(OnCompleteListener {
+                        if (it.isSuccessful)
+                        {
+                            AppConstantsValue.assignmentStorageRef.child(fileNameInFirebase)
+                                .downloadUrl.addOnSuccessListener {
 
-                            // file uploaded successfully
-                            val fileUrl = it.toString()
-                            val assignmentModel = AssignmentModel()
-                            assignmentModel.courseDocumentId = courseDocumentId
-                            assignmentModel.name = name
-                            assignmentModel.detail = details
-                            assignmentModel.dueDate = Timestamp(this.calendar.time)
-                            assignmentModel.assignmentAttachmentUrl = fileUrl
-                            assignmentModel.assignmentAttachmentFileType = attachmentResult!!.type
-                            assignmentModel.attachmentCreator =
-                                FirebaseAuth.getInstance().currentUser!!.documentReference()
-                            AppConstantsValue.assignmentCollectionRef.add(assignmentModel).addOnCompleteListener {
+                                // file uploaded successfully
+                                val fileUrl = it.toString()
+                                val assignmentModel = AssignmentModel()
+                                assignmentModel.courseDocumentId = courseDocumentId
+                                assignmentModel.name = name
+                                assignmentModel.detail = details
+                                assignmentModel.dueDate = Timestamp(this.calendar.time)
+                                assignmentModel.assignmentAttachmentUrl = fileUrl
+                                assignmentModel.assignmentAttachmentDetail = attachmentResult
+                                assignmentModel.attachmentCreator =
+                                    FirebaseAuth.getInstance().currentUser!!.documentReference()
+                                AppConstantsValue.assignmentCollectionRef.add(assignmentModel).addOnCompleteListener {
+                                    appActivity.dismissLoadingAlert()
+                                    if (!it.isSuccessful)
+                                    {
+                                        Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                                    }
+
+                                }
+
+                            }.addOnFailureListener {
+                                attachmentResult = null
                                 appActivity.dismissLoadingAlert()
-                                if (it.isSuccessful)
-                                {
-//                                    Toast.makeText(activity, it.result?.path, Toast.LENGTH_LONG).show()
-                                }
-                                else
-                                {
-                                    Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
-                                }
+                                Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                             }
 
-                        }.addOnFailureListener {
-                            Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                         }
-
-                    }
-                    else
-                    {
-                        Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
-                    }
-                })
+                        else
+                        {
+                            attachmentResult = null
+                            appActivity.dismissLoadingAlert()
+                            Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                        }
+                    })
 
 
             }
@@ -270,40 +279,42 @@ class AssignmentFragment : Fragment()
         assignmentList.clear()
         assignmentAdapter.notifyDataSetChanged()
         appActivity.showLoadingAlert()
-        listenerRegistration = AppConstantsValue.assignmentCollectionRef.whereEqualTo("courseDocumentId",courseDocumentId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { querySnapshot, fFE ->
-                appActivity.dismissLoadingAlert()
-                if (fFE != null)
-                {
-                    Log.w(TAG, "onEvent:error", fFE)
-                    return@addSnapshotListener
-                }
-
-                if (querySnapshot == null)
-                {
-                    return@addSnapshotListener
-                }
-
-                // Dispatch the event
-                Log.d(TAG, "onEvent:numChanges:" + querySnapshot.documentChanges.size)
-
-                for (change in querySnapshot.documentChanges)
-                {
-                    when (change.type)
+        listenerRegistration =
+            AppConstantsValue.assignmentCollectionRef.whereEqualTo("courseDocumentId", courseDocumentId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener { querySnapshot, fFE ->
+                    appActivity.dismissLoadingAlert()
+                    if (fFE != null)
                     {
-                        DocumentChange.Type.ADDED -> onDocumentAdded(change)
-                        DocumentChange.Type.MODIFIED -> onDocumentModified(change)
-                        DocumentChange.Type.REMOVED -> onDocumentRemoved(change)
+                        Log.w(TAG, "onEvent:error", fFE)
+                        return@addSnapshotListener
                     }
-                }
 
-                if(isSubmitAttachment){
-                    uploadSolution()
-                    isSubmitAttachment = false
-                }
+                    if (querySnapshot == null)
+                    {
+                        return@addSnapshotListener
+                    }
 
-            }
+                    // Dispatch the event
+                    Log.d(TAG, "onEvent:numChanges:" + querySnapshot.documentChanges.size)
+
+                    for (change in querySnapshot.documentChanges)
+                    {
+                        when (change.type)
+                        {
+                            DocumentChange.Type.ADDED -> onDocumentAdded(change)
+                            DocumentChange.Type.MODIFIED -> onDocumentModified(change)
+                            DocumentChange.Type.REMOVED -> onDocumentRemoved(change)
+                        }
+                    }
+
+                    if (isSubmitAttachment)
+                    {
+                        deletePreviousAssignementSolutionOfStudent(currentAssignmentDocumentId!!)
+                        isSubmitAttachment = false
+                    }
+
+                }
     }
 
     private fun onDocumentAdded(change: DocumentChange)
@@ -329,19 +340,32 @@ class AssignmentFragment : Fragment()
 
     private fun onDocumentModified(change: DocumentChange)
     {
-        if (change.oldIndex == change.newIndex)
-        {
-            // Item changed but remained in same position
-            assignmentList[change.oldIndex] = change.document.toObject(AssignmentModel::class.java)
-            assignmentAdapter.notifyItemChanged(change.oldIndex)
+        val assignmentModel = change.document.toObject(AssignmentModel::class.java)
+        assignmentModel.attachmentCreator?.get()?.addOnSuccessListener { document ->
+            if (document != null)
+            {
+                Log.d("", "DocumentSnapshot data: ${document.data}")
+                assignmentModel.documentId = change.document.id
+                assignmentModel.user = document.toObject(User::class.java)
+
+                if (change.oldIndex == change.newIndex)
+                {
+                    // Item changed but remained in same position
+                    assignmentList[change.oldIndex] = assignmentModel
+                    assignmentAdapter.notifyItemChanged(change.oldIndex)
+                }
+                else
+                {
+                    // Item changed and changed position
+                    assignmentList.removeAt(change.oldIndex)
+                    assignmentList.add(change.newIndex, assignmentModel)
+                    assignmentAdapter.notifyItemMoved(change.oldIndex, change.newIndex)
+                }
+
+            }
+
         }
-        else
-        {
-            // Item changed and changed position
-            assignmentList.removeAt(change.oldIndex)
-            assignmentList.add(change.newIndex, change.document.toObject(AssignmentModel::class.java))
-            assignmentAdapter.notifyItemMoved(change.oldIndex, change.newIndex)
-        }
+
     }
 
     private fun onDocumentRemoved(change: DocumentChange)
@@ -374,21 +398,35 @@ class AssignmentFragment : Fragment()
         }
     }
 
-    fun deleteItem(documentId: String)
+    fun deleteItem(assignmentModel: AssignmentModel)
     {
-        AppConstantsValue.assignmentCollectionRef.document(documentId)
+        AppConstantsValue.assignmentCollectionRef.document(assignmentModel.documentId!!)
             .delete().addOnSuccessListener {
-                Toast.makeText(activity, "deleted", Toast.LENGTH_LONG).show()
+                //                Toast.makeText(activity, "deleted", Toast.LENGTH_LONG).show()
+                if (assignmentModel.assignmentAttachmentUrl.isNullOrEmpty())
+                {
+                    return@addOnSuccessListener
+                }
+                AppConstantsValue.assignmentStorageRef
+                    .child(assignmentModel.assignmentAttachmentDetail?.nameInFirebase!!).delete()
+                    .addOnFailureListener {
+                        Toast.makeText(
+                            context,
+                            it.localizedMessage,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
             }
             .addOnFailureListener() {
                 Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
             }
     }
 
-    fun openFileLocation(documentId: String)
+    fun openFileLocation(pos: Int, assignmentModel: AssignmentModel)
     {
         attachmentResult = null
-        currentAssignmentDocumentId = documentId
+        selectedPos = pos
+        currentAssignmentDocumentId = assignmentModel.documentId
         KotRequest.File(this, REQUEST_FILE_FOR_SOLUTION)
             .isMultiple(false)
             .setMimeType(KotConstants.FILE_TYPE_FILE_ALL)
@@ -397,45 +435,101 @@ class AssignmentFragment : Fragment()
 
     fun uploadSolution()
     {
-        appActivity.showLoadingAlert()
-        AppConstantsValue.storageSolutionRef.putFile(attachmentResult!!.uri).addOnCompleteListener(OnCompleteListener {
-            if (it.isSuccessful)
-            {
-                AppConstantsValue.storageSolutionRef.downloadUrl.addOnSuccessListener {
-                    // file uploaded successfully
-                    val fileUrl = it.toString()
-                    val solutionModel = SolutionModel(currentAssignmentDocumentId,fileUrl,attachmentResult!!.type,FirebaseAuth.getInstance().currentUser!!.documentReference())
+        val fileNameInFirebase = System.currentTimeMillis().toString()
+        attachmentResult?.nameInFirebase = fileNameInFirebase
+        AppConstantsValue.storageSolutionRef.child(fileNameInFirebase).putFile(attachmentResult?.uri!!)
+            .addOnCompleteListener(OnCompleteListener {
+                if (it.isSuccessful)
+                {
+                    AppConstantsValue.storageSolutionRef.child(fileNameInFirebase).downloadUrl.addOnSuccessListener {
+                        // file uploaded successfully
+                        val fileUrl = it.toString()
+                        val solutionModel = SolutionModel(
+                            currentAssignmentDocumentId,
+                            fileUrl,
+                            attachmentResult,
+                            FirebaseAuth.getInstance().currentUser!!.documentReference()
+                        )
 
-                    AppConstantsValue.solutionCollectionRef.add(solutionModel).addOnSuccessListener {
-                        appActivity.dismissLoadingAlert()
+                        AppConstantsValue.solutionCollectionRef.add(solutionModel).addOnSuccessListener {
+                            appActivity.dismissLoadingAlert()
 
-                        // update in list also
-                         updateParticularPost()
+                            // update in list also
+                            updateParticularPost(solutionModel.solutionAttachmentUrl, solutionModel.timestamp)
 
-                        Toast.makeText(appActivity, getString(R.string.solution_uploaded), Toast.LENGTH_LONG).show()
-                    }.addOnFailureListener{
-                        appActivity.dismissLoadingAlert()
+                            Toast.makeText(appActivity, getString(R.string.solution_uploaded), Toast.LENGTH_LONG).show()
+                        }.addOnFailureListener {
+                            appActivity.dismissLoadingAlert()
                             Toast.makeText(appActivity, it.message, Toast.LENGTH_LONG).show()
+                        }
+
+                    }.addOnFailureListener {
+                        appActivity.dismissLoadingAlert()
+                        Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                     }
 
-                }.addOnFailureListener {
-                    appActivity.dismissLoadingAlert()
-                    Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                 }
-
-            }
-            else
-            {
-                Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
-            }
-        })
+                else
+                {
+                    Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                }
+            })
 
 
     }
 
-    private fun updateParticularPost()
+
+    private fun deletePreviousAssignementSolutionOfStudent(assignmentDocumentId: String)
     {
-        AppConstantsValue.assignmentCollectionRef.document(currentAssignmentDocumentId.toString()).update("documentId",currentAssignmentDocumentId)
+        appActivity.showLoadingAlert()
+        val currentUserDocumentRef = FirebaseAuth.getInstance().currentUser!!.documentReference()
+        FirebaseFirestore.getInstance().collection(AppConstantsValue.SOLUTION_COLLECTION_PATH)
+            .whereEqualTo("assignmentDocumentId", assignmentDocumentId)
+            .whereEqualTo("studentSubmitter", currentUserDocumentRef).get().addOnCompleteListener {
+                if (it.isSuccessful)
+                {
+                    val documentList = it.result?.documents
+                    val batch = FirebaseFirestore.getInstance().batch()
+                    documentList?.forEach {
+                        val solutionModel = it.toObject(SolutionModel::class.java)
+                        AppConstantsValue.assignmentStorageRef
+                            .child(solutionModel?.solutionAttachmentDetail?.nameInFirebase!!).delete()
+                        batch.delete(it.reference)
+                    }
+                    batch.commit().addOnCompleteListener{
+                        if(it.isSuccessful){
+                            uploadSolution()
+                        }else{
+                            appActivity.dismissLoadingAlert()
+                            Toast.makeText(appActivity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                }else{
+                    appActivity.dismissLoadingAlert()
+                    Toast.makeText(appActivity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    private fun updateParticularPost(solutionUrl: String?, timestamp1: Timestamp?)
+    {
+//        AppConstantsValue.assignmentCollectionRef.document(currentAssignmentDocumentId.toString())
+//            .update("documentId", currentAssignmentDocumentId)
+        val row = assignmentList.get(selectedPos)
+        row.lastSubmittedUrl = solutionUrl
+
+        val timestampDate =
+            android.text.format.DateFormat.getDateFormat(activity)
+                .format(timestamp1?.toDate())
+        val timestampTime =
+            android.text.format.DateFormat.getTimeFormat(activity)
+                .format(timestamp1?.toDate())
+        val lastTime = "Last submitted: $timestampTime, $timestampDate"
+
+        row.lastSumbittedTime = lastTime
+        assignmentList.set(selectedPos, row)
+        assignmentAdapter.notifyDataSetChanged()
 
     }
 

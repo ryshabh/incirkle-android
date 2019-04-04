@@ -1,9 +1,10 @@
 package com.clockworks.incirkle.Fragments
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,21 +14,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 import com.clockworks.incirkle.Activities.AppActivity
 import com.clockworks.incirkle.Activities.CommentsActivity
-import com.clockworks.incirkle.Activities.CourseFeedActivity
 import com.clockworks.incirkle.Interfaces.serialize
 import com.clockworks.incirkle.Models.ForumPost
 import com.clockworks.incirkle.Models.User
 import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
+import com.clockworks.incirkle.filePicker.KotConstants
+import com.clockworks.incirkle.filePicker.KotRequest
+import com.clockworks.incirkle.filePicker.KotResult
+import com.clockworks.incirkle.utils.AppConstantsValue
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.fragment_course_forum.*
@@ -49,6 +51,8 @@ class CourseForumFragment() : Fragment()
     private var root: View? = null
     private var formList = ArrayList<ForumPost>()
 
+    private lateinit var listenerRegistration: ListenerRegistration
+
 
     //    private lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
 //    private lateinit var bottomSheetLayout: LinearLayout
@@ -56,6 +60,12 @@ class CourseForumFragment() : Fragment()
 
     lateinit var dialog: AlertDialog
     lateinit var adapter: ForumPostAdapter
+
+    private var attachmentResult: KotResult? = null
+
+    private lateinit var popupRootView: View
+    private lateinit var appActivity: AppActivity
+    private lateinit var forumPostsReference: CollectionReference
 
     class ForumPostAdapter(
         private val context: Context,
@@ -171,7 +181,7 @@ class CourseForumFragment() : Fragment()
                 task.exception?.let { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show() }
                     ?: task.result?.serialize(User::class.java)?.let()
                     {
-                        viewModel.posterNameTextView.setText(it.fullName() + if (it.type == User.Type.TEACHER) "(Intructor) " else "")
+                        viewModel.posterNameTextView.setText(it.fullName() + if (it.type == User.Type.TEACHER) " (Intructor) " else "")
                         viewModel.popupicon.visibility = when
                         {
                             isTeacher -> View.VISIBLE
@@ -201,7 +211,40 @@ class CourseForumFragment() : Fragment()
 
             viewModel.deleteButton.setOnClickListener() { this.deleteForumPost(post) }
 
-            if (post.attachmentPath != null)
+            if (post.attachmentDetail != null)
+            {
+                val fileTypeCondition: Boolean = post.attachmentDetail?.type?.startsWith(
+                    "image",
+                    true
+                )!! || (post.attachmentDetail?.type?.startsWith("video", true)!!)
+                if (fileTypeCondition)
+                {
+                    viewModel.downloadAttachmentImage.visibility = View.VISIBLE
+                    viewModel.button_activityForum_download_attachment.visibility = View.GONE
+
+                    Glide
+                        .with(context)
+                        .load(post.attachmentPath)
+                        .into(viewModel.downloadAttachmentImage)
+
+                }
+                else
+                {
+                    viewModel.downloadAttachmentImage.visibility = View.GONE
+                    viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
+                    viewModel.button_activityForum_download_attachment.text = post.attachmentDetail?.name
+                    viewModel.button_activityForum_download_attachment.paintFlags =
+                        viewModel.button_activityForum_download_attachment.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                }
+            }
+            else
+            {
+                viewModel.downloadAttachmentImage.visibility = View.GONE
+                viewModel.button_activityForum_download_attachment.visibility = View.GONE
+            }
+
+
+            /*if (post.attachmentPath != null)
             {
                 viewModel.button_activityForum_download_attachment.visibility = View.VISIBLE
                 viewModel.downloadAttachmentImage.visibility = View.VISIBLE
@@ -263,23 +306,13 @@ class CourseForumFragment() : Fragment()
                     }
                 }
 
-                /*  var metadata =
-                      FirebaseStorage.getInstance().getReference("Forum Attachments").child(post.reference.toString())
-                          .metadata;
 
-                  metadata.addOnSuccessListener {
-                      viewModel.downloadAttachmentButton.text = it.name
-                      // Metadata now contains the metadata for 'images/forest.jpg'
-                  }.addOnFailureListener {
-                      // Uh-oh, an error occurred!
-                      it.printStackTrace()
-                  }*/
             }
             else
             {
                 viewModel.button_activityForum_download_attachment.visibility = View.GONE
                 viewModel.downloadAttachmentImage.visibility = View.GONE
-            }
+            }*/
             viewModel.button_activityForum_download_attachment.setOnClickListener {
                 post.attachmentPath?.let {
                     context.startActivity(
@@ -288,10 +321,20 @@ class CourseForumFragment() : Fragment()
                 }
             }
 
+            viewModel.downloadAttachmentImage.setOnClickListener {
+                post.attachmentPath?.let {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    )
+                }
+            }
+
+            viewModel.textview_forumPost_count.text = post.commentCount.toString()
 
             post.reference!!.collection("Comments").get()
                 .addOnSuccessListener()
                 {
+                    post.commentCount = it.size()
                     viewModel.textview_forumPost_count.text = it.size().toString()
                 }
                 .addOnCompleteListener()
@@ -316,8 +359,12 @@ class CourseForumFragment() : Fragment()
                             }
                             ?.addOnSuccessListener()
                             {
+                                if (post.attachmentPath.isNullOrEmpty())
+                                {
+                                    return@addOnSuccessListener
+                                }
                                 FirebaseStorage.getInstance().getReference("Forum Attachments")
-                                    .child(post.reference!!.id).delete()
+                                    .child(post.attachmentDetail?.nameInFirebase!!).delete()
                                     .addOnFailureListener {
                                         Toast.makeText(
                                             context,
@@ -334,13 +381,14 @@ class CourseForumFragment() : Fragment()
                 })
                 popup.show()
             })
-            view.setOnClickListener()
+            view.llCommentcount.setOnClickListener()
             {
                 val intent = Intent(context, CommentsActivity::class.java)
                 intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHER, isTeacher)
                 intent.putExtra(CommentsActivity.IDENTIFIER_IS_TEACHING_ASSISTANT, isTeachingAssistant)
                 intent.putExtra(CommentsActivity.IDENTIFIER_POST_PATH, post.reference!!.path)
-                courseForumFragment.activity?.startActivity(intent)
+                intent.putExtra(CommentsActivity.SELECTED_ITEM_NO, position)
+                courseForumFragment.activity?.startActivityForResult(intent, 25)
                 courseForumFragment.activity?.overridePendingTransition(R.anim.slide_in_up, R.anim.stay);
 //                courseForumFragment.showBottomSheetDialog(isTeacher, isTeachingAssistant, post.reference!!.path)
                 /*courseForumFragment.bottomSheetLayout.visibility = View.VISIBLE
@@ -420,6 +468,12 @@ class CourseForumFragment() : Fragment()
 
     private fun initialize()
     {
+
+        appActivity = this.activity as AppActivity
+        forumPostsReference =
+            FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
+                .collection("Forum Posts")
+
         val isTeacher = arguments?.getBoolean(IDENTIFIER_IS_TEACHER) ?: false
         val isTeacherAssistant = arguments?.getBoolean(IDENTIFIER_IS_TEACHING_ASSISTANT) ?: false
 
@@ -444,39 +498,94 @@ class CourseForumFragment() : Fragment()
             };
         }
         card_view_createforum.setOnClickListener {
-            var view = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_forum, null)
+            popupRootView = layoutInflater.inflate(com.clockworks.incirkle.R.layout.popup_add_forum, null)
 
-            view.button_forum_selectAttachment.setOnClickListener {
-                val appActivity = this.activity as AppActivity
-                appActivity.selectFile {
-                    view.button_forum_selectAttachment.text =
-                        appActivity.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
-                }
+            popupRootView.button_forum_selectAttachment.setOnClickListener {
+                //                val appActivity = this.activity as AppActivity
+//                appActivity.selectFile {
+//                    view.button_forum_selectAttachment.text =
+//                        appActivity.selectedFileUri?.getName(context!!) ?: getString(R.string.text_select_attachment)
+                attachmentResult = null
+                KotRequest.File(this, KotConstants.REQUEST_FILE)
+                    .isMultiple(false)
+                    .setMimeType(KotConstants.FILE_TYPE_FILE_ALL)
+                    .pick()
+//                }
             }
-            val forumPostsReference =
-                FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
-                    .collection("Forum Posts")
 
-            view.button_post_forum.setOnClickListener()
+            popupRootView.button_post_forum.setOnClickListener()
             {
-                view.editText_post_forum_name.error = null
-                view.editText_post_forum_description.error = null
+                popupRootView.editText_post_forum_name.error = null
+                popupRootView.editText_post_forum_description.error = null
 
-                val name = view.editText_post_forum_name.text.toString().trim()
-                val description = view.editText_post_forum_description.text.toString().trim()
+                val name = popupRootView.editText_post_forum_name.text.toString().trim()
+                val description = popupRootView.editText_post_forum_description.text.toString().trim()
                 if (name.isBlank())
                 {
-                    view.editText_post_forum_name.error = "Forum Post name cannot be empty"
+                    popupRootView.editText_post_forum_name.error = "Forum Post name cannot be empty"
                     return@setOnClickListener
                 }
                 else if (description.isBlank())
                 {
-                    view.editText_post_forum_description.error = "Forum Post description cannot be empty"
+                    popupRootView.editText_post_forum_description.error = "Forum Post description cannot be empty"
                     return@setOnClickListener
                 }
-                else
+                else if (attachmentResult == null)
                 {
-                    FirebaseAuth.getInstance().currentUser?.let()
+                    // only text
+                    appActivity.showLoadingAlert()
+                    val creatorRef = FirebaseAuth.getInstance().currentUser!!.documentReference()
+                    val forumPost = ForumPost(name, description, creatorRef, null, null)
+                    forumPostsReference.add(forumPost).addOnCompleteListener {
+                        appActivity.dismissLoadingAlert()
+                        if (!it.isSuccessful)
+                        {
+                            Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                        }
+
+                    }
+                }
+                else if (attachmentResult != null)
+                {
+                    // text and attachment both
+                    appActivity.showLoadingAlert()
+                    val fileNameInFirebase = System.currentTimeMillis().toString()
+                    attachmentResult?.nameInFirebase = fileNameInFirebase
+                    AppConstantsValue.forumStorageRef.child(fileNameInFirebase).putFile(attachmentResult?.uri!!)
+                        .addOnCompleteListener {
+                            if (it.isSuccessful)
+                            {
+                                AppConstantsValue.forumStorageRef.child(fileNameInFirebase)
+                                    .downloadUrl.addOnSuccessListener {
+                                    // file uploaded successfully
+                                    val fileUrl = it.toString()
+                                    val creatorRef = FirebaseAuth.getInstance().currentUser!!.documentReference()
+                                    val forumPost = ForumPost(name, description, creatorRef, fileUrl, attachmentResult)
+
+                                    forumPostsReference.add(forumPost).addOnCompleteListener {
+                                        appActivity.dismissLoadingAlert()
+                                        attachmentResult = null
+                                        if (!it.isSuccessful)
+                                        {
+                                            Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }.addOnFailureListener {
+                                    attachmentResult = null
+                                    appActivity.dismissLoadingAlert()
+                                    Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            else
+                            {
+                                attachmentResult = null
+                                appActivity.dismissLoadingAlert()
+                                Toast.makeText(activity, it.exception.toString(), Toast.LENGTH_LONG).show()
+                            }
+                        }
+
+
+                    /*FirebaseAuth.getInstance().currentUser?.let()
                     {
                         val appActivity = this.activity as AppActivity
                         appActivity.showLoadingAlert()
@@ -485,20 +594,20 @@ class CourseForumFragment() : Fragment()
                             .addOnCompleteListener { appActivity.dismissLoadingAlert() }
                             .addOnSuccessListener()
                             {
-                                view.editText_post_forum_name.setText("")
-                                view.editText_post_forum_description.setText("")
+                                popupRootView.editText_post_forum_name.setText("")
+                                popupRootView.editText_post_forum_description.setText("")
                                 (activity as CourseFeedActivity).updateAttachmentPath(
                                     it,
                                     FirebaseStorage.getInstance().getReference("Forum Attachments").child(it.id),
                                     "attachmentPath"
                                 )
                             }
-                    }
+                    }*/
                 }
                 dialog.dismiss()
             }
             dialog = AlertDialog.Builder(activity)
-                .setView(view)
+                .setView(popupRootView)
                 .setCancelable(true)
                 .create()
 
@@ -517,7 +626,8 @@ class CourseForumFragment() : Fragment()
         val forumPostsReference =
             FirebaseFirestore.getInstance().document(arguments!!.getString(IDENTIFIER_COURSE_PATH))
                 .collection("Forum Posts")
-        forumPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
+
+        listenerRegistration = forumPostsReference.orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener()
         { result, e ->
             e?.let { (this.activity as AppActivity).showError(it) }
                 ?: result?.map { it.serialize(ForumPost::class.java) }?.let()
@@ -549,6 +659,7 @@ class CourseForumFragment() : Fragment()
         }
     }
 
+    /*
     fun showBottomSheetDialog(isTeacher: Boolean, isTeachingAssistant: Boolean, path: String)
     {
         val bundle = Bundle();
@@ -561,7 +672,7 @@ class CourseForumFragment() : Fragment()
     }
 
 
-    /*  class CommentsAdapter(
+      class CommentsAdapter(
           private val cBSFragment: CourseForumFragment,
           private val isTeacher: Boolean,
           private val isTeachingAssistant: Boolean,
@@ -664,6 +775,37 @@ class CourseForumFragment() : Fragment()
               return view
           }
       }*/
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+    {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 25 && resultCode == Activity.RESULT_OK && data != null)
+        {
+            val selectedItemNo = data.getIntExtra(CommentsActivity.SELECTED_ITEM_NO, -1)
+            val selectedItemCount = data.getIntExtra(CommentsActivity.SELECTED_ITEM_COUNT, -1)
+            val commentRow = formList.get(selectedItemCount)
+            commentRow.commentCount = selectedItemCount
+            formList.set(selectedItemNo, commentRow)
+            adapter.notifyDataSetChanged()
+        }
+        if (KotConstants.REQUEST_FILE == requestCode && resultCode == Activity.RESULT_OK)
+        {
+            val result = data?.getParcelableArrayListExtra<KotResult>(KotConstants.EXTRA_FILE_RESULTS)
+            attachmentResult = result!!.get(0)
+            if (attachmentResult != null)
+            {
+                popupRootView.button_forum_selectAttachment.text = attachmentResult!!.name
+            }
+        }
+
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
+        listenerRegistration.remove()
+    }
 
 
 }

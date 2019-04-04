@@ -3,5 +3,7 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/home_action_enrol_course"
           android:title="@string/title_activity_enrolCourse"
-          app:showAsAction="never"/>
+          app:iconTint="@color/md_white"
+          android:icon="@drawable/ic_add_button"
+          app:showAsAction="always"/>
 </menu>

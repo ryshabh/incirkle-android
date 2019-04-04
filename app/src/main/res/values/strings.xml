@@ -138,5 +138,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="solution_uploaded">Solution Uploaded Successfully</string>
     <string name="not_submitted_yet">Not submitted yet!</string>
+    <string name="course_list">Course list</string>
+    <string name="assignment_submisstion_list">Assignment submission list</string>
 
 </resources>

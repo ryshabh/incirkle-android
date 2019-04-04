@@ -12,11 +12,11 @@
             android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".Activities.SubmissionActivity">
-        </activity>
+        <activity
+                android:name=".Activities.SubmissionActivity"
+                android:theme="@style/AppTheme.NoActionBar"/>
         <activity
                 android:name=".Activities.CommentWithAttachment"
                 android:theme="@style/AppTheme.NoActionBar">
@@ -75,7 +75,6 @@
         </activity>
         <activity
                 android:name=".Activities.HomeActivity"
-                android:label="@string/app_name"
                 android:launchMode="singleTask"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -94,6 +93,13 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/provider_paths"/>
         </provider>
+
+
+        <meta-data
+                android:name="firebase_crashlytics_collection_enabled"
+                android:value="${enableCrashReporting}"/>
+
+
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.clockworks.incirkle.Models
 
+import com.clockworks.incirkle.filePicker.KotResult
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.IgnoreExtraProperties
@@ -15,10 +16,12 @@ data class AssignmentModel(
     var detail: String? = null,
     var dueDate: Timestamp? = null,
     var assignmentAttachmentUrl: String? = null,
-    var assignmentAttachmentFileType: String? = null,
+    var assignmentAttachmentDetail: KotResult? = null,
     var attachmentCreator: DocumentReference? = null,
     var timestamp: Timestamp = Timestamp.now(),
-    var user: User? = null
+    var user: User? = null,
+    var lastSubmittedUrl:String?=null,
+    var lastSumbittedTime:String?=null
 )
 {
 
