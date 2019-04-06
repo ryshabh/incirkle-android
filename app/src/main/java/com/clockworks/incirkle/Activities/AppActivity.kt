@@ -10,13 +10,10 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import com.clockworks.incirkle.filePicker.KotConstants
+import android.widget.Toast
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.storage.StorageReference
 import dmax.dialog.SpotsDialog
-import android.R.attr.data
-import android.R
-
 
 
 abstract class AppActivity : AppCompatActivity()
@@ -189,7 +186,8 @@ abstract class AppActivity : AppCompatActivity()
                                 documentReference.update(fieldPath, it.toString())
                                     .addOnFailureListener { showError(it) }
                                     .addOnCompleteListener {
-                                        dismissLoadingAlert() }
+                                        dismissLoadingAlert()
+                                    }
                             }
                     }
             } catch (e: Exception)
@@ -199,6 +197,17 @@ abstract class AppActivity : AppCompatActivity()
                 showError(e)
             }
         }
+    }
+
+
+    fun showLongToast(context: Context, msg: String)
+    {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+    }
+
+    fun showShortToast(context: Context, msg: String)
+    {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
 }

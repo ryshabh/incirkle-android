@@ -22,10 +22,12 @@ class InviteStudentsActivity : AppActivity()
     companion object
     {
         const val REQUEST_CODE = 1
+        const val IDENTIFIER_TEACHING_ASSISTANTS = "Teaching Assistants"
         const val IDENTIFIER_INVITED_STUDENTS = "Invited Students"
     }
 
     private var invitedStudents = ArrayList<String>()
+    private var teachingAssistants = ArrayList<String>()
 
     private fun updateInvitedStudentsListView(list: ArrayList<Pair<String, String>>)
     {
@@ -60,6 +62,7 @@ class InviteStudentsActivity : AppActivity()
         supportActionBar?.let { it.title = getString(R.string.text_inviteStudents) }
 
         this.invitedStudents = intent.getStringArrayListExtra(IDENTIFIER_INVITED_STUDENTS)
+        teachingAssistants = intent.getStringArrayListExtra(IDENTIFIER_TEACHING_ASSISTANTS)
         this.updateInvitedStudents()
     }
 
@@ -104,9 +107,12 @@ class InviteStudentsActivity : AppActivity()
                         }
                     }
 
-                    if (userID.equals(FirebaseAuth.getInstance().currentUser?.documentReference()?.id, true))
-                        this.showError(Exception("Cannot add self"))
-                    else
+                    if (userID.equals(FirebaseAuth.getInstance().currentUser?.phoneNumber, true))
+                        this.showLongToast(this,getString(R.string.cant_add_self))
+                   else if (teachingAssistants.contains(userID))
+                    {
+                        this.showLongToast(this,getString(R.string.cant_add_student))
+                    }else
                     {
                         this.invitedStudents.add(userID)
                         this.updateInvitedStudents()

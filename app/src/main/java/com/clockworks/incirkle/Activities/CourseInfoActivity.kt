@@ -172,7 +172,7 @@ class CourseInfoActivity : AppActivity()
                         {
                             this.performThrowable { it.serialize(User::class.java) }?.let()
                             {
-                                if (this.courseID != null)
+//                                if (this.courseID != null)
                                     if(!it.courses.contains(courseReference)){
                                         it.courses.add(courseReference)
                                     }
@@ -299,6 +299,7 @@ class CourseInfoActivity : AppActivity()
         val intent = Intent(this, TeachingAssistantsActivity::class.java)
         intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_CAN_MODIFY, this.privilege == PRIVILEGE.FULL)
         intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_TEACHING_ASSISTANTS, this.course.teachingAssistants)
+        intent.putExtra(TeachingAssistantsActivity.IDENTIFIER_INVITED_STUDENTS, this.course.invitedStudents)
         startActivityForResult(intent, TeachingAssistantsActivity.REQUEST_CODE)
     }
 
@@ -306,6 +307,7 @@ class CourseInfoActivity : AppActivity()
     {
         val intent = Intent(this, InviteStudentsActivity::class.java)
         intent.putExtra(InviteStudentsActivity.IDENTIFIER_INVITED_STUDENTS, this.course.invitedStudents)
+        intent.putExtra(InviteStudentsActivity.IDENTIFIER_TEACHING_ASSISTANTS, this.course.teachingAssistants)
         startActivityForResult(intent, InviteStudentsActivity.REQUEST_CODE)
     }
 

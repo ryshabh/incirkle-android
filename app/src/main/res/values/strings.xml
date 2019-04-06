@@ -140,5 +140,8 @@
     <string name="not_submitted_yet">Not submitted yet!</string>
     <string name="course_list">Course list</string>
     <string name="assignment_submisstion_list">Assignment submission list</string>
+    <string name="cant_add_teaching_assistant">This user is already added as a student of this course</string>
+    <string name="cant_add_student">This user is already added as a teaching assistant of this course</string>
+    <string name="cant_add_self">Cannot add self</string>
 
 </resources>

@@ -14,7 +14,6 @@ import com.clockworks.incirkle.Models.documentReference
 import com.clockworks.incirkle.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_teaching_assistants.*
-import java.lang.Exception
 
 class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteListener
 {
@@ -23,9 +22,11 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
         const val REQUEST_CODE = 2
         const val IDENTIFIER_CAN_MODIFY = "Can Modify"
         const val IDENTIFIER_TEACHING_ASSISTANTS = "Teaching Assistants"
+        const val IDENTIFIER_INVITED_STUDENTS = "Invited Students"
     }
 
     private var teachingAssistants = ArrayList<String>()
+    private var inviteStudents = ArrayList<String>()
     private var isAdmin = false
     private var deleteAlert: AlertDialog? = null
 
@@ -40,8 +41,7 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
         this.updateTeachingAssistantsListView(ArrayList())
         val assistants = ArrayList<Pair<String, String>>()
         User.iterate(this.teachingAssistants)
-        {
-            index, _, task ->
+        { index, _, task ->
             this.showLoadingAlert()
             task.addOnFailureListener(::showError)
                 .addOnSuccessListener()
@@ -63,6 +63,7 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
         supportActionBar?.let { it.title = getString(R.string.text_teachingAssistants) }
 
         this.teachingAssistants = intent.getStringArrayListExtra(IDENTIFIER_TEACHING_ASSISTANTS)
+        this.inviteStudents = intent.getStringArrayListExtra(IDENTIFIER_INVITED_STUDENTS)
         this.isAdmin = this.intent.getBooleanExtra(IDENTIFIER_CAN_MODIFY, false)
         if (this.isAdmin)
             button_add_teachingAssistant.visibility = View.VISIBLE
@@ -77,14 +78,12 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
                 .setTitle("Remove Teaching Assistant")
                 .setMessage("Are you sure you wish to remove User with ID: ${this.teachingAssistants[position]} as Teaching Assistant?")
                 .setPositiveButton("Yes")
-                {
-                    _, _ ->
+                { _, _ ->
                     this.teachingAssistants.removeAt(position)
                     this.updateTeachingAssistants()
                 }
                 .setNegativeButton("No")
-                {
-                    _, _ ->
+                { _, _ ->
                     this.deleteAlert = null
                 }
                 .create()
@@ -106,8 +105,7 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
 
         val alert = builder.create()
         alert.setOnShowListener()
-        {
-                dialogInterface ->
+        { dialogInterface ->
 
             (dialogInterface as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener()
             {
@@ -133,8 +131,12 @@ class TeachingAssistantsActivity : AppActivity(), DetailedListAdapter.DeleteList
                         }
                     }
 
-                    if (userID.equals(FirebaseAuth.getInstance().currentUser?.documentReference()?.id, true))
-                        this.showError(Exception("Cannot add self"))
+                    if (userID.equals(FirebaseAuth.getInstance().currentUser?.phoneNumber, true))
+                    this.showLongToast(this,getString(R.string.cant_add_self))
+                    else if (inviteStudents.contains(userID))
+                    {
+                        this.showLongToast(this,getString(R.string.cant_add_teaching_assistant))
+                    }
                     else
                     {
                         this.teachingAssistants.add(userID)
