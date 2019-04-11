@@ -33,9 +33,9 @@ class SubmissionActivity : AppActivity()
         setContentView(R.layout.activity_submission)
         toolbar.setTitle(getString(R.string.assignment_submisstion_list))
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        supportActionBar?.setHomeButtonEnabled(true)
+//        supportActionBar?.setDisplayShowHomeEnabled(true)
 
 
         assignmentId = intent.getStringExtra(ASSIGNMENT_ID)

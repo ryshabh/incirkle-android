@@ -25,9 +25,9 @@ class CommentWithAttachment : AppActivity()
         setContentView(R.layout.activity_comment_with_attachment)
 
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        supportActionBar?.setHomeButtonEnabled(true)
+//        supportActionBar?.setDisplayShowHomeEnabled(true)
 
         fileName = intent.getStringExtra("fileName");
         fileUri = intent.getParcelableExtra("fileUri")

@@ -199,6 +199,55 @@ abstract class AppActivity : AppCompatActivity()
         }
     }
 
+    fun updateAttachmentPathWithouDocumentReference(
+        fileReference: StorageReference
+    )
+    {
+        this.selectedFileUri?.let()
+        {
+            this.selectedFileUri = null
+            this.didSelectFile()
+
+            showLoadingAlert()
+
+            try
+            {
+                fileReference.putFile(it).continueWith()
+                {
+                    if (!it.isSuccessful)
+                        throw it.exception!!
+                    return@continueWith fileReference.downloadUrl
+                }
+                    .addOnCompleteListener { dismissLoadingAlert() }
+                    .addOnFailureListener()
+                    {
+                        dismissLoadingAlert()
+                        showError(it)
+                    }
+                    .addOnSuccessListener()
+                    {
+                        showLoadingAlert()
+                        it.addOnCompleteListener { dismissLoadingAlert() }
+                            .addOnFailureListener()
+                            {
+                                dismissLoadingAlert()
+                                showError(it)
+                            }
+                            .addOnSuccessListener()
+                            {
+                                dismissLoadingAlert()
+                                changedUrl = it.toString();
+                            }
+                    }
+            } catch (e: Exception)
+            {
+                e.printStackTrace()
+                dismissLoadingAlert()
+                showError(e)
+            }
+        }
+    }
+
 
     fun showLongToast(context: Context, msg: String)
     {

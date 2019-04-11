@@ -1,9 +1,8 @@
-<LinearLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:gravity="center_vertical|center_horizontal"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="20dp"
         tools:context=".Activities.LoginActivity"
@@ -11,6 +10,7 @@
         android:focusableInTouchMode="true">
 
     <TextView
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="4"
@@ -24,12 +24,30 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:text="@string/button_login_email"
-            android:onClick="emailLogin" />
+            android:onClick="emailLogin"/>
 
     <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
             android:text="@string/button_login_phone"
             android:onClick="phoneLogin"/>
 
-</LinearLayout>
+
+    <Button
+            android:layout_above="@+id/btnSignupStudent"
+            android:layout_marginBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/signup_for_teacher"
+            android:onClick="signupForTeacher"/>
+
+    <Button
+            android:id="@+id/btnSignupStudent"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/signup_for_student"
+            android:onClick="signupForStudent"/>
+
+</RelativeLayout>

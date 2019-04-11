@@ -143,5 +143,9 @@
     <string name="cant_add_teaching_assistant">This user is already added as a student of this course</string>
     <string name="cant_add_student">This user is already added as a teaching assistant of this course</string>
     <string name="cant_add_self">Cannot add self</string>
+    <string name="signup_for_teacher">Sign up for teacher</string>
+    <string name="signup_for_student">Sign up for student</string>
+    <string name="submit">Submit</string>
+    <string name="signup">Sign up</string>
 
 </resources>

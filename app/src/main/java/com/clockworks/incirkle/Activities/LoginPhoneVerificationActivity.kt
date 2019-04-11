@@ -1,5 +1,6 @@
 package com.clockworks.incirkle.Activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -18,7 +19,9 @@ class LoginPhoneVerificationActivity : AppActivity()
     {
         const val IDENTIFIER_VERIFICATION_CODE = "Verification Code"
     }
+
     private lateinit var mVerificationId: String
+    private var isFromUserProfile = false
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -27,15 +30,17 @@ class LoginPhoneVerificationActivity : AppActivity()
         setSupportActionBar(toolbar)
 
         this.mVerificationId = intent.getStringExtra(IDENTIFIER_VERIFICATION_CODE) ?: ""
+        this.isFromUserProfile = intent.getBooleanExtra("isFromUserProfile",false)
 
-        this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         this.editText_verification_code.filters = arrayOf(InputFilter.LengthFilter(6))
-        this.editText_verification_code.addTextChangedListener(object: TextWatcher
+        this.editText_verification_code.addTextChangedListener(object : TextWatcher
         {
             override fun afterTextChanged(p0: Editable?)
             {
-                this@LoginPhoneVerificationActivity .button_continue.isEnabled = p0?.length == 6
+                this@LoginPhoneVerificationActivity.button_continue.isEnabled = p0?.length == 6
             }
+
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int)
             {
             }
@@ -49,11 +54,20 @@ class LoginPhoneVerificationActivity : AppActivity()
     fun verify(v: View)
     {
 
-       val credential = PhoneAuthProvider.getCredential(this.mVerificationId, this.editText_verification_code.text.toString())
+        val credential =
+            PhoneAuthProvider.getCredential(this.mVerificationId, this.editText_verification_code.text.toString())
         this.showLoadingAlert()
         FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnFailureListener(::showError)
-            .addOnSuccessListener { this.signIn() }
+            .addOnFailureListener { showLongToast(this@LoginPhoneVerificationActivity, it.localizedMessage) }
+            .addOnSuccessListener {
+                if(isFromUserProfile)
+                {
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }else{
+                    signIn()
+                }
+            }
             .addOnCompleteListener { this.dismissLoadingAlert() }
     }
 
@@ -64,4 +78,5 @@ class LoginPhoneVerificationActivity : AppActivity()
         startActivity(homeActivityIntent)
         finish()
     }
+
 }

@@ -15,6 +15,8 @@ class AppConstantsValue
         const val SOLUTION_COLLECTION_PATH = "Solution"
         const val SOLUTION_STORAGE_PATH = "Solution Attachments"
 
+        const val USERS_PATH = "Users"
+
         //  assignment their references
 
         val assignmentStorageRef = FirebaseStorage.getInstance().getReference(AppConstantsValue.ASSIGNMENT_STORAGE_PATH)
@@ -27,6 +29,9 @@ class AppConstantsValue
 
         val solutionCollectionRef =
             FirebaseFirestore.getInstance().collection(AppConstantsValue.SOLUTION_COLLECTION_PATH)
+
+        val userCollectionRef =
+            FirebaseFirestore.getInstance().collection(AppConstantsValue.USERS_PATH)
 
 
         // activity
